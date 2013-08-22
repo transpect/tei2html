@@ -127,7 +127,7 @@
     And don’t ever change the priority unless you’ve made sure that no other template
     relies on this value to be 0.25.
     -->
-  <xsl:template match="p |  table | caption | ref | mixed-citation | copyright-statement | styled-content | italic | bold |
+  <xsl:template match="head | quote | seg | p |  table | caption | ref | mixed-citation | copyright-statement | styled-content | italic | bold |
     underline | sub | sup | verse-line | verse-group | copyright-statement" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
@@ -413,7 +413,7 @@
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
     <xsl:element name="{concat('h', $heading-level)}">
       <xsl:attribute name="class" select="if(parent::div[@type]) then parent::div/@type else local-name()"/>
-      <xsl:apply-templates mode="#current"></xsl:apply-templates>
+      <xsl:next-match/>
     </xsl:element>
   </xsl:template>
 
@@ -544,13 +544,13 @@
   
   <xsl:template match="quote" mode="tei2html">
     <blockquote class="{local-name()}">
-      <xsl:apply-templates mode="#current"/>
+      <xsl:next-match/>
     </blockquote>
   </xsl:template>
   
   <xsl:template match="seg" mode="tei2html">
     <span class="{local-name()}">
-      <xsl:apply-templates mode="#current"/>
+      <xsl:next-match/>
     </span>
   </xsl:template>
   
@@ -971,7 +971,7 @@
         <xsl:sequence select="2"/>
         <!--<xsl:sequence select="count($elt/ancestor::*[tei2html:is-book-part-like(.)]) + 1"/>-->
       </xsl:when>
-      <xsl:when test="$elt/parent::div/@type = ('part', 'chapter')">
+      <xsl:when test="$elt/parent::div/@type = ('part', 'chapter', 'appendix')">
         <xsl:sequence select="3"/>
       </xsl:when>
       <xsl:when test="$elt/parent::div/@type = ('section')">
