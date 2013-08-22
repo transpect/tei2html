@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<p:declare-step xmlns:p="http://www.w3.org/ns/xproc" 
+<p:declare-step 
+  xmlns:p="http://www.w3.org/ns/xproc" 
   xmlns:c="http://www.w3.org/ns/xproc-step"  
   xmlns:cx="http://xmlcalabash.com/ns/extensions"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
@@ -13,7 +14,6 @@
   <p:option name="srcpaths" required="false" select="'no'"/>
   <p:option name="debug" required="false" select="'no'"/>
   <p:option name="debug-dir-uri" required="false" select="'debug'"/>
-  <p:option name="css-location" required="false" select="'http://customers.le-tex.de/generic/book-conversion/adaptions/common/css/stylesheet.css'"/>
   
   <p:input port="source" primary="true" />
   <p:input port="paths" kind="parameter" primary="true"/>
@@ -27,7 +27,6 @@
   <p:import href="http://transpect.le-tex.de/book-conversion/converter/xpl/dynamic-transformation-pipeline.xpl"/>
     
   <bc:dynamic-transformation-pipeline load="tei2html/tei2html-driver">
-    <p:with-param name="css-location" select="$css-location"/>
     <p:with-option name="debug" select="$debug"/>
     <p:with-option name="debug-dir-uri" select="$debug-dir-uri"/>
     <p:input port="additional-inputs"><p:empty/></p:input>
