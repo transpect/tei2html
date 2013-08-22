@@ -409,6 +409,13 @@
     </xsl:if>
   </xsl:template>
   
+  <xsl:template match="head" mode="tei2html">
+    <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
+    <xsl:element name="{concat('h', $heading-level)}">
+      <xsl:attribute name="class" select="if(parent::div[@type]) then parent::div/@type else local-name()"/>
+      <xsl:apply-templates mode="#current"></xsl:apply-templates>
+    </xsl:element>
+  </xsl:template>
 
   <xsl:template match="label[../title union ../caption/title]" mode="tei2html">
     <xsl:param name="actually-process-it" as="xs:boolean?"/>
@@ -533,6 +540,22 @@
     <span class="{local-name()}">
       <xsl:next-match/>
     </span> 
+  </xsl:template>
+  
+  <xsl:template match="quote" mode="tei2html">
+    <blockquote class="{local-name()}">
+      <xsl:apply-templates mode="#current"/>
+    </blockquote>
+  </xsl:template>
+  
+  <xsl:template match="seg" mode="tei2html">
+    <span class="{local-name()}">
+      <xsl:apply-templates mode="#current"/>
+    </span>
+  </xsl:template>
+  
+  <xsl:template match="pb" mode="tei2html">
+    <div style="page-break-after:always" class="{local-name()}"></div>
   </xsl:template>
 
   <xsl:template match="index" mode="tei2html">
@@ -947,6 +970,12 @@
       <xsl:when test="$elt/parent::title-group">
         <xsl:sequence select="2"/>
         <!--<xsl:sequence select="count($elt/ancestor::*[tei2html:is-book-part-like(.)]) + 1"/>-->
+      </xsl:when>
+      <xsl:when test="$elt/parent::div/@type = ('part', 'chapter')">
+        <xsl:sequence select="3"/>
+      </xsl:when>
+      <xsl:when test="$elt/parent::div/@type = ('section')">
+        <xsl:sequence select="count($elt/ancestor::div[@type eq 'section']) +3"/>
       </xsl:when>
       <xsl:when test="$elt/parent::sec[ancestor::boxed-text]">
         <xsl:sequence select="count($elt/ancestor::*[ancestor::boxed-text]) + 3"/>
