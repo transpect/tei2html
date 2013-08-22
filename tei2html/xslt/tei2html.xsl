@@ -554,6 +554,8 @@
     </span>
   </xsl:template>
   
+  <xsl:template match="@rend" mode="tei2html"/>
+  
   <xsl:template match="pb" mode="tei2html">
     <div style="page-break-after:always" class="{local-name()}"></div>
   </xsl:template>
