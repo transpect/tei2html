@@ -291,30 +291,29 @@
     </dd>
   </xsl:template>
 
-  <xsl:template match="list[@list-type eq 'bullet']" mode="tei2html">
-    <ul>
+  <xsl:template match="list[@rend eq 'itemizedlist']" mode="tei2html">
+    <ul class="{@rend}">
+      <xsl:if test="@style">
+        <xsl:attribute name="style" select="@style"/>
+      </xsl:if>
       <xsl:apply-templates mode="#current"/>
     </ul>
   </xsl:template>
   
-  <xsl:template match="list[matches(@list-type, '^(order|alpha|roman)')]" mode="tei2html">
-    <ol>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
+  <xsl:template match="list[@rend eq 'orderedlist')]" mode="tei2html">
+    <ol class="{@rend}">
+      <xsl:if test="@style">
+        <xsl:attribute name="style" select="@style"/>
+      </xsl:if>
+      <xsl:apply-templates mode="#current"/>
     </ol>
   </xsl:template>
-  
-  <xsl:template match="@list-type" mode="tei2html">
-    <xsl:choose>
-      <xsl:when test=". = 'order'"/>
-      <xsl:when test=". = 'alpha-lower'"><xsl:attribute name="class" select="'lower-alpha'"/></xsl:when>
-      <xsl:when test=". = 'alpha-upper'"><xsl:attribute name="class" select="'upper-alpha'"/></xsl:when>
-      <xsl:when test=". = 'roman-lower'"><xsl:attribute name="class" select="'lower-roman'"/></xsl:when>
-      <xsl:when test=". = 'roman-upper'"><xsl:attribute name="class" select="'upper-roman'"/></xsl:when>
-    </xsl:choose>
-  </xsl:template>
-  
-  <xsl:template match="list-item" mode="tei2html">
+    
+  <xsl:template match="item" mode="tei2html">
     <li>
+      <xsl:if test="@n">
+        <xsl:attribute name="number" select="@n"/>
+      </xsl:if>
       <xsl:apply-templates mode="#current"/>
     </li>
   </xsl:template>
