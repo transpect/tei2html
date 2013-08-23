@@ -300,7 +300,7 @@
     </ul>
   </xsl:template>
   
-  <xsl:template match="list[@rend eq 'orderedlist')]" mode="tei2html">
+  <xsl:template match="list[@rend eq 'orderedlist']" mode="tei2html">
     <ol class="{@rend}">
       <xsl:if test="@style">
         <xsl:attribute name="style" select="@style"/>
