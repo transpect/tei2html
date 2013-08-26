@@ -16,6 +16,7 @@
   <p:option name="debug-dir-uri" required="false" select="'debug'"/>
   
   <p:input port="source" primary="true" />
+  <p:input port="additional-inputs" sequence="true"/>
   <p:input port="paths" kind="parameter" primary="true"/>
   <p:output port="result" primary="true" />
   <p:serialization port="result" 
@@ -29,7 +30,9 @@
   <bc:dynamic-transformation-pipeline load="tei2html/tei2html-driver">
     <p:with-option name="debug" select="$debug"/>
     <p:with-option name="debug-dir-uri" select="$debug-dir-uri"/>
-    <p:input port="additional-inputs"><p:empty/></p:input>
+    <p:input port="additional-inputs">
+      <p:pipe port="additional-inputs" step="tei2html"/>
+    </p:input>
     <p:input port="options"><p:empty/></p:input>
   </bc:dynamic-transformation-pipeline>
   

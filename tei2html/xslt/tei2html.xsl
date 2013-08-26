@@ -108,14 +108,18 @@
         <xsl:apply-templates select=".//custom-meta-group/css:rules" mode="hub2htm:css"/>
       </head>
       <body>
-        <xsl:apply-templates select="text" mode="#current">
-          <xsl:with-param name="footnote-ids" select="//fn/@id" as="xs:string*" tunnel="yes"/>
-        </xsl:apply-templates>
+        <xsl:call-template name="html-body"/>
       </body>
     </html>
   </xsl:template>
   
-    <xsl:template match="text | body | front | div[$divify-sections = 'no']" mode="tei2html">
+  <xsl:template name="html-body">
+    <xsl:apply-templates select="text" mode="#current">
+      <xsl:with-param name="footnote-ids" select="//fn/@id" as="xs:string*" tunnel="yes"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  
+  <xsl:template match="text | body | front | div[$divify-sections = 'no']" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
