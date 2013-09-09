@@ -552,16 +552,24 @@
   </xsl:template>
   
   <xsl:template match="seg" mode="tei2html">
-    <span class="{local-name()}">
+    <span>
       <xsl:next-match/>
     </span>
   </xsl:template>
   
-  <xsl:template match="@rend" mode="tei2html"/>
+  <xsl:template match="@rend" mode="tei2html">
+    <xsl:attribute name="class" select="."/>
+  </xsl:template>
   
   <xsl:template match="pb" mode="tei2html">
     <div style="page-break-after:always" class="{local-name()}"></div>
   </xsl:template>
+
+  <xsl:template match="lb" mode="tei2html">
+    <br/>
+  </xsl:template>
+  
+
 
   <xsl:template match="index" mode="tei2html">
     <div class="{local-name()}">
@@ -994,10 +1002,22 @@
                               then tei2html:heading-level($ancestor-title) + 1
                               else 2"/></xsl:when>
       <xsl:otherwise>
-        <xsl:message>No heading level for <xsl:copy-of select="$elt/.."/></xsl:message>
+        <xsl:variable name="custom" as="xs:integer?">
+          <xsl:apply-templates select="$elt" mode="tei2html_heading-level"/>
+        </xsl:variable>
+        <xsl:choose>
+          <xsl:when test="$custom">
+            <xsl:sequence select="$custom"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:message>No heading level for <xsl:copy-of select="$elt/.."/></xsl:message>    
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:function>
+
+  <xsl:template match="*" mode="tei2html_heading-level" as="xs:integer?"/>
 
   <xsl:function name="tei2html:table-width-grid" as="xs:integer">
     <!-- returns 0, 50, or 100. It should be interpreted and used as a width
