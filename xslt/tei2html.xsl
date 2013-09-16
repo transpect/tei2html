@@ -105,6 +105,7 @@
             <xsl:with-param name="in-toc" select="true()" tunnel="yes"/>
           </xsl:apply-templates>
         </title>
+        <xsl:call-template name="meta"/>
         <xsl:apply-templates select=".//custom-meta-group/css:rules" mode="hub2htm:css"/>
       </head>
       <body>
@@ -123,6 +124,7 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
+  <xsl:template name="meta"/>
 
   <!-- Default handler for the content of para-like and phrase-like elements,
     invoked by an xsl:next-match for the same matching elements. Don't forget 
@@ -984,7 +986,7 @@
         <xsl:sequence select="2"/>
         <!--<xsl:sequence select="count($elt/ancestor::*[tei2html:is-book-part-like(.)]) + 1"/>-->
       </xsl:when>
-      <xsl:when test="$elt/parent::div/@type = ('part', 'chapter', 'appendix')">
+      <xsl:when test="$elt/parent::div/@type = ('part', 'chapter', 'appendix', 'imprint')">
         <xsl:sequence select="3"/>
       </xsl:when>
       <xsl:when test="$elt/parent::div/@type = ('section')">
