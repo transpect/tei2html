@@ -221,7 +221,7 @@
     <br/>
   </xsl:template>
 
-  <xsl:template match="target[@id]" mode="tei2html">
+  <xsl:template match="anchor[@xml:id]" mode="tei2html">
     <a id="{@id}"/>
   </xsl:template>
   
