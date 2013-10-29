@@ -124,8 +124,20 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
-  <xsl:template name="meta"/>
+  <xsl:template name="meta">
+    <xsl:apply-templates select="teiHeader/profileDesc/textClass/keywords" mode="#current"/>
+  </xsl:template>
 
+  <xsl:template match="keywords" mode="tei2html">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template match="keywords/term" mode="tei2html"/>
+  
+  <xsl:template match="keywords/term[@key = 'source-dir-uri']" mode="tei2html" priority="2">
+    <meta name="{@key}" content="{.}"/>
+  </xsl:template>
+  
   <!-- Default handler for the content of para-like and phrase-like elements,
     invoked by an xsl:next-match for the same matching elements. Don't forget 
     to include the names of the elements that you want to handle here. Otherwise
