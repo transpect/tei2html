@@ -105,7 +105,9 @@
             <xsl:with-param name="in-toc" select="true()" tunnel="yes"/>
           </xsl:apply-templates>
         </title>
-        <xsl:call-template name="meta"/>
+        <!-- hier nur drin, weil es unten nicht über template meta matcht -->
+<!--        <meta name="lang" content="{teiHeader/profileDesc/langUsage/language/@ident}"/>-->
+        <xsl:call-template name="meta" /> 
         <xsl:apply-templates select=".//custom-meta-group/css:rules" mode="hub2htm:css"/>
       </head>
       <body>
@@ -125,10 +127,16 @@
   </xsl:template>
   
   <xsl:template name="meta">
+    <!-- warum matcht langUsage nicht? -->
+    <xsl:apply-templates select="teiHeader/profileDesc/langUsage" mode="#current"/>    
     <xsl:apply-templates select="teiHeader/profileDesc/textClass/keywords" mode="#current"/>
   </xsl:template>
 
   <xsl:template match="keywords" mode="tei2html">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+
+  <xsl:template match="langUsage" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
@@ -136,6 +144,10 @@
   
   <xsl:template match="keywords/term[@key = 'source-dir-uri']" mode="tei2html" priority="2">
     <meta name="{@key}" content="{.}"/>
+  </xsl:template>
+  
+  <xsl:template match="langUsage/language" mode="tei2html" priority="2">
+    <meta name="lang" content="{@ident}"/>
   </xsl:template>
   
   <!-- Default handler for the content of para-like and phrase-like elements,
@@ -942,6 +954,26 @@
       <xsl:apply-templates mode="render-xref"/>
     </title>
   </xsl:template>
+  
+  <xsl:template match="figure" mode="tei2html">
+    <xsl:choose>
+      <xsl:when test="ancestor::p[1]">
+        <xsl:apply-templates mode="#current"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <div class="figure">
+          <xsl:apply-templates select="@*, node()" mode="#current"/>
+        </div>
+      </xsl:otherwise>
+    </xsl:choose>
+ </xsl:template>
+  
+  <xsl:template match="graphic" mode="tei2html">
+    <img alt="{replace(@url, '^.*fig_(.+$)', '$1')}" src="{resolve-uri(@url)}">
+      <xsl:copy-of select="@* except @url"/>
+      <xsl:call-template name="css:content"/>
+    </img>
+  </xsl:template>  
   
   <xsl:function name="tei2html:link-rendering-type" as="xs:string">
     <xsl:param name="elt" as="element(linked-item)"/>
