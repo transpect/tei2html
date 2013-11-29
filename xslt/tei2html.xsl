@@ -968,8 +968,8 @@
     </xsl:choose>
  </xsl:template>
   
-  <xsl:template match="graphic" mode="tei2html">
-    <img alt="{replace(@url, '^.*fig_(.+$)', '$1')}" src="{resolve-uri(@url)}">
+  <xsl:template match="graphic" mode="tei2html" priority="2">
+    <img alt="{replace(@url, '^.*?/([^/]+)$', '$1')}" src="{resolve-uri(@url)}">
       <xsl:copy-of select="@* except @url"/>
       <xsl:call-template name="css:content"/>
     </img>
