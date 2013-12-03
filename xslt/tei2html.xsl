@@ -108,7 +108,7 @@
         <!-- hier nur drin, weil es unten nicht über template meta matcht -->
 <!--        <meta name="lang" content="{teiHeader/profileDesc/langUsage/language/@ident}"/>-->
         <xsl:call-template name="meta" /> 
-        <xsl:apply-templates select=".//custom-meta-group/css:rules" mode="hub2htm:css"/>
+        <xsl:apply-templates select="teiHeader/encodingDesc/css:rules" mode="hub2htm:css"/>
       </head>
       <body>
         <xsl:call-template name="html-body"/>
