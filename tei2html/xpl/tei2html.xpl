@@ -17,7 +17,9 @@
   <p:option name="debug-dir-uri" required="false" select="'debug'"/>
   
   <p:input port="source" primary="true" />
-  <p:input port="additional-inputs" sequence="true"/>
+  <p:input port="additional-inputs" sequence="true">
+    <p:empty/>
+  </p:input>
   <p:input port="paths" kind="parameter" primary="true"/>
   <p:output port="result" primary="true" />
   <p:serialization port="result" 
