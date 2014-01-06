@@ -122,7 +122,7 @@
     </xsl:apply-templates>
   </xsl:template>
   
-  <xsl:template match="text | body | front | div[$divify-sections = 'no']" mode="tei2html">
+  <xsl:template match="text | body | front | div[$divify-sections = 'no'][not(@type = 'toc')]" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
@@ -157,8 +157,8 @@
     And don’t ever change the priority unless you’ve made sure that no other template
     relies on this value to be 0.25.
     -->
-  <xsl:template match="head | quote | seg | p |  table | caption | ref | mixed-citation | copyright-statement | styled-content | italic | bold |
-    underline | sub | sup | verse-line | verse-group | copyright-statement" mode="tei2html" priority="-0.25" >
+  <xsl:template match="head | quote | seg | p |  table | caption | ref | styled-content | italic | bold |
+    underline | sub | sup | l | lg" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
   
@@ -177,24 +177,24 @@
   
   <xsl:template match="*" mode="class-att"/>
 
-  <xsl:template match="*[@content-type | @style-type]" mode="class-att">
-    <xsl:apply-templates select="@content-type | @style-type" mode="#current"/>
+  <xsl:template match="*[@rend]" mode="class-att">
+    <xsl:apply-templates select="@rend" mode="#current"/>
   </xsl:template>
 
-  <xsl:template match="verse-line[@content-type | @style-type]" mode="class-att" priority="2">
+<!--  <xsl:template match="verse-line[@content-type | @style-type]" mode="class-att" priority="2">
     <xsl:variable name="att" as="attribute(class)?">
       <xsl:next-match/>
     </xsl:variable>
     <xsl:if test="$att">
       <xsl:attribute name="class" select="string-join(('verse-line', $att), ' ')"/>
     </xsl:if>
-  </xsl:template>
+  </xsl:template>-->
 
   <xsl:variable name="tei2html:ignore-style-name-regex-x"
     select="'^(NormalParagraphStyle|Hyperlink)$'"
     as="xs:string"/>
 
-  <xsl:template match="@content-type[not(../@style-type)] | @style-type" mode="class-att">
+  <xsl:template match="@rend" mode="class-att">
     <xsl:if test="not(matches(., $tei2html:ignore-style-name-regex-x, 'x'))">
       <xsl:attribute name="class" select="replace(., ':', '_')"/>  
     </xsl:if>
@@ -222,19 +222,19 @@
   </xsl:template>
   
   <!-- will be handled by class-att mode -->
-  <xsl:template match="@content-type | @style-type | @specific-use" mode="tei2html"/>
+  <xsl:template match="@rend" mode="tei2html"/>
 
   <xsl:variable name="default-structural-containers" as="xs:string+"
-    select="('book-part', 'front-matter-part', 'sec', 'app', 'ack', 'ref-list', 'dedication', 'foreword', 'preface', 'contrib-group')"/>
+    select="('book-part', 'front-matter-part', 'section', 'appendix', 'ack', 'ref-list', 'dedication', 'foreword', 'preface', 'contrib-group')"/>
 
   <!-- everything that goes into a div (except footnote-like content): -->
-  <xsl:template match="  *[name() = $default-structural-containers][$divify-sections = 'yes']
-                       | fig | caption | abstract | verse-group" 
+<!--  <xsl:template match="  *[name() = $default-structural-containers][$divify-sections = 'yes']
+                       | figure | caption | abstract | verse-group" 
     mode="tei2html" priority="2">
     <div class="{string-join((name(), @book-part-type, @sec-type, @content-type), ' ')}">
       <xsl:next-match/>
     </div>
-  </xsl:template>
+  </xsl:template>-->
 
   <xsl:template match="*[name() = $default-structural-containers][not($divify-sections = 'yes')]" 
     mode="tei2html" priority="2">
@@ -249,12 +249,12 @@
     <a id="{@id}"/>
   </xsl:template>
   
-  <xsl:template match="boxed-text[@content-type eq 'marginalia']" mode="tei2html">
+<!--  <xsl:template match="boxed-text[@content-type eq 'marginalia']" mode="tei2html">
      <div class="{@content-type}">
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </div>   
   </xsl:template>
-
+-->
 
   <xsl:template match="*[p[@specific-use eq 'EpubAlternative']]" mode="epub-alternatives" priority="2">
     <xsl:copy copy-namespaces="no">
@@ -360,11 +360,20 @@
     </blockquote>
   </xsl:template>
   
-  <xsl:template match="fig" mode="tei2html">
-    <div class="{local-name()}">
-      <xsl:apply-templates select="@*, * except (label | caption | permissions), caption, permissions" mode="#current"/>
-    </div>
+   
+    <xsl:template match="figure" mode="tei2html">
+    <xsl:choose>
+      <xsl:when test="ancestor::p[1]">
+         <xsl:apply-templates mode="#current"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <div class="{local-name()}">
+          <xsl:apply-templates select="@*, node()" mode="#current"/>
+        </div>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
+  
 
   <xsl:template match="table-wrap | table-wrap-foot" mode="tei2html">
     <div class="{local-name()}">
@@ -398,26 +407,25 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="toc" mode="tei2html">
+  <xsl:template match="div[@type = 'toc']" mode="tei2html">
     <div class="toc">
       <xsl:choose>
-        <xsl:when test="exists(* except title-group)">
+        <xsl:when test="exists(* except head)">
           <!-- explicitly rendered toc -->
           <xsl:apply-templates mode="tei2html"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates select="title-group" mode="tei2html"/>
-          <xsl:apply-templates
-            select="//title[parent::sec | parent::title-group | parent::app | parent::ref-list]
-                           [not(ancestor::boxed-text or ancestor::toc)]
-                           [tei2html:heading-level(.) le number((current()/@depth, 100)[1]) + 1]"
+          <xsl:apply-templates select="head" mode="tei2html"/>
+          <xsl:apply-templates select="//head[parent::div[@type ='section'] | div[@type ='index'] | parent::div[@type ='appendix'] | parent::div[@type ='chapter']]
+                                              [not(ancestor::div[@type ='toc'])]
+                                              [tei2html:heading-level(.) le number((@depth, 100)[1]) + 1]"
             mode="toc"/>
         </xsl:otherwise>
       </xsl:choose>
     </div>
   </xsl:template>
   
-  <xsl:template match="title" mode="toc">
+  <xsl:template match="head" mode="toc">
     <p class="toc{tei2html:heading-level(.)}">
       <a href="#{(@id, generate-id())[1]}">
         <xsl:if test="../label">
@@ -583,9 +591,9 @@
     </span>
   </xsl:template>
   
-  <xsl:template match="@rend" mode="tei2html">
+<!--  <xsl:template match="@rend" mode="tei2html">
     <xsl:attribute name="class" select="."/>
-  </xsl:template>
+  </xsl:template>-->
   
   <xsl:template match="pb" mode="tei2html">
     <div style="page-break-after:always" class="{local-name()}"></div>
@@ -691,8 +699,8 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
-  <xsl:template match="p[boxed-text | fig | table-wrap]" mode="tei2html" priority="1.2">
-    <xsl:for-each-group select="node()" group-adjacent="boolean(self::boxed-text | self::fig | self::table-wrap)">
+  <xsl:template match="p[boxed-text | figure | table-wrap]" mode="tei2html" priority="1.2">
+    <xsl:for-each-group select="node()" group-adjacent="boolean(self::boxed-text | self::figure | self::table-wrap)">
       <xsl:choose>
         <xsl:when test="current-grouping-key()">
           <xsl:apply-templates select="current-group()" mode="#current"/>
@@ -727,9 +735,9 @@
   <xsl:template match="*[name() = ('graphic', 'inline-graphic')]/@*[name() = ('css:width', 'css:height')]"
     mode="hub2htm:css-style-overrides"/>
 
-  <xsl:template match="graphic/attrib" mode="tei2html">
+<!--  <xsl:template match="graphic/attrib" mode="tei2html">
     <xsl:attribute name="title" select="concat('Attribution: ', .)"/>
-  </xsl:template>
+  </xsl:template>-->
   
   <xsl:template match="tr | tbody | thead | tfoot | td | th | colgroup | col | table[not(matches(@css:width, 'pt$'))]" mode="tei2html">
     <xsl:element name="{local-name()}" exclude-result-prefixes="#all">
@@ -968,12 +976,22 @@
     </xsl:choose>
  </xsl:template>
   
+  <xsl:template match="figDesc" mode="tei2html">
+    <xsl:copy copy-namespaces="no">
+      <p>
+        <xsl:apply-templates select="@*, node()" mode="#current"/>     
+      </p>
+    </xsl:copy>
+  </xsl:template>
+  
   <xsl:template match="graphic" mode="tei2html" priority="2">
     <img alt="{replace(@url, '^.*?/([^/]+)$', '$1')}" src="{resolve-uri(@url)}">
       <xsl:copy-of select="@* except @url"/>
       <xsl:call-template name="css:content"/>
     </img>
   </xsl:template>  
+  
+  <xsl:template match="@url | @type [. = 'tab']" mode="tei2html" priority="-0.5"/>
   
   <xsl:function name="tei2html:link-rendering-type" as="xs:string">
     <xsl:param name="elt" as="element(linked-item)"/>
@@ -985,6 +1003,30 @@
   <xsl:template match="linked-items | ref-type-group" mode="render-xref">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
+  
+  <xsl:template match="lg" mode="tei2html">
+    <div class="poem">
+      <xsl:apply-templates select="node()" mode="#current"/>
+    </div>
+  </xsl:template> 
+  
+  <xsl:template match="l[matches(@rend,'Gedicht')]" mode="tei2html">
+    <xsl:variable name="class" as="xs:string">
+      <xsl:choose>
+        <xsl:when test="matches(@srcpath, 'ParagraphStyleRange.*?ParagraphStyleRange') or matches(@rend, '_top$')">
+          <xsl:sequence select="if (seg[@type = 'indent-to-here']) then 'poem-top-indent' else 'poem-top'"></xsl:sequence>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:sequence select="if (seg[@type = 'indent-to-here']) then 'poem-indent' else 'poem'"></xsl:sequence>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <p>
+      <xsl:copy-of select="@* except @rend"/>
+      <xsl:attribute name="class" select="$class"/>
+      <xsl:apply-templates select="node()"/>
+    </p>
+  </xsl:template> 
   
   <xsl:template match="ref-type-group[@type = ('sec', 'part', 'chapter')]/rendering[@type = ('title', 'number')]" mode="render-xref">
     <xsl:value-of select="key('l10n-string', if(count(item) gt 1) then ../@type else concat(../@type, 's'), $l10n)"/>
@@ -1042,7 +1084,7 @@
       <xsl:when test="$elt/parent::*[local-name() = ('index')]">
         <xsl:sequence select="2"/>
       </xsl:when>
-      <xsl:when test="$elt/parent::*[local-name() = ('ref-list', 'sec', 'abstract', 'ack', 'app', 'app-group', 'bio')]">
+      <xsl:when test="$elt/parent::*[local-name() = ('ref-list', 'section', 'abstract', 'ack', 'appendix', 'app-group', 'bio')]">
         <xsl:variable name="ancestor-title" select="$elt/../../(title | (. | ../book-part-meta)/title-group/title)" as="element(title)?"/>
         <xsl:sequence select="if (exists($ancestor-title)) 
                               then tei2html:heading-level($ancestor-title) + 1
