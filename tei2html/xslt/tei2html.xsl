@@ -60,10 +60,10 @@
   
   <!-- collateral. Otherwise the generated IDs might differ due to temporary trees / variables 
     when transforming the content -->  
-  <xsl:template match="index-term | xref | fn" mode="epub-alternatives">
+  <xsl:template match="index/term | xref | fn" mode="epub-alternatives">
     <xsl:copy copy-namespaces="no">
       <xsl:attribute name="id" select="generate-id()"/>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:apply-templates select="@* except @xml:id, node()" mode="#current"/>
     </xsl:copy>
   </xsl:template>
   
@@ -122,7 +122,7 @@
     </xsl:apply-templates>
   </xsl:template>
   
-  <xsl:template match="text | body | front | div[$divify-sections = 'no'][not(@type = 'toc')]" mode="tei2html">
+  <xsl:template match="text | body | front | div[$divify-sections = 'no'][not(@type = 'imprint')]" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
@@ -247,6 +247,10 @@
 
   <xsl:template match="anchor[@xml:id]" mode="tei2html">
     <a id="{@id}"/>
+  </xsl:template>
+  
+  <xsl:template match="@xml:id" mode="clean-up">
+    <xsl:attribute name="id" select="."/>
   </xsl:template>
   
 <!--  <xsl:template match="boxed-text[@content-type eq 'marginalia']" mode="tei2html">
@@ -407,7 +411,7 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="div[@type = 'toc']" mode="tei2html">
+  <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
     <div class="toc">
       <xsl:choose>
         <xsl:when test="exists(* except head)">
@@ -416,12 +420,18 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates select="head" mode="tei2html"/>
-          <xsl:apply-templates select="//head[parent::div[@type ='section'] | div[@type ='index'] | parent::div[@type ='appendix'] | parent::div[@type ='chapter']]
-                                              [not(ancestor::div[@type ='toc'])]
-                                              [tei2html:heading-level(.) le number((@depth, 100)[1]) + 1]"
+          <xsl:apply-templates select="//head[parent::div[@type ='section'] | parent::divGen[@type ='index'] | parent::div[@type ='appendix'] | parent::div[@type ='chapter']]
+                                              [not(ancestor::divGen[@type ='toc'])]
+                                              [tei2html:heading-level(.) le number((@rendition, 100)[1]) + 1]"
             mode="toc"/>
         </xsl:otherwise>
       </xsl:choose>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="div[@type = 'imprint']" mode="tei2html">
+    <div class="imprint">
+      <xsl:apply-templates mode="#current"/>
     </div>
   </xsl:template>
   
@@ -449,10 +459,12 @@
   <xsl:template match="head" mode="tei2html">
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
     <xsl:element name="{concat('h', $heading-level)}">
-      <xsl:attribute name="class" select="if(parent::div[@type]) then parent::div/@type else local-name()"/>
+      <xsl:attribute name="class" select="if(parent::div[@type] or parent::divGen[@type]) then (parent::div, parent::divGen)[1]/@type else local-name()"/>
       <xsl:next-match/>
     </xsl:element>
   </xsl:template>
+  
+  
 
   <xsl:template match="label[../title union ../caption/title]" mode="tei2html">
     <xsl:param name="actually-process-it" as="xs:boolean?"/>
@@ -495,7 +507,7 @@
     </xsl:element>
   </xsl:template>
   
-  <xsl:template match="index-term | fn" mode="strip-indexterms-etc"/>
+  <xsl:template match="index/term | fn" mode="strip-indexterms-etc"/>
   
   <!-- Discard certain css markup on titles that would otherwise survive on paras: -->
   <xsl:template match="title/@css:*[matches(local-name(), '^(margin-|text-align)')]" mode="tei2html"/>
@@ -605,10 +617,10 @@
   
 
 
-  <xsl:template match="index" mode="tei2html">
+  <xsl:template match="divGen[@type= 'index']" mode="tei2html">
     <div class="{local-name()}">
     <xsl:apply-templates select="@*, node()" mode="#current"/>
-      <xsl:for-each-group select="//index-term[not(parent::index-term)]" group-by="substring(term, 1, 1)"
+      <xsl:for-each-group select="//index/term[not(parent::term)]" group-by="substring(., 1, 1)"
         collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary">
         <xsl:sort select="current-grouping-key()" 
           collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
@@ -625,9 +637,9 @@
   
   <xsl:template name="group-index-terms">
     <xsl:param name="level" as="xs:integer"/>
-    <xsl:param name="index-terms" as="element(index-term)*"/>
+    <xsl:param name="index-terms" as="element(term)*"/>
     <!-- §§§ We need to know a book’s main language! -->
-    <xsl:for-each-group select="$index-terms" group-by="term"
+    <xsl:for-each-group select="$index-terms" group-by="."
       collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=identical">
       <xsl:sort collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
       <xsl:sort collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=identical"/>
@@ -642,7 +654,7 @@
     <p class="ie ie{$level}">
       <xsl:value-of select="current-grouping-key()"/>
       <xsl:text>&#x2002;</xsl:text>
-      <xsl:for-each select="current-group()[not(index-term)]">
+      <xsl:for-each select="current-group()[not(term)]">
         <a href="#it_{@id}" id="ie_{@id}">
           <xsl:value-of select="position()"/>
         </a>
@@ -652,19 +664,19 @@
       </xsl:for-each>
     </p>
     <xsl:call-template name="group-index-terms">
-      <xsl:with-param name="index-terms" select="current-group()/index-term"/>
+      <xsl:with-param name="index-terms" select="current-group()/term"/>
       <xsl:with-param name="level" select="$level + 1"/>
     </xsl:call-template>
   </xsl:template>
 
-  <xsl:template match="index-term[not(parent::index-term)]" mode="tei2html">
+  <xsl:template match="index[not(parent::index)]" mode="tei2html">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:if test="not($in-toc)">
-      <span class="indexterm" id="it_{descendant-or-self::index-term[last()]/@id}">
+      <span class="indexterm" id="it_{descendant-or-self::term[last()]/@id}">
         <xsl:attribute name="title">
-          <xsl:apply-templates mode="#current"/>
+          <xsl:apply-templates select="term" mode="#current"/>
         </xsl:attribute>
-        <a href="#ie_{descendant-or-self::index-term[last()]/@id}" class="it"/>
+        <a href="#ie_{descendant-or-self::term[last()]/@id}" class="it"/>
       </span>
     </xsl:if>
   </xsl:template>
@@ -680,11 +692,11 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="index-term/term" mode="tei2html">
+  <xsl:template match="term" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
-  <xsl:template match="index-term[parent::index-term]" mode="tei2html">
+  <xsl:template match="index[parent::index]" mode="tei2html">
     <xsl:text xml:space="preserve">, </xsl:text>
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
@@ -1022,9 +1034,9 @@
       </xsl:choose>
     </xsl:variable>
     <p>
-      <xsl:copy-of select="@* except @rend"/>
+      <xsl:copy-of select="@srcpth"/>
       <xsl:attribute name="class" select="$class"/>
-      <xsl:apply-templates select="node()"/>
+      <xsl:apply-templates select="node()" mode="tei2html"/>
     </p>
   </xsl:template> 
   
@@ -1057,7 +1069,7 @@
   <xsl:function name="tei2html:is-book-part-like" as="xs:boolean">
     <xsl:param name="elt" as="element(*)"/>
     <!-- add more: -->
-    <xsl:sequence select="exists($elt/(self::toc | self::book-part | self::preface | self::foreword | self::dedication |
+    <xsl:sequence select="exists($elt/(self::divGen[@type = 'toc'] | self::book-part | self::preface | self::foreword | self::dedication |
       self::front-matter-part))"/>
   </xsl:function>
   
@@ -1072,7 +1084,7 @@
         <xsl:sequence select="2"/>
         <!--<xsl:sequence select="count($elt/ancestor::*[tei2html:is-book-part-like(.)]) + 1"/>-->
       </xsl:when>
-      <xsl:when test="$elt/parent::div/@type = ('part', 'chapter', 'appendix', 'imprint')">
+      <xsl:when test="$elt/parent::div/@type = ('part', 'chapter', 'appendix', 'imprint') or $elt/parent::divGen/@type = ('index', 'toc')">
         <xsl:sequence select="3"/>
       </xsl:when>
       <xsl:when test="$elt/parent::div/@type = ('section')">
@@ -1081,7 +1093,7 @@
       <xsl:when test="$elt/parent::sec[ancestor::boxed-text]">
         <xsl:sequence select="count($elt/ancestor::*[ancestor::boxed-text]) + 3"/>
       </xsl:when>
-      <xsl:when test="$elt/parent::*[local-name() = ('index')]">
+      <xsl:when test="$elt/parent::*[@type = 'index']">
         <xsl:sequence select="2"/>
       </xsl:when>
       <xsl:when test="$elt/parent::*[local-name() = ('ref-list', 'section', 'abstract', 'ack', 'appendix', 'app-group', 'bio')]">
