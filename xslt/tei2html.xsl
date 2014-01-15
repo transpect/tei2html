@@ -13,6 +13,7 @@
   xmlns:l10n="http://www.le-tex.de/namespace/l10n"
   xmlns="http://www.w3.org/1999/xhtml"
   xpath-default-namespace="http://www.tei-c.org/ns/1.0"
+   exclude-result-prefixes="#all"
   version="2.0">
 
   <xsl:import href="http://transpect.le-tex.de/hub2html/xsl/css-rules.xsl"/>
@@ -157,7 +158,7 @@
     And don’t ever change the priority unless you’ve made sure that no other template
     relies on this value to be 0.25.
     -->
-  <xsl:template match="head | quote | seg | p |  table | caption | ref | styled-content | italic | bold |
+  <xsl:template match="head | quote | seg | p |  table | caption | note | ref | styled-content | italic | bold |
     underline | sub | sup | l | lg" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
@@ -228,13 +229,13 @@
     select="('book-part', 'front-matter-part', 'section', 'appendix', 'ack', 'ref-list', 'dedication', 'foreword', 'preface', 'contrib-group')"/>
 
   <!-- everything that goes into a div (except footnote-like content): -->
-<!--  <xsl:template match="  *[name() = $default-structural-containers][$divify-sections = 'yes']
+  <xsl:template match="  *[name() = $default-structural-containers][$divify-sections = 'yes']
                        | figure | caption | abstract | verse-group" 
     mode="tei2html" priority="2">
     <div class="{string-join((name(), @book-part-type, @sec-type, @content-type), ' ')}">
       <xsl:next-match/>
     </div>
-  </xsl:template>-->
+  </xsl:template>
 
   <xsl:template match="*[name() = $default-structural-containers][not($divify-sections = 'yes')]" 
     mode="tei2html" priority="2">
@@ -246,7 +247,7 @@
   </xsl:template>
 
   <xsl:template match="anchor[@xml:id]" mode="tei2html">
-    <a id="{@id}"/>
+    <a id="{@xml:id}"/>
   </xsl:template>
   
   <xsl:template match="@xml:id" mode="clean-up">
@@ -364,18 +365,8 @@
     </blockquote>
   </xsl:template>
   
-   
-    <xsl:template match="figure" mode="tei2html">
-    <xsl:choose>
-      <xsl:when test="ancestor::p[1]">
-         <xsl:apply-templates mode="#current"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <div class="{local-name()}">
-          <xsl:apply-templates select="@*, node()" mode="#current"/>
-        </div>
-      </xsl:otherwise>
-    </xsl:choose>
+  <xsl:template match="figure" mode="tei2html">
+      <xsl:apply-templates select="node()" mode="#current"/>
   </xsl:template>
   
 
@@ -456,17 +447,7 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="head" mode="tei2html">
-    <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
-    <xsl:element name="{concat('h', $heading-level)}">
-      <xsl:attribute name="class" select="if(parent::div[@type] or parent::divGen[@type]) then (parent::div, parent::divGen)[1]/@type else local-name()"/>
-      <xsl:next-match/>
-    </xsl:element>
-  </xsl:template>
-  
-  
-
-  <xsl:template match="label[../title union ../caption/title]" mode="tei2html">
+  <xsl:template match="label[../head union ../caption/head]" mode="tei2html">
     <xsl:param name="actually-process-it" as="xs:boolean?"/>
     <xsl:if test="$actually-process-it">
       <span>
@@ -477,36 +458,16 @@
   </xsl:template>
 
   <xsl:template match="label" mode="tei2html"/>
-  
-  <xsl:template match="title | book-title" mode="tei2html">
-    <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
-    <xsl:variable name="level" select="tei2html:heading-level(.)" as="xs:integer?"/>
-    <xsl:element name="{if ($level) then concat('h', $level) else 'p'}">
-      <xsl:copy-of select="(../@id, parent::title-group/../../@id)[1][not($divify-sections = 'yes')]"/>
-      <xsl:apply-templates select="@*" mode="#current"/>
-      <xsl:apply-templates select="." mode="class-att"/>
-      <xsl:sequence select="hub2htm:style-overrides(.)"/>
-      <xsl:variable name="label" as="element(label)?" select="(../label, parent::caption/../label)[1]"/>
-      <xsl:attribute name="title">
-        <xsl:apply-templates select="$label" mode="strip-indexterms-etc"/>
-        <xsl:apply-templates select="$label" mode="label-sep"/>
-        <xsl:variable name="stripped" as="text()">
-          <xsl:value-of>
-            <xsl:apply-templates mode="strip-indexterms-etc"/>  
-          </xsl:value-of>
-        </xsl:variable>
-        <xsl:sequence select="replace($stripped, '^[\p{Zs}\s]*(.+?)[\p{Zs}\s]*$', '$1')"/>
-      </xsl:attribute>
-      <xsl:apply-templates select="$label" mode="#current">
-        <xsl:with-param name="actually-process-it" select="true()"/>
-      </xsl:apply-templates>
-      <xsl:if test="not($in-toc)">
-        <a id="{generate-id()}" />  
-      </xsl:if>
-      <xsl:apply-templates mode="#current"/>
+
+  <xsl:template match="head" mode="tei2html">
+    <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
+    <xsl:element name="{concat('h', $heading-level)}">
+      <xsl:attribute name="class" select="if(parent::div[@type] or parent::divGen[@type]) then (parent::div, parent::divGen)[1]/@type else local-name()"/>
+      <xsl:next-match/>
     </xsl:element>
   </xsl:template>
   
+ 
   <xsl:template match="index/term | fn" mode="strip-indexterms-etc"/>
   
   <!-- Discard certain css markup on titles that would otherwise survive on paras: -->
@@ -731,12 +692,18 @@
       <xsl:apply-templates select="@* except @content-type, node()" mode="#current"/>
     </div>
   </xsl:template>
-  
-  <xsl:template match="graphic | inline-graphic" mode="tei2html">
-    <img alt="An dieser Stelle kann leider das hinterlegte Bild nicht dargestellt werden.">
+    
+    
+  <xsl:template match="graphic" mode="tei2html">
+    <img>
+      <xsl:attribute name="alt" select="replace(@url, '^.*?/([^/]+)$', '$1')"/>
+      <xsl:attribute name="src" select="resolve-uri(@url)"/>
+       <xsl:copy-of select="@* except (@url, @rend)"/>
       <xsl:call-template name="css:content"/>
     </img>
-  </xsl:template>
+  </xsl:template>  
+  
+<!--  <xsl:template match="@url | @type [. = 'tab']" mode="tei2html" priority="-0.5"/>-->
   
   <xsl:template match="graphic/@xlink:href" mode="tei2html">
     <xsl:attribute name="src" select="."/>
@@ -747,10 +714,6 @@
   <xsl:template match="*[name() = ('graphic', 'inline-graphic')]/@*[name() = ('css:width', 'css:height')]"
     mode="hub2htm:css-style-overrides"/>
 
-<!--  <xsl:template match="graphic/attrib" mode="tei2html">
-    <xsl:attribute name="title" select="concat('Attribution: ', .)"/>
-  </xsl:template>-->
-  
   <xsl:template match="tr | tbody | thead | tfoot | td | th | colgroup | col | table[not(matches(@css:width, 'pt$'))]" mode="tei2html">
     <xsl:element name="{local-name()}" exclude-result-prefixes="#all">
       <xsl:call-template name="css:content"/>
@@ -975,35 +938,12 @@
     </title>
   </xsl:template>
   
-  <xsl:template match="figure" mode="tei2html">
-    <xsl:choose>
-      <xsl:when test="ancestor::p[1]">
-        <xsl:apply-templates mode="#current"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <div class="figure">
-          <xsl:apply-templates select="@*, node()" mode="#current"/>
-        </div>
-      </xsl:otherwise>
-    </xsl:choose>
- </xsl:template>
-  
-  <xsl:template match="figDesc" mode="tei2html">
-    <xsl:copy copy-namespaces="no">
+  <xsl:template match="caption" mode="tei2html">
       <p>
-        <xsl:apply-templates select="@*, node()" mode="#current"/>     
+        <xsl:attribute name="class" select="@rend"/>
+        <xsl:apply-templates select="node()" mode="#current"/>     
       </p>
-    </xsl:copy>
   </xsl:template>
-  
-  <xsl:template match="graphic" mode="tei2html" priority="2">
-    <img alt="{replace(@url, '^.*?/([^/]+)$', '$1')}" src="{resolve-uri(@url)}">
-      <xsl:copy-of select="@* except @url"/>
-      <xsl:call-template name="css:content"/>
-    </img>
-  </xsl:template>  
-  
-  <xsl:template match="@url | @type [. = 'tab']" mode="tei2html" priority="-0.5"/>
   
   <xsl:function name="tei2html:link-rendering-type" as="xs:string">
     <xsl:param name="elt" as="element(linked-item)"/>
@@ -1022,20 +962,10 @@
     </div>
   </xsl:template> 
   
-  <xsl:template match="l[matches(@rend,'Gedicht')]" mode="tei2html">
-    <xsl:variable name="class" as="xs:string">
-      <xsl:choose>
-        <xsl:when test="matches(@srcpath, 'ParagraphStyleRange.*?ParagraphStyleRange') or matches(@rend, '_top$')">
-          <xsl:sequence select="if (seg[@type = 'indent-to-here']) then 'poem-top-indent' else 'poem-top'"></xsl:sequence>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:sequence select="if (seg[@type = 'indent-to-here']) then 'poem-indent' else 'poem'"></xsl:sequence>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
+  <xsl:template match="l" mode="tei2html">
     <p>
-      <xsl:copy-of select="@srcpth"/>
-      <xsl:attribute name="class" select="$class"/>
+      <xsl:copy-of select="@srcpath"/>
+      <xsl:attribute name="class" select="@rend"/>
       <xsl:apply-templates select="node()" mode="tei2html"/>
     </p>
   </xsl:template> 
