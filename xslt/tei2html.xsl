@@ -223,7 +223,7 @@
   </xsl:template>
   
   <!-- will be handled by class-att mode -->
-  <xsl:template match="@rend" mode="tei2html"/>
+<!--  <xsl:template match="@rend" mode="tei2html"/>-->
 
   <xsl:variable name="default-structural-containers" as="xs:string+"
     select="('book-part', 'front-matter-part', 'section', 'appendix', 'ack', 'ref-list', 'dedication', 'foreword', 'preface', 'contrib-group')"/>
@@ -564,9 +564,9 @@
     </span>
   </xsl:template>
   
-<!--  <xsl:template match="@rend" mode="tei2html">
+  <xsl:template match="@rend" mode="tei2html">
     <xsl:attribute name="class" select="."/>
-  </xsl:template>-->
+  </xsl:template>
   
   <xsl:template match="pb" mode="tei2html">
     <div style="page-break-after:always" class="{local-name()}"></div>
@@ -698,7 +698,8 @@
     <img>
       <xsl:attribute name="alt" select="replace(@url, '^.*?/([^/]+)$', '$1')"/>
       <xsl:attribute name="src" select="resolve-uri(@url)"/>
-       <xsl:copy-of select="@* except (@url, @rend)"/>
+      <xsl:apply-templates select="@rend" mode="class-att"/>
+      <xsl:copy-of select="@* except (@url, @rend)"/>
       <xsl:call-template name="css:content"/>
     </img>
   </xsl:template>  
