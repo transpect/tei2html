@@ -13,7 +13,7 @@
   xmlns:l10n="http://www.le-tex.de/namespace/l10n"
   xmlns="http://www.w3.org/1999/xhtml"
   xpath-default-namespace="http://www.tei-c.org/ns/1.0"
-   exclude-result-prefixes="#all"
+  exclude-result-prefixes="#all"
   version="2.0">
 
   <xsl:import href="http://transpect.le-tex.de/hub2html/xsl/css-rules.xsl"/>
@@ -144,6 +144,10 @@
   <xsl:template match="keywords/term" mode="tei2html"/>
   
   <xsl:template match="keywords/term[@key = 'source-dir-uri']" mode="tei2html" priority="2">
+    <meta name="{@key}" content="{.}"/>
+  </xsl:template>
+  
+  <xsl:template match="keywords/term[@key = 'source-basename']" mode="tei2html" priority="2">
     <meta name="{@key}" content="{.}"/>
   </xsl:template>
   
