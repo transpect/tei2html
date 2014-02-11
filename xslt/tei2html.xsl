@@ -406,7 +406,7 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
+  <xsl:template match="*:divGen[@type = 'toc']" mode="tei2html">
     <div class="toc">
       <xsl:choose>
         <xsl:when test="exists(* except head)">
@@ -460,8 +460,6 @@
       <xsl:apply-templates select="." mode="label-sep"/>
     </xsl:if>
   </xsl:template>
-
-  <xsl:template match="label" mode="tei2html"/>
 
   <xsl:template match="head" mode="tei2html">
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
