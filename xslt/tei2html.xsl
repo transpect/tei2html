@@ -182,7 +182,7 @@
   
   <xsl:template match="*" mode="class-att"/>
 
-  <xsl:template match="*[@rend]" mode="class-att">
+  <xsl:template match="*[@rend][not(local-name() = 'head')]" mode="class-att">
     <xsl:apply-templates select="@rend" mode="#current"/>
   </xsl:template>
 
