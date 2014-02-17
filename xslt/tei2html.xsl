@@ -119,7 +119,7 @@
   
   <xsl:template name="html-body">
     <xsl:apply-templates select="text" mode="#current">
-      <xsl:with-param name="footnote-ids" select="//fn/@id" as="xs:string*" tunnel="yes"/>
+      <xsl:with-param name="footnote-ids" select="//note[@type = 'footnote']/@xml:id" as="xs:string*" tunnel="yes"/>
     </xsl:apply-templates>
   </xsl:template>
   
@@ -230,7 +230,7 @@
 <!--  <xsl:template match="@rend" mode="tei2html"/>-->
 
   <xsl:variable name="default-structural-containers" as="xs:string+"
-    select="('book-part', 'front-matter-part', 'section', 'appendix', 'ack', 'ref-list', 'dedication', 'foreword', 'preface', 'contrib-group')"/>
+    select="('part', 'front-matter-part', 'section', 'appendix', 'acknowledgements', 'ref-list', 'dedication', 'preface')"/>
 
   <!-- everything that goes into a div (except footnote-like content): -->
   <xsl:template match="  *[name() = $default-structural-containers][$divify-sections = 'yes']
@@ -274,32 +274,35 @@
   <xsl:template match="permissions[preceding-sibling::*/p[@specific-use eq 'EpubAlternative']]" mode="epub-alternatives"
     priority="2"/>
 
-  <xsl:template match="*[fn]" mode="tei2html">
+  <xsl:template match="*[note[@type = 'footnote']]" mode="tei2html">
     <xsl:next-match/>
   </xsl:template>
 
   <xsl:template match="*" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
-    <div class="{name()}" id="fn_{@id}">
+    <div class="{name()}" id="fn_{@xml:id}">
       <span class="note-mark">
-        <a href="#fna_{@id}">
+        <a href="#fna_{@xml:id}">
           <sup>
-            <xsl:value-of select="index-of($footnote-ids, @id)"/>
+            <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
           </sup>
         </a>
       </span>
       <xsl:apply-templates mode="tei2html"/>
     </div>
   </xsl:template>
+  
+  <xsl:template match="*:label[ancestor::*:div[@class = 'note']]" mode="clean-up"/>
+  
 
-  <xsl:template match="fn" mode="tei2html">
+  <xsl:template match="note[@type = 'footnote']" mode="tei2html">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
     <xsl:param name="in-toc" tunnel="yes" as="xs:boolean?"/>
     <xsl:if test="not($in-toc)">
-      <span class="note-anchor" id="fna_{@id}">
-        <a href="#fn_{@id}">
+      <span class="note-anchor" id="fna_{@xml:id}">
+        <a href="#fn_{@xml:id}">
           <sup>
-            <xsl:value-of select="index-of($footnote-ids, @id)"/>
+            <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
           </sup>
         </a>
       </span>
@@ -330,20 +333,14 @@
     </dd>
   </xsl:template>
 
-  <xsl:template match="list[@rend eq 'itemizedlist']" mode="tei2html">
-    <ul class="{@rend}">
-      <xsl:if test="@style">
-        <xsl:attribute name="style" select="@style"/>
-      </xsl:if>
+  <xsl:template match="list[@type eq 'itemizedlist']" mode="tei2html">
+    <ul class="{descendant::p[1]/@rend}">
       <xsl:apply-templates mode="#current"/>
     </ul>
   </xsl:template>
   
-  <xsl:template match="list[@rend eq 'orderedlist']" mode="tei2html">
-    <ol class="{@rend}">
-      <xsl:if test="@style">
-        <xsl:attribute name="style" select="@style"/>
-      </xsl:if>
+  <xsl:template match="list[@type eq 'orderedlist']" mode="tei2html">
+    <ol class="{descendant::p[1]/@rend}">
       <xsl:apply-templates mode="#current"/>
     </ol>
   </xsl:template>
@@ -384,7 +381,7 @@
     <xsl:attribute name="class" select="."/>
   </xsl:template>
   
-  <xsl:template match="book-part | front-matter-part | foreword | preface | dedication" mode="tei2html">
+  <xsl:template match="part | preface | dedication" mode="tei2html">
     <xsl:apply-templates select="book-part-meta | front-matter | book-body | body | book-back | back | named-book-part-body" mode="tei2html"/>
   </xsl:template>
   
@@ -398,7 +395,7 @@
   </xsl:template>
   
   <xsl:template name="tei2html:footnotes">
-    <xsl:variable name="footnotes" select=".//fn" as="element(fn)*"/>
+    <xsl:variable name="footnotes" select=".//note[@type = 'footnote']" as="element(note)*"/>
     <xsl:if test="$footnotes">
       <div class="notes">
         <xsl:apply-templates select="$footnotes" mode="notes"/>
@@ -415,7 +412,7 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates select="head" mode="tei2html"/>
-          <xsl:apply-templates select="//head[parent::div[@type ='section'] | parent::divGen[@type ='index'] | parent::div[@type ='appendix'] | parent::div[@type ='chapter']]
+          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'preface')] | parent::divGen[@type ='index']]
                                               [not(ancestor::divGen[@type ='toc'])]
                                               [tei2html:heading-level(.) le number((@rendition, 100)[1]) + 1]"
             mode="toc"/>
@@ -430,7 +427,7 @@
     </div>
   </xsl:template>
   
-  <xsl:template match="head" mode="toc">
+  <xsl:template match="head[not(starts-with(@rend, 'p_h_virtual'))]" mode="toc">
     <p class="toc{tei2html:heading-level(.)}">
       <a href="#{(@id, generate-id())[1]}">
         <xsl:if test="../label">
@@ -529,13 +526,16 @@
     </b>
   </xsl:template>
     
-  <xsl:template match="ref | copyright-statement" mode="tei2html">
-    <p class="{name()}">
-      <xsl:next-match/>
-    </p>
+  <xsl:template match="link | ref" mode="tei2html">
+    <a>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:if test="not(node())">
+        <xsl:value-of select="(@xlink:href|@target)[1]"/>
+      </xsl:if>
+    </a>
   </xsl:template>
   
-  <xsl:template match="ref[@id]/node()[last()]" mode="tei2html">
+<!--  <xsl:template match="ref[@id]/node()[last()]" mode="tei2html">
     <xsl:next-match/>
     <xsl:text>&#x2002;</xsl:text>
     <xsl:for-each select="key('by-rid', ../@id)">
@@ -552,7 +552,7 @@
     <span class="{local-name()}">
       <xsl:next-match/>
     </span> 
-  </xsl:template>
+  </xsl:template>-->
   
   <xsl:template match="quote" mode="tei2html">
     <blockquote class="{local-name()}">
@@ -674,8 +674,8 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
-  <xsl:template match="p[boxed-text | figure | table-wrap]" mode="tei2html" priority="1.2">
-    <xsl:for-each-group select="node()" group-adjacent="boolean(self::boxed-text | self::figure | self::table-wrap)">
+  <xsl:template match="p[boxed-text | figure | table]" mode="tei2html" priority="1.2">
+    <xsl:for-each-group select="node()" group-adjacent="boolean(self::boxed-text | self::figure | self::table)">
       <xsl:choose>
         <xsl:when test="current-grouping-key()">
           <xsl:apply-templates select="current-group()" mode="#current"/>
@@ -717,13 +717,31 @@
   <xsl:template match="*[name() = ('graphic', 'inline-graphic')]/@*[name() = ('css:width', 'css:height')]"
     mode="hub2htm:css-style-overrides"/>
 
-  <xsl:template match="tr | tbody | thead | tfoot | td | th | colgroup | col | table[not(matches(@css:width, 'pt$'))]" mode="tei2html">
+  <xsl:template match="tbody | thead | tfoot | th | colgroup | col | table[not(matches(@css:width, '(pt|mm)$'))]" mode="tei2html">
     <xsl:element name="{local-name()}" exclude-result-prefixes="#all">
       <xsl:call-template name="css:content"/>
     </xsl:element>
   </xsl:template>  
 
-  <xsl:template match="table[matches(@css:width, 'pt$')]" mode="tei2html">
+  <xsl:template match="row" mode="tei2html">
+    <xsl:element name="tr" exclude-result-prefixes="#all">
+      <xsl:call-template name="css:content"/>
+    </xsl:element>
+  </xsl:template>  
+  
+  <xsl:template match="cell" mode="tei2html">
+    <xsl:element name="td" exclude-result-prefixes="#all">
+      <xsl:call-template name="css:content"/>
+    </xsl:element>
+  </xsl:template>  
+  
+  <xsl:template match="cell/@css:width" mode="table-widths">
+    <xsl:variable name="cell-width" select="if (matches(., '(pt|mm)$')) then letex:length-to-unitless-twip(.) else ."/>
+    <xsl:variable name="table-width" select="if (ancestor::table[1]/@css:width) then letex:length-to-unitless-twip(ancestor::table[1]/@css:width) else '5000'"/>
+    <xsl:attribute name="css:width" select="replace((xs:string((100 * $cell-width) div $table-width)), '(\d+)(\.?)(\d{2})?(\d*)', '$1$2$3%')"/>    
+  </xsl:template>
+  
+  <xsl:template match="table[matches(@css:width, '(pt|mm)$')]" mode="tei2html">
     <xsl:variable name="conditional-percent-widths" as="element(table)">
       <xsl:apply-templates select="." mode="table-widths"/>
     </xsl:variable>
@@ -734,7 +752,6 @@
   
   <!-- There should always be @css:width. @width is only decorational (will be valuable just in case 
     all @css:* will be stripped -->
-  <xsl:template match="@width" mode="tei2html"/>
 
   <xsl:template match="table[@css:width]" mode="table-widths">
     <xsl:variable name="twips" select="letex:length-to-unitless-twip(@css:width)" as="xs:double?"/>
@@ -769,7 +786,7 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template match="table[not(col | colgroup)][@css:width]/*/tr/*/@css:width
+  <xsl:template match="table[not(col | colgroup)][@css:width]/*/row/*/@css:width
                        | table[exists(col | colgroup)][@css:width]//col/@width" mode="table-widths">
     <xsl:param name="table-twips" as="xs:double?" tunnel="yes"/>
     <xsl:param name="table-percentage" as="xs:integer?" tunnel="yes"/>
@@ -787,7 +804,7 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template match="table[exists(col | colgroup)]/*/tr/*/@css:width" mode="table-widths"/>
+  <xsl:template match="table[exists(col | colgroup)]/*/row/*/@css:width" mode="table-widths"/>
     
   
   <xsl:template match="*[matches(@role, 'master_page_objects_p_pagenumber')]" mode="tei2html"/>
@@ -798,17 +815,8 @@
     <xsl:copy/>
   </xsl:template>
   
-  <xsl:template match="ext-link" mode="tei2html">
-    <a>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
-      <xsl:if test="not(node())">
-        <xsl:value-of select="@xlink:href"/>
-      </xsl:if>
-    </a>
-  </xsl:template>
-
-  <xsl:template match="@xlink:href" mode="tei2html">
-    <xsl:attribute name="{if (contains(../name(), 'graphic')) then 'src' else 'href'}" 
+  <xsl:template match="@xlink:href | @target" mode="tei2html">
+    <xsl:attribute name="href" 
                    select="if ($rr and matches(., '^\.\./'))
                            then resolve-uri(., $rr)
                            else ."/>
@@ -1002,38 +1010,25 @@
   <xsl:function name="tei2html:is-book-part-like" as="xs:boolean">
     <xsl:param name="elt" as="element(*)"/>
     <!-- add more: -->
-    <xsl:sequence select="exists($elt/(self::divGen[@type = 'toc'] | self::book-part | self::preface | self::foreword | self::dedication |
+    <xsl:sequence select="exists($elt/(self::divGen[@type = 'toc'] | self::part | self::preface | self::dedication |
       self::front-matter-part))"/>
   </xsl:function>
   
   <xsl:function name="tei2html:heading-level" as="xs:integer?">
     <xsl:param name="elt" as="element(*)"/>
     <xsl:choose>
-      <xsl:when test="$elt/ancestor::table-wrap"/>
+      <xsl:when test="$elt/ancestor::table"/>
       <xsl:when test="$elt/ancestor::verse-group"/>
-      <xsl:when test="$elt/ancestor::fig"/>
-      <xsl:when test="$elt/parent::book-title-group"><xsl:sequence select="1"/></xsl:when>
-      <xsl:when test="$elt/parent::title-group">
+      <xsl:when test="$elt/ancestor::figure"/>
+      <xsl:when test="$elt/parent::div/@type = ('part', 'appendix', 'imprint', 'acknowledgements', 'dedication', 'glossary', 'preface') or $elt/parent::divGen/@type = ('index', 'toc')">
         <xsl:sequence select="2"/>
-        <!--<xsl:sequence select="count($elt/ancestor::*[tei2html:is-book-part-like(.)]) + 1"/>-->
       </xsl:when>
-      <xsl:when test="$elt/parent::div/@type = ('part', 'chapter', 'appendix', 'imprint') or $elt/parent::divGen/@type = ('index', 'toc')">
-        <xsl:sequence select="3"/>
+      <xsl:when test="$elt/parent::div/@type = ('chapter')">
+        <xsl:sequence select="if ($elt/ancestor::div/@type = 'virtual-part') then 2 else 3"/>
       </xsl:when>
       <xsl:when test="$elt/parent::div/@type = ('section')">
         <xsl:sequence select="count($elt/ancestor::div[@type eq 'section']) +3"/>
       </xsl:when>
-      <xsl:when test="$elt/parent::sec[ancestor::boxed-text]">
-        <xsl:sequence select="count($elt/ancestor::*[ancestor::boxed-text]) + 3"/>
-      </xsl:when>
-      <xsl:when test="$elt/parent::*[@type = 'index']">
-        <xsl:sequence select="2"/>
-      </xsl:when>
-      <xsl:when test="$elt/parent::*[local-name() = ('ref-list', 'section', 'abstract', 'ack', 'appendix', 'app-group', 'bio')]">
-        <xsl:variable name="ancestor-title" select="$elt/../../(title | (. | ../book-part-meta)/title-group/title)" as="element(title)?"/>
-        <xsl:sequence select="if (exists($ancestor-title)) 
-                              then tei2html:heading-level($ancestor-title) + 1
-                              else 2"/></xsl:when>
       <xsl:otherwise>
         <xsl:variable name="custom" as="xs:integer?">
           <xsl:apply-templates select="$elt" mode="tei2html_heading-level"/>
