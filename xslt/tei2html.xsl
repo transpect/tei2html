@@ -163,7 +163,7 @@
     relies on this value to be 0.25.
     -->
   <xsl:template match="head | quote | seg | p |  table | caption | note | ref | styled-content | italic | bold |
-    underline | sub | sup | l | lg" mode="tei2html" priority="-0.25" >
+    underline | sub | sup | l | lg | hi" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
   
@@ -277,6 +277,12 @@
   <xsl:template match="*[note[@type = 'footnote']]" mode="tei2html">
     <xsl:next-match/>
   </xsl:template>
+  
+  <xsl:template match="note[not(@type = 'footnote')]" mode="tei2html">
+    <p>
+      <xsl:next-match/>
+    </p>
+  </xsl:template>
 
   <xsl:template match="*" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
@@ -339,6 +345,12 @@
     </ul>
   </xsl:template>
   
+  <xsl:template match="list[@type eq 'variablelist']" mode="tei2html">
+    <ul class="varlist">
+      <xsl:apply-templates mode="#current"/>
+    </ul>
+  </xsl:template>
+  
   <xsl:template match="list[@type eq 'orderedlist']" mode="tei2html">
     <ol class="{descendant::p[1]/@rend}">
       <xsl:apply-templates mode="#current"/>
@@ -352,6 +364,21 @@
       </xsl:if>
       <xsl:apply-templates mode="#current"/>
     </li>
+  </xsl:template>
+  
+  <xsl:template match="gloss" mode="tei2html">
+    <xsl:choose>
+      <xsl:when test="preceding-sibling::*[1][local-name() = 'term']">
+        <span>
+          <xsl:apply-templates select="@*, node()" mode="#current"/>
+        </span>
+      </xsl:when>
+      <xsl:otherwise>
+        <p>
+          <xsl:apply-templates select="@*, node()" mode="#current"/>
+        </p>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="preformat" mode="tei2html">
@@ -475,6 +502,7 @@
   <xsl:template match="table-wrap/label" mode="label-sep">
     <xsl:text>&#x2002;</xsl:text>
   </xsl:template>
+  
   <xsl:template match="label" mode="label-sep">
     <xsl:text>&#x2003;</xsl:text>
   </xsl:template>
@@ -502,7 +530,7 @@
     </p>
   </xsl:template>
   
-  <xsl:template match="styled-content" mode="tei2html">
+  <xsl:template match="hi" mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
     </span>
@@ -514,17 +542,6 @@
     </xsl:element>
   </xsl:template>
   
-  <xsl:template match="italic" mode="tei2html">
-    <i>
-      <xsl:next-match/>
-    </i>
-  </xsl:template>
-  
-  <xsl:template match="bold" mode="tei2html">
-    <b>
-      <xsl:next-match/>
-    </b>
-  </xsl:template>
     
   <xsl:template match="link | ref" mode="tei2html">
     <a>
@@ -548,11 +565,7 @@
     </xsl:for-each>
   </xsl:template>
 
-  <xsl:template match="mixed-citation" mode="tei2html"> 
-    <span class="{local-name()}">
-      <xsl:next-match/>
-    </span> 
-  </xsl:template>-->
+-->
   
   <xsl:template match="quote" mode="tei2html">
     <blockquote class="{local-name()}">
@@ -578,7 +591,6 @@
     <br/>
   </xsl:template>
   
-
 
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
     <div class="{local-name()}">
