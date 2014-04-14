@@ -283,7 +283,13 @@
       <xsl:next-match/>
     </p>
   </xsl:template>
-
+  
+  <xsl:template match="byline" mode="tei2html">
+    <p>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </p>
+  </xsl:template>
+  
   <xsl:template match="*" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
     <div class="{name()}" id="fn_{@xml:id}">
@@ -439,7 +445,7 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates select="head" mode="tei2html"/>
-          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'preface')] | parent::divGen[@type ='index']]
+          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'preface', 'part')] | parent::divGen[@type ='index']]
                                               [not(ancestor::divGen[@type ='toc'])]
                                               [tei2html:heading-level(.) le number((@rendition, 100)[1]) + 1]"
             mode="toc"/>
@@ -454,7 +460,7 @@
     </div>
   </xsl:template>
   
-  <xsl:template match="head[not(starts-with(@rend, 'p_h_virtual'))]" mode="toc">
+  <xsl:template match="head[not(starts-with(@rend, 'p_h_virtual'))][not(@type = 'sub')]" mode="toc">
     <p class="toc{tei2html:heading-level(.)}">
       <a href="#{(@id, generate-id())[1]}">
         <xsl:if test="../label">
@@ -475,7 +481,13 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="label[../head union ../caption/head]" mode="tei2html">
+  <xsl:template match="head[@type = 'sub']" mode="tei2html" priority="2">
+    <p>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </p>
+  </xsl:template>
+  
+ <xsl:template match="label[../head union ../caption/head]" mode="tei2html">
     <xsl:param name="actually-process-it" as="xs:boolean?"/>
     <xsl:if test="$actually-process-it">
       <span>
@@ -485,7 +497,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="head" mode="tei2html">
+  <xsl:template match="head[not(@type = 'sub')]" mode="tei2html">
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
     <xsl:element name="{concat('h', $heading-level)}">
       <xsl:attribute name="class" select="if(parent::div[@type] or parent::divGen[@type]) then (parent::div, parent::divGen)[1]/@type else local-name()"/>
@@ -493,7 +505,6 @@
     </xsl:element>
   </xsl:template>
   
- 
   <xsl:template match="index/term | fn" mode="strip-indexterms-etc"/>
   
   <!-- Discard certain css markup on titles that would otherwise survive on paras: -->
@@ -1032,7 +1043,8 @@
       <xsl:when test="$elt/ancestor::table"/>
       <xsl:when test="$elt/ancestor::verse-group"/>
       <xsl:when test="$elt/ancestor::figure"/>
-      <xsl:when test="$elt/parent::div/@type = ('part', 'appendix', 'imprint', 'acknowledgements', 'dedication', 'glossary', 'preface') or $elt/parent::divGen/@type = ('index', 'toc')">
+      <xsl:when test="$elt/parent::div/@type = ('part', 'appendix', 'imprint', 'acknowledgements', 'dedication', 'glossary', 'preface') or 
+                      $elt/parent::divGen/@type = ('index', 'toc')">
         <xsl:sequence select="2"/>
       </xsl:when>
       <xsl:when test="$elt/parent::div/@type = ('chapter')">
