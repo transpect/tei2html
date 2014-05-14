@@ -68,6 +68,8 @@
     </xsl:copy>
   </xsl:template>
   
+  <xsl:template match="*[@rendition = 'PrintOnly']" mode="epub-alternatives"/>
+  
   <xsl:template match="html:span[not(@*)]" mode="clean-up">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
