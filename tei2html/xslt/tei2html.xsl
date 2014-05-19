@@ -273,6 +273,12 @@
     </xsl:copy>
   </xsl:template>
 
+  <xsl:template match="label" mode="tei2html" priority="-1">
+    <span class="'label'">
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </span>
+  </xsl:template>
+  
   <xsl:template match="permissions[preceding-sibling::*/p[@specific-use eq 'EpubAlternative']]" mode="epub-alternatives"
     priority="2"/>
 
