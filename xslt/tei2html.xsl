@@ -248,10 +248,6 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
-  <xsl:template match="break" mode="tei2html">
-    <br/>
-  </xsl:template>
-
   <xsl:template match="anchor[@xml:id]" mode="tei2html">
     <a id="{@xml:id}"/>
   </xsl:template>
@@ -273,7 +269,7 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="label" mode="tei2html" priority="-1">
+  <xsl:template match="label" mode="tei2html" priority="0.5">
     <span class="'label'">
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </span>
@@ -444,24 +440,25 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="*:divGen[@type = 'toc']" mode="tei2html">
+  <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
     <div class="toc">
       <xsl:choose>
         <xsl:when test="exists(* except head)">
+
           <!-- explicitly rendered toc -->
           <xsl:apply-templates mode="tei2html"/>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates select="head" mode="tei2html"/>
+
+          <xsl:apply-templates select="head" mode="#current"/>
           <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'preface', 'part')] | parent::divGen[@type ='index']]
                                               [not(ancestor::divGen[@type ='toc'])]
-                                              [tei2html:heading-level(.) le number((@rendition, 100)[1]) + 1]"
-            mode="toc"/>
+                                              [tei2html:heading-level(.) le number((@rendition, 100)[1]) + 1]" mode="toc"/>
         </xsl:otherwise>
       </xsl:choose>
     </div>
   </xsl:template>
-  
+    
   <xsl:template match="div[@type = 'imprint']" mode="tei2html">
     <div class="imprint">
       <xsl:apply-templates mode="#current"/>
@@ -609,7 +606,6 @@
   <xsl:template match="lb" mode="tei2html">
     <br/>
   </xsl:template>
-  
 
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
     <div class="{local-name()}">
