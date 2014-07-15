@@ -45,7 +45,9 @@
     <p:with-option name="status-dir-uri" select="$status-dir-uri"/>
   </letex:simple-progress-msg>
   
-  <bc:dynamic-transformation-pipeline load="tei2html/tei2html-driver">
+  <bc:dynamic-transformation-pipeline load="tei2html/tei2html-driver"
+    fallback-xsl="http://transpect.le-tex.de/tei2html/xsl/tei2html.xsl"
+    fallback-xpl="http://transpect.le-tex.de/tei2html/xpl/tei2html_default.xpl">
     <p:with-option name="debug" select="$debug"/>
     <p:with-option name="debug-dir-uri" select="$debug-dir-uri"/>
     <p:input port="additional-inputs">
