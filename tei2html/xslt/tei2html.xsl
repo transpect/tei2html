@@ -17,8 +17,8 @@
   version="2.0">
 
   <xsl:import href="http://transpect.le-tex.de/hub2html/xsl/css-rules.xsl"/>
-  <xsl:import href="http://transpect.le-tex.de/hub2html/xsl/css-atts2wrap.xsl"/>
   <xsl:import href="http://transpect.le-tex.de/xslt-util/lengths/lengths.xsl"/>
+  <xsl:import href="http://transpect.le-tex.de/hub2html/xsl/css-atts2wrap.xsl"/>
   
   <xsl:param name="debug" select="'yes'"/>
   <xsl:param name="debug-dir-uri" select="'debug'"/>
@@ -31,11 +31,6 @@
   <xsl:param name="divify-sections" select="'no'"/>
 
   <xsl:param name="css-location" select="concat($common-path, '/css/stylesheet.css')"/>
-
-  <!-- Resolve Relative links to the parent directory against the following URI
-       (for example, the source XML directory's URL in the code repository),
-       empty string or unset param if no resolution required: -->
-  <xsl:param name="rr" select="'https://hosting-1.hogrefe.de/BookTagSet/trunk/doc/'"/>
 
   <!-- for calculating whether a table covers the whole width or only part of it: -->
   <xsl:param name="page-width" select="'180mm'"/>
@@ -111,12 +106,22 @@
         <!-- hier nur drin, weil es unten nicht über template meta matcht -->
 <!--        <meta name="lang" content="{teiHeader/profileDesc/langUsage/language/@ident}"/>-->
         <xsl:call-template name="meta" /> 
-        <xsl:apply-templates select="teiHeader/encodingDesc/css:rules" mode="hub2htm:css"/>
+        <xsl:apply-templates select="teiHeader/encodingDesc/css:rules" mode="#current"/>
       </head>
       <body>
         <xsl:call-template name="html-body"/>
       </body>
     </html>
+  </xsl:template>
+  
+  <xsl:template match="css:rule" mode="tei2html">
+    <xsl:call-template name="css:move-to-attic">
+      <xsl:with-param name="atts" select="@*[css:map-att-to-elt(., current())]"/>
+    </xsl:call-template>
+  </xsl:template>
+  
+  <xsl:template match="css:rules" mode="clean-up">
+    <xsl:apply-templates select="." mode="hub2htm:css"/>
   </xsl:template>
   
   <xsl:template name="html-body">
@@ -125,8 +130,23 @@
     </xsl:apply-templates>
   </xsl:template>
   
-  <xsl:template match="text | body | front | div[$divify-sections = 'no'][not(@type = 'imprint')]" mode="tei2html">
+  <xsl:template match="body" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
+    <xsl:call-template name="tei2html:footnotes"/>
+  </xsl:template>
+  
+  <xsl:template match="text | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal'))]" mode="tei2html">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template match="div[@type = ('imprint', 'dedication', 'preface', 'marginal')]" mode="tei2html">
+    <div>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="*:div" mode="tei2html">
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
   </xsl:template>
   
   <xsl:template name="meta">
@@ -177,6 +197,22 @@
     <xsl:sequence select="hub2htm:style-overrides(.)"/>
   </xsl:template>
 
+  <xsl:template match="html:span[(count(@*) eq 1) and (@srcpath)]" mode="clean-up">
+    <xsl:apply-templates select="node()" mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template match="epigraph" mode="tei2html">
+    <div class="motto">
+      <xsl:apply-templates mode="#current"/>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="floatingText" mode="tei2html">
+    <div class="{@rend}">
+      <xsl:apply-templates select="@*, body/*" mode="#current"/>
+    </div>
+  </xsl:template>
+  
   <xsl:function name="tei2html:strip-combining" as="xs:string">
     <xsl:param name="input" as="xs:string"/>
     <xsl:sequence select="replace(normalize-unicode($input, 'NFKD'), '\p{Mn}', '')"/>
@@ -238,7 +274,7 @@
   <xsl:template match="  *[name() = $default-structural-containers][$divify-sections = 'yes']
                        | figure | caption | abstract | verse-group" 
     mode="tei2html" priority="2">
-    <div class="{string-join((name(), @book-part-type, @sec-type, @content-type), ' ')}">
+    <div class="{name()}">
       <xsl:next-match/>
     </div>
   </xsl:template>
@@ -269,8 +305,8 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="label" mode="tei2html" priority="0.5">
-    <span class="'label'">
+  <xsl:template match="label[not(parent::item)]" mode="tei2html" priority="0.5">
+    <span class="label">
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </span>
   </xsl:template>
@@ -325,57 +361,6 @@
     </xsl:if>
   </xsl:template>
  
- 
-  <xsl:template match="def-list" mode="tei2html">
-    <dl>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
-    </dl>
-  </xsl:template>
-    
-  <xsl:template match="def-item" mode="tei2html">
-    <xsl:apply-templates mode="#current"/>
-  </xsl:template>
-
-  <xsl:template match="def-item/term" mode="tei2html">
-    <dt>
-      <xsl:copy-of select="../@id"/>
-      <xsl:call-template name="css:content"/>
-    </dt>
-  </xsl:template>
-  
-  <xsl:template match="def-item/def" mode="tei2html">
-    <dd>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
-    </dd>
-  </xsl:template>
-
-  <xsl:template match="list[@type eq 'itemizedlist']" mode="tei2html">
-    <ul class="{descendant::p[1]/@rend}">
-      <xsl:apply-templates mode="#current"/>
-    </ul>
-  </xsl:template>
-  
-  <xsl:template match="list[@type eq 'variablelist']" mode="tei2html">
-    <ul class="varlist">
-      <xsl:apply-templates mode="#current"/>
-    </ul>
-  </xsl:template>
-  
-  <xsl:template match="list[@type eq 'orderedlist']" mode="tei2html">
-    <ol class="{descendant::p[1]/@rend}">
-      <xsl:apply-templates mode="#current"/>
-    </ol>
-  </xsl:template>
-    
-  <xsl:template match="item" mode="tei2html">
-    <li>
-      <xsl:if test="@n">
-        <xsl:attribute name="number" select="@n"/>
-      </xsl:if>
-      <xsl:apply-templates mode="#current"/>
-    </li>
-  </xsl:template>
-  
   <xsl:template match="gloss" mode="tei2html">
     <xsl:choose>
       <xsl:when test="preceding-sibling::*[1][local-name() = 'term']">
@@ -389,6 +374,49 @@
         </p>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+  
+  <xsl:template match="list[@type eq 'gloss']" mode="tei2html">
+    <dl>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </dl>
+  </xsl:template>
+  
+  <xsl:template match="item[parent::list[@type eq 'gloss']]" mode="tei2html">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+
+  <xsl:template match="item[parent::list[@type eq 'gloss']]/label" mode="tei2html">
+    <dt>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </dt>
+  </xsl:template>
+  
+  <xsl:template match="item[parent::list[@type eq 'gloss']]/gloss" mode="tei2html">
+    <dd>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </dd>
+  </xsl:template>
+
+  <xsl:template match="list[@type eq 'bulleted']" mode="tei2html">
+    <ul class="{descendant::p[1]/@rend}">
+      <xsl:apply-templates mode="#current"/>
+    </ul>
+  </xsl:template>
+  
+  <xsl:template match="list[@type eq 'ordered']" mode="tei2html">
+    <ol class="{descendant::p[1]/@rend}">
+      <xsl:apply-templates mode="#current"/>
+    </ol>
+  </xsl:template>
+    
+  <xsl:template match="item" mode="tei2html">
+    <li>
+      <xsl:if test="@n">
+        <xsl:attribute name="number" select="@n"/>
+      </xsl:if>
+      <xsl:apply-templates mode="#current"/>
+    </li>
   </xsl:template>
   
   <xsl:template match="preformat" mode="tei2html">
@@ -416,19 +444,6 @@
 
   <xsl:template match="@preformat-type" mode="tei2html">
     <xsl:attribute name="class" select="."/>
-  </xsl:template>
-  
-  <xsl:template match="part | preface | dedication" mode="tei2html">
-    <xsl:apply-templates select="book-part-meta | front-matter | book-body | body | book-back | back | named-book-part-body" mode="tei2html"/>
-  </xsl:template>
-  
-  <xsl:template match="body | book-body | title-group | book-part-meta | front-matter | book-back | back" mode="tei2html">
-    <xsl:apply-templates mode="#current"/>
-  </xsl:template>
-  
-  <xsl:template match="body[not(descendant::body)] | named-book-part-body | app | app-group" mode="tei2html">
-    <xsl:apply-templates mode="#current"/>
-    <xsl:call-template name="tei2html:footnotes"/>
   </xsl:template>
   
   <xsl:template name="tei2html:footnotes">
@@ -465,7 +480,7 @@
     </div>
   </xsl:template>
   
-  <xsl:template match="head[not(starts-with(@rend, 'p_h_virtual'))][not(@type = 'sub')]" mode="toc">
+  <xsl:template match="head[not(@type = 'sub')]" mode="toc">
     <p class="toc{tei2html:heading-level(.)}">
       <a href="#{(@id, generate-id())[1]}">
         <xsl:if test="../label">
@@ -508,6 +523,14 @@
       <xsl:attribute name="class" select="if(parent::div[@type] or parent::divGen[@type]) then (parent::div, parent::divGen)[1]/@type else local-name()"/>
       <xsl:next-match/>
     </xsl:element>
+  </xsl:template>
+  
+  <xsl:variable name="tei:anonymous-chapter-regex" select="'p_h_anonym'" as="xs:string"/>
+  <xsl:template match="head[matches(@rend, $tei:anonymous-chapter-regex)]" mode="tei2html">
+    <xsl:copy>
+      <xsl:apply-templates select="@* except @rend" mode="#current"/>
+      <xsl:attribute name="title" select="."/>
+    </xsl:copy>
   </xsl:template>
   
   <xsl:template match="index/term | fn" mode="strip-indexterms-etc"/>
@@ -716,12 +739,6 @@
     </xsl:for-each-group>  
   </xsl:template>
   
-  <xsl:template match="boxed-text" mode="tei2html">
-    <div class="box {@content-type}">
-      <xsl:apply-templates select="@* except @content-type, node()" mode="#current"/>
-    </div>
-  </xsl:template>
-    
     
   <xsl:template match="graphic" mode="tei2html">
     <img>
@@ -832,7 +849,6 @@
   </xsl:template>
 
   <xsl:template match="table[exists(col | colgroup)]/*/row/*/@css:width" mode="table-widths"/>
-    
   
   <xsl:template match="*[matches(@role, 'master_page_objects_p_pagenumber')]" mode="tei2html"/>
   <xsl:template match="*[matches(@role, 'master_page_objects_p_runninghead')]" mode="tei2html"/>
@@ -842,13 +858,7 @@
     <xsl:copy/>
   </xsl:template>
   
-  <xsl:template match="@xlink:href | @target" mode="tei2html">
-    <xsl:attribute name="href" 
-                   select="if ($rr and matches(., '^\.\./'))
-                           then resolve-uri(., $rr)
-                           else ."/>
-  </xsl:template>
-  
+   
   <xsl:key name="by-id" match="*[@id]" use="@id"/>
   <xsl:key name="by-rid" match="*[@rid]" use="@rid"/>
   
@@ -995,7 +1005,7 @@
   </xsl:template>
   
   <xsl:template match="lg" mode="tei2html">
-    <div class="poem">
+    <div class="{@type}">
       <xsl:apply-templates select="node()" mode="#current"/>
     </div>
   </xsl:template> 
