@@ -11,6 +11,7 @@
   xmlns:hub2htm="http://www.le-tex.de/namespace/hub2htm" 
   xmlns:tei2html="http://www.le-tex.de/namespace/tei2html" 
   xmlns:l10n="http://www.le-tex.de/namespace/l10n"
+  xmlns:epub="http://www.idpf.org/2007/ops"
   xmlns="http://www.w3.org/1999/xhtml"
   xpath-default-namespace="http://www.tei-c.org/ns/1.0"
   exclude-result-prefixes="#all"
@@ -501,7 +502,7 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="head[@type = 'sub']" mode="tei2html" priority="2">
+  <xsl:template match="head[@type = 'sub'][preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']]]" mode="tei2html" priority="2">
     <p>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </p>
@@ -622,17 +623,43 @@
     <xsl:attribute name="class" select="."/>
   </xsl:template>
   
+
+  
   <xsl:template match="pb" mode="tei2html">
-    <div style="page-break-after:always" class="{local-name()}"></div>
+    <div style="page-break-after:always" class="{local-name()}">
+      <xsl:sequence select="letex:create-epub-type-attribute($epub-type, .)"/>
+    </div>
   </xsl:template>
 
+  <!-- override this in your adaptions with 3, then epub-types are created -->
+  <xsl:variable name="epub-type" as="xs:string" select="'2'"/>
+  
+  <xsl:function name="letex:create-epub-type-attribute" as="attribute(epub:type)?">
+    <xsl:param name="epub-type" as="xs:string"/>
+    <xsl:param name="context" as="element(*)"/>
+    <xsl:if test="$epub-type eq '3'">
+      <xsl:choose>
+        <xsl:when test="$context[self::pb]">
+          <xsl:attribute name="epub:type" select="'pagebreak'"/>
+        </xsl:when>
+        <xsl:when test="$context[self::div[@type = ('appendix', 'glossary', 'preface', 'bibliography', 'acknowledgements')]]">
+          <xsl:attribute name="epub:type" select="$context/@type"/>
+        </xsl:when>
+        <xsl:when test="$context[self::divGen[@type = ('index', 'toc')]]">
+          <xsl:attribute name="epub:type" select="$context/@type"/>
+        </xsl:when>
+      </xsl:choose>
+    </xsl:if>
+  </xsl:function>
+  
   <xsl:template match="lb" mode="tei2html">
     <br/>
   </xsl:template>
 
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
     <div class="{local-name()}">
-    <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:sequence select="letex:create-epub-type-attribute($epub-type, .)"/>
+       <xsl:apply-templates select="@*, node()" mode="#current"/>
       <xsl:for-each-group select="//index/term[not(parent::term)]" group-by="substring(., 1, 1)"
         collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary">
         <xsl:sort select="current-grouping-key()" 
