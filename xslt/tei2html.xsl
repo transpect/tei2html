@@ -458,6 +458,7 @@
   
   <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
     <div class="toc">
+      <xsl:sequence select="letex:create-epub-type-attribute($epub-type, .)"/>
       <xsl:choose>
         <xsl:when test="exists(* except head)">
 
@@ -639,13 +640,13 @@
     <xsl:param name="context" as="element(*)"/>
     <xsl:if test="$epub-type eq '3'">
       <xsl:choose>
-        <xsl:when test="$context[self::pb]">
+        <xsl:when test="$context[self::*:pb]">
           <xsl:attribute name="epub:type" select="'pagebreak'"/>
         </xsl:when>
-        <xsl:when test="$context[self::div[@type = ('appendix', 'glossary', 'preface', 'bibliography', 'acknowledgements')]]">
+        <xsl:when test="$context[self::*:div[@type = ('glossary', 'preface', 'bibliography', 'acknowledgements')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
-        <xsl:when test="$context[self::divGen[@type = ('index', 'toc')]]">
+        <xsl:when test="$context[self::*:divGen[@type = ('index', 'toc')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
       </xsl:choose>
