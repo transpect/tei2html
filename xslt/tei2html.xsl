@@ -330,10 +330,12 @@
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </p>
   </xsl:template>
-  
+    
   <xsl:template match="*" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
     <div class="{name()}" id="fn_{@xml:id}">
+      <p class="footnote">
+      <xsl:attribute name="srcpath" select="*:p/@srcpath"/>
       <span class="note-mark">
         <a href="#fna_{@xml:id}">
           <sup>
@@ -341,12 +343,12 @@
           </sup>
         </a>
       </span>
-      <xsl:apply-templates mode="tei2html"/>
+      <xsl:apply-templates  select="*:p/node() except *:p/label" mode="tei2html"/>
+      </p>
     </div>
   </xsl:template>
   
   <xsl:template match="*:label[ancestor::*:div[@class = 'note']]" mode="clean-up"/>
-  
 
   <xsl:template match="note[@type = 'footnote']" mode="tei2html">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
