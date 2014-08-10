@@ -337,13 +337,14 @@
       <p class="footnote">
       <xsl:attribute name="srcpath" select="*:p/@srcpath"/>
       <span class="note-mark">
-        <a href="#fna_{@xml:id}">
-          <sup>
-            <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
-          </sup>
-        </a>
+        <sup>
+         <a href="#fna_{@xml:id}">
+             <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
+         </a>
+        </sup>
+        <xsl:text>&#160;</xsl:text>
       </span>
-      <xsl:apply-templates  select="*:p/node() except *:p/label" mode="tei2html"/>
+        <xsl:apply-templates  select="*:p/node() except (*:p/label, *:p/seg[@type = 'tab'])" mode="tei2html"/>
       </p>
     </div>
   </xsl:template>
