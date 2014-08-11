@@ -454,6 +454,7 @@
     <xsl:variable name="footnotes" select=".//note[@type = 'footnote']" as="element(note)*"/>
     <xsl:if test="$footnotes">
       <div class="notes">
+        <xsl:sequence select="letex:create-epub-type-attribute($epub-type, $footnotes[1])"/>
         <xsl:apply-templates select="$footnotes" mode="notes"/>
       </div>  
     </xsl:if>
@@ -650,6 +651,9 @@
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
         <xsl:when test="$context[self::*:divGen[@type = ('index', 'toc')]]">
+          <xsl:attribute name="epub:type" select="$context/@type"/>
+        </xsl:when>
+        <xsl:when test="$context[self::*:note[@type = ('footnotes')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
       </xsl:choose>
