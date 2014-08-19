@@ -64,9 +64,20 @@
     </xsl:copy>
   </xsl:template>
   
+  <!-- handle conditional texts -->
   <xsl:template match="*[@rendition = 'PrintOnly']" mode="epub-alternatives"/>
   
-  <xsl:template match="html:span[not(@*)]" mode="clean-up">
+  <xsl:template match="*[p[ancestor-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives" priority="2">
+    <xsl:copy copy-namespaces="no">
+      <xsl:apply-templates select="@*, title | info | p[ancestor-or-self::*[@rendition eq 'EpubAlternative']]" mode="#current"/>
+    </xsl:copy>
+  </xsl:template>
+  
+  <xsl:template match="*[preceding-sibling::*/p[ancestor-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives"
+    priority="2"/>
+  
+  
+   <xsl:template match="html:span[not(@*)]" mode="clean-up">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
@@ -523,7 +534,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="head[not(@type = 'sub')]" mode="tei2html">
+  <xsl:template match="head[not(@type = 'sub')][not(ancestor::*[self::figure or self::table])]" mode="tei2html">
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
     <xsl:element name="{concat('h', $heading-level)}">
       <xsl:attribute name="class" select="if(parent::div[@type] or parent::divGen[@type]) then (parent::div, parent::divGen)[1]/@type else local-name()"/>
