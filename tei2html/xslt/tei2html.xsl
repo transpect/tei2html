@@ -69,15 +69,14 @@
   
   <xsl:template match="*[p[ancestor-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives" priority="2">
     <xsl:copy copy-namespaces="no">
-      <xsl:apply-templates select="@*, title | info | p[ancestor-or-self::*[@rendition eq 'EpubAlternative']]" mode="#current"/>
+      <xsl:apply-templates select="@*, head | info | p[descendant-or-self::*[@rendition eq 'EpubAlternative']]" mode="#current"/>
     </xsl:copy>
   </xsl:template>
   
-  <xsl:template match="*[preceding-sibling::*/p[ancestor-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives"
+  <xsl:template match="*[preceding-sibling::p[descendant-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives"
     priority="2"/>
   
-  
-   <xsl:template match="html:span[not(@*)]" mode="clean-up">
+  <xsl:template match="html:span[not(@*)]" mode="clean-up">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
@@ -197,7 +196,7 @@
     relies on this value to be 0.25.
     -->
   <xsl:template match="head | quote | seg | p |  table | caption | note | ref | styled-content | italic | bold |
-    underline | sub | sup | l | lg | hi" mode="tei2html" priority="-0.25" >
+    underline | sub | sup | l | lg | hi | argument" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
   
@@ -220,8 +219,9 @@
   </xsl:template>
   
   <xsl:template match="floatingText" mode="tei2html">
-    <div class="{@rend}">
-      <xsl:apply-templates select="@*, body/*" mode="#current"/>
+    <div>
+      <xsl:attribute name="class" select="if (@rend != @type) then concat(@type, ' ', @rend) else @rend"/>
+      <xsl:apply-templates select="@* except (@rend, @type), body/*" mode="#current"/>
     </div>
   </xsl:template>
   
@@ -311,20 +311,14 @@
   </xsl:template>
 -->
 
-  <xsl:template match="*[p[@specific-use eq 'EpubAlternative']]" mode="epub-alternatives" priority="2">
-    <xsl:copy copy-namespaces="no">
-      <xsl:apply-templates select="@*, title | info | p[@specific-use eq 'EpubAlternative']" mode="#current"/>
-    </xsl:copy>
-  </xsl:template>
-
+  
   <xsl:template match="label[not(parent::item)]" mode="tei2html" priority="0.5">
     <span class="label">
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </span>
   </xsl:template>
   
-  <xsl:template match="permissions[preceding-sibling::*/p[@specific-use eq 'EpubAlternative']]" mode="epub-alternatives"
-    priority="2"/>
+
 
   <xsl:template match="*[note[@type = 'footnote']]" mode="tei2html">
     <xsl:next-match/>
@@ -440,7 +434,13 @@
     </pre>
   </xsl:template>
 
-  <xsl:template match="disp-quote" mode="tei2html">
+  <xsl:template match="argument" mode="tei2html">
+    <div class="introduction">
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="quote" mode="tei2html">
     <blockquote>
       <xsl:call-template name="css:content"/>
     </blockquote>
@@ -450,13 +450,6 @@
       <xsl:apply-templates select="node()" mode="#current"/>
   </xsl:template>
   
-
-  <xsl:template match="table-wrap | table-wrap-foot" mode="tei2html">
-    <div class="{local-name()}">
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
-    </div>
-  </xsl:template>
-
   <xsl:template match="@preformat-type" mode="tei2html">
     <xsl:attribute name="class" select="."/>
   </xsl:template>
@@ -465,7 +458,7 @@
     <xsl:variable name="footnotes" select=".//note[@type = 'footnote']" as="element(note)*"/>
     <xsl:if test="$footnotes">
       <div class="notes">
-        <xsl:sequence select="letex:create-epub-type-attribute($epub-type, $footnotes[1])"/>
+        <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, $footnotes[1])"/>
         <xsl:apply-templates select="$footnotes" mode="notes"/>
       </div>  
     </xsl:if>
@@ -473,7 +466,7 @@
   
   <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
     <div class="toc">
-      <xsl:sequence select="letex:create-epub-type-attribute($epub-type, .)"/>
+      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:choose>
         <xsl:when test="exists(* except head)">
 
@@ -518,7 +511,8 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="head[@type = 'sub'][preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']]]" mode="tei2html" priority="2">
+  <xsl:template match="head[@type = 'sub'][preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']]] |
+                       head[ancestor::*[self::floatingText]]" mode="tei2html" priority="2">
     <p>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </p>
@@ -534,7 +528,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="head[not(@type = 'sub')][not(ancestor::*[self::figure or self::table])]" mode="tei2html">
+  <xsl:template match="head[not(@type = 'sub')][not(ancestor::*[self::figure or self::table or self::floatingText])]" mode="tei2html">
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
     <xsl:element name="{concat('h', $heading-level)}">
       <xsl:attribute name="class" select="if(parent::div[@type] or parent::divGen[@type]) then (parent::div, parent::divGen)[1]/@type else local-name()"/>
@@ -554,10 +548,6 @@
   
   <!-- Discard certain css markup on titles that would otherwise survive on paras: -->
   <xsl:template match="title/@css:*[matches(local-name(), '^(margin-|text-align)')]" mode="tei2html"/>
-  
-  <xsl:template match="table-wrap/label" mode="label-sep">
-    <xsl:text>&#x2002;</xsl:text>
-  </xsl:template>
   
   <xsl:template match="label" mode="label-sep">
     <xsl:text>&#x2003;</xsl:text>
@@ -623,12 +613,6 @@
 
 -->
   
-  <xsl:template match="quote" mode="tei2html">
-    <blockquote class="{local-name()}">
-      <xsl:next-match/>
-    </blockquote>
-  </xsl:template>
-  
   <xsl:template match="seg" mode="tei2html">
     <span>
       <xsl:next-match/>
@@ -643,12 +627,12 @@
   
   <xsl:template match="pb" mode="tei2html">
     <div style="page-break-after:always" class="{local-name()}">
-      <xsl:sequence select="letex:create-epub-type-attribute($epub-type, .)"/>
+      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
     </div>
   </xsl:template>
 
   <!-- override this in your adaptions with 3, then epub-types are created -->
-  <xsl:variable name="epub-type" as="xs:string" select="'2'"/>
+  <xsl:variable name="tei2html:epub-type" as="xs:string" select="'2'"/>
   
   <xsl:function name="letex:create-epub-type-attribute" as="attribute(epub:type)?">
     <xsl:param name="epub-type" as="xs:string"/>
@@ -677,7 +661,7 @@
 
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
     <div class="{local-name()}">
-      <xsl:sequence select="letex:create-epub-type-attribute($epub-type, .)"/>
+      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
        <xsl:apply-templates select="@*, node()" mode="#current"/>
       <xsl:for-each-group select="//index/term[not(parent::term)]" group-by="substring(., 1, 1)"
         collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary">
@@ -770,8 +754,8 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
-  <xsl:template match="p[boxed-text | figure | table]" mode="tei2html" priority="1.2">
-    <xsl:for-each-group select="node()" group-adjacent="boolean(self::boxed-text | self::figure | self::table)">
+  <xsl:template match="p[floatingText | figure | table]" mode="tei2html" priority="1.2">
+    <xsl:for-each-group select="node()" group-adjacent="boolean(self::floatingText | self::figure | self::table)">
       <xsl:choose>
         <xsl:when test="current-grouping-key()">
           <xsl:apply-templates select="current-group()" mode="#current"/>
@@ -807,12 +791,36 @@
   <xsl:template match="*[name() = ('graphic', 'inline-graphic')]/@*[name() = ('css:width', 'css:height')]"
     mode="hub2htm:css-style-overrides"/>
 
-  <xsl:template match="tbody | thead | tfoot | th | colgroup | col | table[not(matches(@css:width, '(pt|mm)$'))]" mode="tei2html">
+  <xsl:template match="tbody | thead | tfoot | th | colgroup | col" mode="tei2html">
     <xsl:element name="{local-name()}" exclude-result-prefixes="#all">
       <xsl:call-template name="css:content"/>
     </xsl:element>
   </xsl:template>  
 
+  <xsl:template match="table[not(matches(@css:width, '(pt|mm)$'))]" mode="tei2html">
+    <div class="table-wrapper">
+      <xsl:apply-templates select="head" mode="#current">
+        <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
+      </xsl:apply-templates>
+      <xsl:element name="{local-name()}" exclude-result-prefixes="#all">
+        <xsl:call-template name="css:content"/>
+      </xsl:element>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="table/head" mode="tei2html">
+    <xsl:param name="not-discard-table-head" as="xs:boolean?" tunnel="yes"/>
+    <xsl:choose>
+      <xsl:when test="$not-discard-table-head">
+        <xsl:element name="p" exclude-result-prefixes="#all">
+          <xsl:call-template name="css:content"/>
+        </xsl:element>
+      </xsl:when>
+      <xsl:otherwise>
+      </xsl:otherwise>
+    </xsl:choose>
+   </xsl:template>
+  
   <xsl:template match="row" mode="tei2html">
     <xsl:element name="tr" exclude-result-prefixes="#all">
       <xsl:call-template name="css:content"/>
@@ -896,9 +904,6 @@
 
   <xsl:template match="table[exists(col | colgroup)]/*/row/*/@css:width" mode="table-widths"/>
   
-  <xsl:template match="*[matches(@role, 'master_page_objects_p_pagenumber')]" mode="tei2html"/>
-  <xsl:template match="*[matches(@role, 'master_page_objects_p_runninghead')]" mode="tei2html"/>
-
 
   <xsl:template match="@colspan | @rowspan" mode="tei2html">
     <xsl:copy/>
@@ -1101,8 +1106,9 @@
     <xsl:param name="elt" as="element(*)"/>
     <xsl:choose>
       <xsl:when test="$elt/ancestor::table"/>
-      <xsl:when test="$elt/ancestor::verse-group"/>
+      <xsl:when test="$elt/ancestor::lg"/>
       <xsl:when test="$elt/ancestor::figure"/>
+      <xsl:when test="$elt/ancestor::floatingText"/>
       <xsl:when test="$elt/parent::div/@type = ('part', 'appendix', 'imprint', 'acknowledgements', 'dedication', 'glossary', 'preface') or 
                       $elt/parent::divGen/@type = ('index', 'toc')">
         <xsl:sequence select="2"/>
