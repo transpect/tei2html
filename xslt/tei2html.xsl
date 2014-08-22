@@ -195,7 +195,7 @@
     And don’t ever change the priority unless you’ve made sure that no other template
     relies on this value to be 0.25.
     -->
-  <xsl:template match="head | quote | seg | p |  table | caption | note | ref | styled-content | italic | bold |
+  <xsl:template match="head | quote | seg | p |  table | caption | note | italic | bold |
     underline | sub | sup | l | lg | hi | argument" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
@@ -589,9 +589,11 @@
   </xsl:template>
   
     
-  <xsl:template match="link | ref" mode="tei2html">
+  <xsl:template match="ref | link" mode="tei2html" priority="5">
     <a>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:attribute name="href" select="@target"/>
+      <xsl:attribute name="class" select="name()"/>
+      <xsl:apply-templates select="@* except @target, node()" mode="#current"/>
       <xsl:if test="not(node())">
         <xsl:value-of select="(@xlink:href|@target)[1]"/>
       </xsl:if>
@@ -1069,7 +1071,7 @@
     </p>
   </xsl:template> 
   
-  <xsl:template match="ref-type-group[@type = ('sec', 'part', 'chapter')]/rendering[@type = ('title', 'number')]" mode="render-xref">
+<!--  <xsl:template match="ref-type-group[@type = ('sec', 'part', 'chapter')]/rendering[@type = ('title', 'number')]" mode="render-xref">
     <xsl:value-of select="key('l10n-string', if(count(item) gt 1) then ../@type else concat(../@type, 's'), $l10n)"/>
     <xsl:text>&#xa0;</xsl:text>
     <xsl:for-each select="item">
@@ -1078,23 +1080,8 @@
         <xsl:text xml:space="preserve">, </xsl:text>
       </xsl:if>
     </xsl:for-each>
-  </xsl:template>
+  </xsl:template>-->
 
-  <xsl:template match="ref-type-group/rendering/item" mode="render-xref">
-    <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
-    <xsl:choose>
-      <xsl:when test="$in-toc">
-        <xsl:apply-templates mode="#current"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <a href="#{@id}">
-          <xsl:apply-templates mode="#current"/>
-        </a>    
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  
   <xsl:function name="tei2html:is-book-part-like" as="xs:boolean">
     <xsl:param name="elt" as="element(*)"/>
     <!-- add more: -->
