@@ -287,6 +287,7 @@
                        | figure | caption | abstract | verse-group" 
     mode="tei2html" priority="2">
     <div class="{name()}">
+      <xsl:copy-of select="@*"/>
       <xsl:next-match/>
     </div>
   </xsl:template>
@@ -450,6 +451,14 @@
       <xsl:apply-templates select="node()" mode="#current"/>
   </xsl:template>
   
+  <xsl:template match="figure/head" mode="tei2html">
+    <p>
+      <xsl:apply-templates select="@* except @rend" mode="#current"/>
+      <xsl:attribute name="class" select="concat(@rend, ' figure-head')"/>
+      <xsl:apply-templates select="node()" mode="#current"/>
+    </p>
+  </xsl:template>
+  
   <xsl:template match="@preformat-type" mode="tei2html">
     <xsl:attribute name="class" select="."/>
   </xsl:template>
@@ -514,7 +523,9 @@
   <xsl:template match="head[@type = 'sub'][preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']]] |
                        head[ancestor::*[self::floatingText]]" mode="tei2html" priority="2">
     <p>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:apply-templates select="@* except @rend" mode="#current"/>
+      <xsl:attribute name="class" select="if (@type = 'sub') then concat(@rend, ' subtitle') else concat(@rend, ' ', normalize-space((ancestor::*[self::floatingText]/@type)[1]), '-head')"/>
+      <xsl:apply-templates select="node()" mode="#current"/>
     </p>
   </xsl:template>
   
@@ -637,7 +648,7 @@
   <xsl:variable name="tei2html:epub-type" as="xs:string" select="'2'"/>
   
   <xsl:function name="letex:create-epub-type-attribute" as="attribute(epub:type)?">
-    <xsl:param name="epub-type" as="xs:string"/>
+    <xsl:param name="tei2html:epub-type" as="xs:string"/>
     <xsl:param name="context" as="element(*)"/>
     <xsl:if test="$tei2html:epub-type eq '3'">
       <xsl:choose>
@@ -999,39 +1010,6 @@
     </xsl:choose>
   </xsl:function>
 
-
-  <!-- Example:
-       <linked-item number="4.2" label="Figure 4.2.">
-         <title>Title, potentially including markup. If there is an alt-title[@alt-title-type eq 'xref'], it should be used</title>
-         <teaser>The beginning of the contents, without index terms and footnotes</teaser>
-       </linked-item>
-  -->
-  <xsl:template match="*" mode="linked-item" xmlns="">
-    <linked-item>
-      <xsl:copy-of select="@id"/>
-      <xsl:attribute name="ref-type" select="tei2html:ref-type(.)"/>
-      <xsl:variable name="title-container" as="element(*)">
-        <xsl:choose>
-          <xsl:when test="self::book-part">
-            <xsl:sequence select="book-part-meta/title-group"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:sequence select="."/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:variable>
-      <xsl:for-each select="$title-container/alt-title[@alt-title-type eq 'number']">
-        <xsl:attribute name="number" select="."/>
-      </xsl:for-each>
-      <xsl:for-each select="$title-container/label">
-        <xsl:attribute name="label" select="."/>
-      </xsl:for-each>
-      <xsl:apply-templates select="($title-container/(title, alt-title[@alt-title-type eq 'xref']))[last()]" mode="#current"/>
-      <teaser>
-        <xsl:apply-templates mode="render-xref"/>
-      </teaser>
-    </linked-item>
-  </xsl:template>
   
   <xsl:template match="title | alt-title[@alt-title-type eq 'xref']" mode="linked-item" xmlns="">
     <title>
