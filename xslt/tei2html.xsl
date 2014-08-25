@@ -1057,6 +1057,12 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
+  <xsl:template match="sp" mode="tei2html">
+    <div class="speech">
+      <xsl:apply-templates select="node()" mode="#current"/>
+    </div>
+  </xsl:template> 
+  
   <xsl:template match="lg" mode="tei2html">
     <div class="{@type}">
       <xsl:apply-templates select="node()" mode="#current"/>
