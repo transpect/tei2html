@@ -340,23 +340,27 @@
   <xsl:template match="*" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
     <div class="{name()}" id="fn_{@xml:id}">
-      <p class="footnote">
-      <xsl:attribute name="srcpath" select="*:p/@srcpath"/>
-      <span class="note-mark">
+      <p class="footnote-marker">
+<!--      <xsl:attribute name="srcpath" select="*:p/@srcpath"/>-->
+  <!--    <span class="note-mark">-->
         <sup>
          <a href="#fna_{@xml:id}">
              <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
          </a>
         </sup>
         <xsl:text>&#160;</xsl:text>
-      </span>
-        <xsl:apply-templates  select="*:p/node() except (*:p/label, *:p/seg[@type = 'tab'])" mode="tei2html"/>
+      <!--</span>-->
       </p>
+      <div class="footnote-text">
+        <xsl:apply-templates  select="* except (*:p[1]/label, *:p[1]/seg[@type = 'tab'])" mode="tei2html"/>
+      </div>
     </div>
   </xsl:template>
   
-  <xsl:template match="*:label[ancestor::*:div[@class = 'note']]" mode="clean-up"/>
-
+  
+  <xsl:template match="*:label[ancestor::*:note]" mode="tei2html"/>
+  <xsl:template match="*:seg[@type = 'tab'][preceding-sibling::*[1][self::*:label]][ancestor::*:note]" mode="tei2html"/>
+  
   <xsl:template match="note[@type = 'footnote']" mode="tei2html">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
     <xsl:param name="in-toc" tunnel="yes" as="xs:boolean?"/>
