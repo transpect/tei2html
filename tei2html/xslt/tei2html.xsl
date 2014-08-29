@@ -150,11 +150,21 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
-  <xsl:template match="div[@type = ('imprint', 'dedication', 'preface', 'marginal')]" mode="tei2html">
+  
+  <xsl:template match="div[@type]" mode="tei2html" priority="3">
+    <div>
+      <xsl:apply-templates select="@* except @rend" mode="#current"/>
+      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
+      <xsl:attribute name="class" select="@type"/>
+      <xsl:apply-templates select="node()" mode="#current"/>
+    </div>
+  </xsl:template>
+  
+<!--  <xsl:template match="div[@type = ('imprint', 'dedication', 'preface', 'marginal')]" mode="tei2html" priority="2">
     <div>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </div>
-  </xsl:template>
+  </xsl:template>-->
   
   <xsl:template match="*:div" mode="tei2html">
       <xsl:apply-templates select="@*, node()" mode="#current"/>
@@ -319,7 +329,7 @@
     </span>
   </xsl:template>
   
-
+  <xsl:template match="*:label[ancestor::*:note]" mode="tei2html" priority="1.5"/>
 
   <xsl:template match="*[note[@type = 'footnote']]" mode="tei2html">
     <xsl:next-match/>
@@ -341,15 +351,12 @@
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
     <div class="{name()}" id="fn_{@xml:id}">
       <p class="footnote-marker">
-<!--      <xsl:attribute name="srcpath" select="*:p/@srcpath"/>-->
-  <!--    <span class="note-mark">-->
         <sup>
          <a href="#fna_{@xml:id}">
              <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
          </a>
         </sup>
         <xsl:text>&#160;</xsl:text>
-      <!--</span>-->
       </p>
       <div class="footnote-text">
         <xsl:apply-templates  select="* except (*:p[1]/label, *:p[1]/seg[@type = 'tab'])" mode="tei2html"/>
@@ -357,8 +364,6 @@
     </div>
   </xsl:template>
   
-  
-  <xsl:template match="*:label[ancestor::*:note]" mode="tei2html"/>
   <xsl:template match="*:seg[@type = 'tab'][preceding-sibling::*[1][self::*:label]][ancestor::*:note]" mode="tei2html"/>
   
   <xsl:template match="note[@type = 'footnote']" mode="tei2html">
@@ -478,23 +483,25 @@
   </xsl:template>
   
   <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
-    <div class="toc">
+    <xsl:element name="{if ($tei2html:epub-type = '2') then 'div' else 'nav'}">
+      <xsl:attribute name="class" select="'toc'"/>
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:choose>
         <xsl:when test="exists(* except head)">
-
           <!-- explicitly rendered toc -->
           <xsl:apply-templates mode="tei2html"/>
         </xsl:when>
         <xsl:otherwise>
-
           <xsl:apply-templates select="head" mode="#current"/>
-          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'preface', 'part')] | parent::divGen[@type ='index']]
-                                              [not(ancestor::divGen[@type ='toc'])]
-                                              [tei2html:heading-level(.) le number((@rendition, 100)[1]) + 1]" mode="toc"/>
+          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'preface', 'part')]
+            | parent::divGen[@type ='index']
+            ]
+            [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']])])]
+            [not(ancestor::divGen[@type ='toc'])]
+            [tei2html:heading-level(.) le number((@rendition, 100)[1]) + 1]" mode="toc"/>
         </xsl:otherwise>
       </xsl:choose>
-    </div>
+    </xsl:element>
   </xsl:template>
     
   <xsl:template match="div[@type = 'imprint']" mode="tei2html">
@@ -506,9 +513,9 @@
   <xsl:template match="head[not(@type = 'sub')]" mode="toc">
     <p class="toc{tei2html:heading-level(.)}">
       <a href="#{(@id, generate-id())[1]}">
-        <xsl:if test="../label">
-          <xsl:apply-templates select="../label/node()" mode="strip-indexterms-etc"/>
-          <xsl:text>&#x2002;</xsl:text>
+        <xsl:if test="label">
+          <xsl:apply-templates select="label/node()" mode="strip-indexterms-etc"/>
+          <xsl:apply-templates select="label" mode="label-sep"/>
         </xsl:if>
         <xsl:apply-templates mode="tei2html">
           <xsl:with-param name="in-toc" select="true()" as="xs:boolean" tunnel="yes"/>
@@ -544,19 +551,52 @@
   </xsl:template>
 
   <xsl:template match="head[not(@type = 'sub')][not(ancestor::*[self::figure or self::table or self::floatingText])]" mode="tei2html">
+    <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
     <xsl:element name="{concat('h', $heading-level)}">
+      <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:attribute name="class" select="if(parent::div[@type] or parent::divGen[@type]) then (parent::div, parent::divGen)[1]/@type else local-name()"/>
-      <xsl:next-match/>
+      <xsl:attribute name="title" select="tei2html:heading-title(.)"/>
+      <xsl:if test="not($in-toc)">
+        <a id="{generate-id()}" />  
+      </xsl:if>
+      <xsl:sequence select="tei2html:heading-content(.)"/>
     </xsl:element>
   </xsl:template>
   
+
+  <xsl:function name="tei2html:heading-title" as="xs:string?">
+    <xsl:param name="context"/>
+    <xsl:value-of select="tei2html:heading-content($context)"/>  
+  </xsl:function>
+  
+  <xsl:function name="tei2html:heading-content">
+    <xsl:param name="context"/>
+    <xsl:if test="$context/label">
+      <xsl:apply-templates select="$context/label/node()" mode="strip-indexterms-etc"/>
+      <xsl:apply-templates select="$context/label" mode="label-sep"/>
+    </xsl:if>
+    <xsl:apply-templates select="$context/node() except $context/label" mode="tei2html"/>
+  </xsl:function>
+  
   <xsl:variable name="tei:anonymous-chapter-regex" select="'p_h_anonym'" as="xs:string"/>
-  <xsl:template match="head[matches(@rend, $tei:anonymous-chapter-regex)]" mode="tei2html">
+<!--  <xsl:template match="head[matches(@rend, $tei:anonymous-chapter-regex)]" mode="tei2html">
     <xsl:copy>
       <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:attribute name="title" select="."/>
     </xsl:copy>
+  </xsl:template>
+  -->
+  <xsl:variable name="tei2html:dissolve-br-in-toc-head" as="xs:boolean" select="false()"/>
+  
+  <xsl:template match="*:head/*:lb[$tei2html:dissolve-br-in-toc-head]" mode="strip-indexterms-etc">
+    <xsl:choose>
+      <xsl:when test="preceding-sibling::node()[1]/(self::text()) and matches(preceding-sibling::node()[1], '\s$') or
+        following-sibling::node()[1]/(self::text()) and matches(following-sibling::node()[1], '^\s')"/>
+      <xsl:otherwise>
+        <xsl:sequence select="'&#160;'"/>
+      </xsl:otherwise>
+    </xsl:choose>  
   </xsl:template>
   
   <xsl:template match="index/term | fn" mode="strip-indexterms-etc"/>
@@ -565,7 +605,7 @@
   <xsl:template match="title/@css:*[matches(local-name(), '^(margin-|text-align)')]" mode="tei2html"/>
   
   <xsl:template match="label" mode="label-sep">
-    <xsl:text>&#x2003;</xsl:text>
+    <xsl:text>&#160;</xsl:text>
   </xsl:template>
   
   <xsl:template match="contrib-group/contrib" mode="tei2html">
@@ -651,7 +691,7 @@
   <!-- override this in your adaptions with 3, then epub-types are created -->
   <xsl:variable name="tei2html:epub-type" as="xs:string" select="'2'"/>
   
-  <xsl:function name="letex:create-epub-type-attribute" as="attribute(epub:type)?">
+  <xsl:function name="letex:create-epub-type-attribute" as="attribute()?">
     <xsl:param name="tei2html:epub-type" as="xs:string"/>
     <xsl:param name="context" as="element(*)"/>
     <xsl:if test="$tei2html:epub-type eq '3'">
@@ -659,14 +699,17 @@
         <xsl:when test="$context[self::*:pb]">
           <xsl:attribute name="epub:type" select="'pagebreak'"/>
         </xsl:when>
-        <xsl:when test="$context[self::*:div[@type = ('glossary', 'preface', 'bibliography', 'acknowledgements')]]">
+        <xsl:when test="$context[self::*:div[@type = ('glossary', 'preface', 'bibliography', 'acknowledgements', 'chapter', 'foreword')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
+        </xsl:when>
+        <xsl:when test="$context[self::*:div[@type = 'marginal']]">
+          <xsl:attribute name="epub:type" select="'sidebar'"/>
         </xsl:when>
         <xsl:when test="$context[self::*:divGen[@type = ('index', 'toc')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
         <xsl:when test="$context[self::*:note[@type = ('footnotes')]]">
-          <xsl:attribute name="epub:type" select="$context/@type"/>
+          <xsl:attribute name="epub:type" namespace="http://www.idpf.org/2007/ops" select="$context/@type"/>
         </xsl:when>
       </xsl:choose>
     </xsl:if>
@@ -1058,24 +1101,6 @@
       <xsl:apply-templates select="node()" mode="tei2html"/>
     </p>
   </xsl:template> 
-  
-<!--  <xsl:template match="ref-type-group[@type = ('sec', 'part', 'chapter')]/rendering[@type = ('title', 'number')]" mode="render-xref">
-    <xsl:value-of select="key('l10n-string', if(count(item) gt 1) then ../@type else concat(../@type, 's'), $l10n)"/>
-    <xsl:text>&#xa0;</xsl:text>
-    <xsl:for-each select="item">
-      <xsl:apply-templates select="." mode="#current"/>
-      <xsl:if test="position() lt last()">
-        <xsl:text xml:space="preserve">, </xsl:text>
-      </xsl:if>
-    </xsl:for-each>
-  </xsl:template>-->
-
-  <xsl:function name="tei2html:is-book-part-like" as="xs:boolean">
-    <xsl:param name="elt" as="element(*)"/>
-    <!-- add more: -->
-    <xsl:sequence select="exists($elt/(self::divGen[@type = 'toc'] | self::part | self::preface | self::dedication |
-      self::front-matter-part))"/>
-  </xsl:function>
   
   <xsl:function name="tei2html:heading-level" as="xs:integer?">
     <xsl:param name="elt" as="element(*)"/>
