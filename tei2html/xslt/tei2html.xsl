@@ -683,7 +683,7 @@
 
   
   <xsl:template match="pb" mode="tei2html">
-    <div style="page-break-after:always" class="{local-name()}">
+    <div style="page-break-before:always" class="{local-name()}">
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
     </div>
   </xsl:template>
