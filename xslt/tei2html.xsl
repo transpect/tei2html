@@ -424,7 +424,7 @@
   </xsl:template>
   
   <xsl:template match="list[@type eq 'ordered']" mode="tei2html">
-    <ol class="{descendant::p[1]/@rend}">
+    <ol class="{concat(descendant::p[1]/@rend, ' ', @style)}">
       <xsl:apply-templates mode="#current"/>
     </ol>
   </xsl:template>
@@ -880,6 +880,13 @@
       </xsl:otherwise>
     </xsl:choose>
    </xsl:template>
+  
+  <!-- For tables in HTML model -->
+  <xsl:template match="table[.//tr]//*[local-name() = ('tr', 'td', 'colgroup')]" mode="tei2html">
+    <xsl:element name="{local-name()}" exclude-result-prefixes="#all">
+      <xsl:call-template name="css:content"/>
+    </xsl:element>
+  </xsl:template>  
   
   <xsl:template match="row" mode="tei2html">
     <xsl:element name="tr" exclude-result-prefixes="#all">
