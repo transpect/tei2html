@@ -231,7 +231,8 @@
   <xsl:template match="floatingText" mode="tei2html">
     <div>
       <xsl:attribute name="class" select="if (@rend != @type) then concat(@type, ' ', @rend) else @rend"/>
-      <xsl:apply-templates select="@* except (@rend, @type), body/*" mode="#current"/>
+      <xsl:apply-templates select="@* except (@rend, @type), front/*" mode="#current"/>
+      <xsl:apply-templates select="body/*" mode="#current"/>
     </div>
   </xsl:template>
   
@@ -464,6 +465,14 @@
     <p>
       <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:attribute name="class" select="concat(@rend, ' figure-head')"/>
+      <xsl:apply-templates select="node()" mode="#current"/>
+    </p>
+  </xsl:template>
+  
+  <xsl:template match="front/head" mode="tei2html" priority="3">
+    <p>
+      <xsl:apply-templates select="@* except @rend" mode="#current"/>
+      <xsl:attribute name="class" select="concat(@rend, ' box-head')"/>
       <xsl:apply-templates select="node()" mode="#current"/>
     </p>
   </xsl:template>
