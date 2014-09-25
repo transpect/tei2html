@@ -504,7 +504,11 @@
   <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
     <xsl:element name="{if ($tei2html:epub-type = '2') then 'div' else 'nav'}">
       <xsl:attribute name="class" select="'toc'"/>
-      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
+      <!-- don’t create an epub:type attribute even for EPUB3 because the content of 
+        the nav would have to be an ordered list (ol). Currently it’s only p elements
+        with class attributes according to the to heading level, which is not permitted 
+        (must be ol). -->
+<!--      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>-->
       <xsl:choose>
         <xsl:when test="exists(* except head)">
           <!-- explicitly rendered toc -->
