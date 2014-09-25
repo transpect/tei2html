@@ -48,8 +48,9 @@
     as="document-node(element(l10n:l10n))"/>
   
   <xsl:key name="l10n-string" match="l10n:string" use="@id"/>
+  <xsl:key name="rule-by-name" match="css:rule" use="@name"/>
   
-  <xsl:template match="* | @*" mode="expand-css clean-up table-widths epub-alternatives">
+  <xsl:template match="* | @*" mode="expand-css clean-up table-widths epub-alternatives" priority="-0.5">
     <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@* | node()" mode="#current" />  
     </xsl:copy>
@@ -129,6 +130,13 @@
     <xsl:call-template name="css:move-to-attic">
       <xsl:with-param name="atts" select="@*[css:map-att-to-elt(., current())]"/>
     </xsl:call-template>
+  </xsl:template>
+  
+  <xsl:template match="css:rules" mode="tei2html">
+    <xsl:copy copy-namespaces="no">
+      <xsl:copy-of select="@*"/>
+      <xsl:copy-of select="node()"/>
+    </xsl:copy>
   </xsl:template>
   
   <xsl:template match="css:rules" mode="clean-up">
@@ -463,17 +471,19 @@
   
   <xsl:template match="figure/head" mode="tei2html">
     <p>
-      <xsl:apply-templates select="@* except @rend" mode="#current"/>
+      <xsl:call-template name="css:content"/>
+  <!--    <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:attribute name="class" select="concat(@rend, ' figure-head')"/>
-      <xsl:apply-templates select="node()" mode="#current"/>
+      <xsl:apply-templates select="node()" mode="#current"/>-->
     </p>
   </xsl:template>
   
   <xsl:template match="front/head" mode="tei2html" priority="3">
     <p>
-      <xsl:apply-templates select="@* except @rend" mode="#current"/>
+      <xsl:call-template name="css:content"/>
+    <!--  <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:attribute name="class" select="concat(@rend, ' box-head')"/>
-      <xsl:apply-templates select="node()" mode="#current"/>
+      <xsl:apply-templates select="node()" mode="#current"/>-->
     </p>
   </xsl:template>
   
@@ -543,9 +553,10 @@
   <xsl:template match="head[@type = 'sub'][preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']]] |
                        head[ancestor::*[self::floatingText]]" mode="tei2html" priority="2">
     <p>
-      <xsl:apply-templates select="@* except @rend" mode="#current"/>
+      <xsl:call-template name="css:content"/>
+      <!--<xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:attribute name="class" select="if (@type = 'sub') then concat(@rend, ' subtitle') else concat(@rend, ' ', normalize-space((ancestor::*[self::floatingText]/@type)[1]), '-head')"/>
-      <xsl:apply-templates select="node()" mode="#current"/>
+      <xsl:apply-templates select="node()" mode="#current"/>-->
     </p>
   </xsl:template>
   
@@ -692,7 +703,7 @@
 
   
   <xsl:template match="pb" mode="tei2html">
-    <div style="page-break-before:always" class="{local-name()}">
+    <div class="{local-name()}">
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
     </div>
   </xsl:template>
