@@ -238,7 +238,18 @@
   
   <xsl:template match="floatingText" mode="tei2html">
     <div>
-      <xsl:attribute name="class" select="if (@rend != @type) then concat(@type, ' ', @rend) else @rend"/>
+      <xsl:if test="@rend or @type">
+      <xsl:attribute name="class">
+        <xsl:choose>
+          <xsl:when test="not(@rend)">
+            <xsl:value-of select="if (@type) then @type else ''"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of select="if (@rend != @type) then concat(@type, ' ', @rend) else @rend"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+      </xsl:if>
       <xsl:apply-templates select="@* except (@rend, @type), front/*" mode="#current"/>
       <xsl:apply-templates select="body/*" mode="#current"/>
     </div>
