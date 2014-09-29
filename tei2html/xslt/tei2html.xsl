@@ -154,7 +154,7 @@
     <xsl:call-template name="tei2html:footnotes"/>
   </xsl:template>
   
-  <xsl:template match="text | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal'))]" mode="tei2html">
+  <xsl:template match="text | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal'))] | div1 | div2" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
@@ -250,9 +250,8 @@
         </xsl:choose>
       </xsl:attribute>
       </xsl:if>
-      <xsl:apply-templates select="@* except (@rend, @type), front/*" mode="#current"/>
-      <xsl:apply-templates select="body/*" mode="#current"/>
-    </div>
+      <xsl:apply-templates select="@* except (@rend, @type), node()" mode="#current"/>
+   </div>
   </xsl:template>
   
   <xsl:function name="tei2html:strip-combining" as="xs:string">
@@ -483,18 +482,12 @@
   <xsl:template match="figure/head" mode="tei2html">
     <p>
       <xsl:call-template name="css:content"/>
-  <!--    <xsl:apply-templates select="@* except @rend" mode="#current"/>
-      <xsl:attribute name="class" select="concat(@rend, ' figure-head')"/>
-      <xsl:apply-templates select="node()" mode="#current"/>-->
     </p>
   </xsl:template>
   
-  <xsl:template match="front/head" mode="tei2html" priority="3">
+  <xsl:template match="floatingText//head" mode="tei2html" priority="3">
     <p>
       <xsl:call-template name="css:content"/>
-    <!--  <xsl:apply-templates select="@* except @rend" mode="#current"/>
-      <xsl:attribute name="class" select="concat(@rend, ' box-head')"/>
-      <xsl:apply-templates select="node()" mode="#current"/>-->
     </p>
   </xsl:template>
   
@@ -883,6 +876,27 @@
 
   <xsl:template match="graphic/@css:*" mode="tei2html"/>
 
+  <xsl:template match="css:rule/@css:*[matches(., 'pt$')]" mode="epub-alternatives">
+    <xsl:attribute name="{name()}" select="hub2htm:pt2px(.)"/>
+  </xsl:template>
+  
+  <xsl:function name="hub2htm:pt2px" as="xs:string">
+    <xsl:param name="attribute-value" as="attribute()"/>
+    <xsl:variable name="px-value" select="concat(round-half-to-even(number(replace($attribute-value, 'pt$', '')) * 1.33), 'px')"/>
+    <xsl:choose>
+      <xsl:when test="$attribute-value = '0pt'">
+        <xsl:sequence select="'0px'"/>
+      </xsl:when>
+      <xsl:when test="$attribute-value != '0pt' and $px-value = '0px'">
+        <xsl:sequence select="'1px'"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence select="$px-value"/>
+      </xsl:otherwise>
+    </xsl:choose>
+    
+  </xsl:function>
+  
   <xsl:template match="*[name() = ('graphic', 'inline-graphic')]/@*[name() = ('css:width', 'css:height')]"
     mode="hub2htm:css-style-overrides"/>
 
@@ -902,6 +916,18 @@
       </xsl:element>
     </div>
   </xsl:template>
+  
+  <xsl:template match="td/@css:width" mode="hub2htm:css-style-overrides" priority="3"/>
+  
+  <xsl:template match="table[matches(@css:width, '(pt|mm)$')]" mode="tei2html">
+    <xsl:variable name="conditional-percent-widths" as="element(table)">
+      <xsl:apply-templates select="." mode="table-widths"/>
+    </xsl:variable>
+    <xsl:apply-templates select="$conditional-percent-widths" mode="#current">
+      <xsl:with-param name="root" select="root(.)" tunnel="yes"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  
   
   <xsl:template match="table/head" mode="tei2html">
     <xsl:param name="not-discard-table-head" as="xs:boolean?" tunnel="yes"/>
@@ -941,15 +967,7 @@
     <xsl:attribute name="css:width" select="replace((xs:string((100 * $cell-width) div $table-width)), '(\d+)(\.?)(\d{2})?(\d*)', '$1$2$3%')"/>    
   </xsl:template>
   
-  <xsl:template match="table[matches(@css:width, '(pt|mm)$')]" mode="tei2html">
-    <xsl:variable name="conditional-percent-widths" as="element(table)">
-      <xsl:apply-templates select="." mode="table-widths"/>
-    </xsl:variable>
-    <xsl:apply-templates select="$conditional-percent-widths" mode="#current">
-      <xsl:with-param name="root" select="root(.)" tunnel="yes"/>
-    </xsl:apply-templates>
-  </xsl:template>
-  
+
   <!-- There should always be @css:width. @width is only decorational (will be valuable just in case 
     all @css:* will be stripped -->
 
@@ -1151,6 +1169,8 @@
       <xsl:when test="$elt/ancestor::lg"/>
       <xsl:when test="$elt/ancestor::figure"/>
       <xsl:when test="$elt/ancestor::floatingText"/>
+      <xsl:when test="$elt/ancestor::div1"/>
+      <xsl:when test="$elt/ancestor::div2"/>
       <xsl:when test="$elt/parent::div/@type = ('part', 'appendix', 'imprint', 'acknowledgements', 'dedication', 'glossary', 'preface') or 
                       $elt/parent::divGen/@type = ('index', 'toc')">
         <xsl:sequence select="2"/>
