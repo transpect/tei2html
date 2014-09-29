@@ -163,7 +163,7 @@
     <div>
       <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
-      <xsl:attribute name="class" select="@type"/>
+      <xsl:attribute name="class" select="if (@rend) then concat(@rend, ' ', @type) else @type"/>
       <xsl:apply-templates select="node()" mode="#current"/>
     </div>
   </xsl:template>
@@ -727,7 +727,13 @@
         <xsl:when test="$context[self::*:pb]">
           <xsl:attribute name="epub:type" select="'pagebreak'"/>
         </xsl:when>
-        <xsl:when test="$context[self::*:div[@type = ('glossary', 'preface', 'bibliography', 'acknowledgements', 'chapter', 'foreword')]]">
+        <xsl:when test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword')]]">
+          <xsl:attribute name="epub:type" select="$context/@type"/>
+        </xsl:when>
+        <xsl:when test="$context[self::*:div[@type = 'preface'][matches(@rend, '(title-page|copyright-page|about-contrib|frontispiz2?|dedication)')]]">
+          <xsl:attribute name="epub:type" select="$context/@rend"/>
+        </xsl:when>
+        <xsl:when test="$context[self::*:div[@type = 'preface'][not(matches(@rend, '(title-page|copyright-page|about-contrib|frontispiz2?|dedication)'))]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'marginal']]">
