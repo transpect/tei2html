@@ -731,7 +731,27 @@
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'preface'][matches(@rend, '(title-page|copyright-page|about-contrib|frontispiz2?|dedication)')]]">
-          <xsl:attribute name="epub:type" select="$context/@rend"/>
+          <xsl:choose>
+            <xsl:when test="matches($context/@rend, 'title-page')">
+              <xsl:attribute name="epub:type" select="'fulltitle'"/>
+            </xsl:when>
+            <xsl:when test="matches($context/@rend, 'copyright-page')">
+              <xsl:attribute name="epub:type" select="'copyright-page'"/>
+            </xsl:when>
+            <xsl:when test="matches($context/@rend, 'about-contrib')">
+              <xsl:attribute name="epub:type" select="'letex:bio'"/>
+            </xsl:when>
+            <!-- additional Info in title -->
+            <xsl:when test="matches($context/@rend, 'frontispiz2')">
+              <xsl:attribute name="epub:type" select="''"/>
+            </xsl:when>
+            <xsl:when test="matches($context/@rend, 'frontispiz$')">
+              <xsl:attribute name="epub:type" select="'letex:about-the-book'"/>
+            </xsl:when>
+            <xsl:when test="matches($context/@rend, 'dedication')">
+              <xsl:attribute name="epub:type" select="'fulltitle'"/>
+            </xsl:when>
+          </xsl:choose>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'preface'][not(matches(@rend, '(title-page|copyright-page|about-contrib|frontispiz2?|dedication)'))]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
