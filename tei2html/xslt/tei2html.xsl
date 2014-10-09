@@ -109,7 +109,7 @@
           <link href="{$work-path}/css/overrides.css" type="text/css" rel="stylesheet"/>
         </xsl:if>
         <title>
-          <xsl:apply-templates select="book-meta/book-title-group/book-title/node() | title-group/title/node()"
+          <xsl:apply-templates select="//titlePart[@type = 'main']/text()"
             mode="#current">
             <!-- suppress replicated target with id: -->
             <xsl:with-param name="in-toc" select="true()" tunnel="yes"/>
@@ -125,6 +125,9 @@
       </body>
     </html>
   </xsl:template>
+  
+  <xsl:template match="titlePage" mode="tei2html"/>
+    
   
   <xsl:template match="css:rule" mode="tei2html">
     <xsl:call-template name="css:move-to-attic">
