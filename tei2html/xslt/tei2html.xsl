@@ -446,7 +446,7 @@
   </xsl:template>
   
   <xsl:template match="list[@type eq 'ordered']" mode="tei2html">
-    <ol class="{concat(descendant::p[1]/@rend, ' ', @style)}">
+    <ol class="{@style}">
       <xsl:apply-templates mode="#current"/>
     </ol>
   </xsl:template>
