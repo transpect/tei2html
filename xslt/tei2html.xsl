@@ -905,7 +905,7 @@
 
   <xsl:template match="graphic/@css:*" mode="tei2html"/>
 
-  <xsl:template match="css:rule/@css:*[matches(., 'pt$')] | @css:*[matches(local-name(), 'width')][matches(., 'pt$')][parent::*[local-name() = ('table', 'col', 'td')]]" mode="epub-alternatives">
+  <xsl:template match="css:rule/@css:*[matches(., 'pt$')] | @css:*[matches(local-name(), '-width')][matches(., 'pt$')][parent::*[local-name() = ('table', 'col', 'td')]]" mode="epub-alternatives">
     <xsl:attribute name="{name()}" select="hub2htm:pt2px(.)"/>
   </xsl:template>
   
@@ -948,7 +948,7 @@
   
   <xsl:template match="td/@css:width" mode="hub2htm:css-style-overrides" priority="3"/>
   
-  <xsl:template match="table[matches(@css:width, '(pt|mm)$')]" mode="tei2html">
+  <xsl:template match="table[matches(@*[local-name() = 'width'], '(pt|mm)$')]" mode="tei2html">
     <xsl:variable name="conditional-percent-widths" as="element(table)">
       <xsl:apply-templates select="." mode="table-widths"/>
     </xsl:variable>
@@ -1034,7 +1034,7 @@
   </xsl:template>
 
   <xsl:template match="table[not(col | colgroup)][@css:width]/*/row/*/@css:width
-                       | table[exists(col | colgroup)][@css:width]//col/@width" mode="table-widths">
+    | table[exists(col | colgroup)][@css:width]//col/@*[local-name() = 'width']" mode="table-widths">
     <xsl:param name="table-twips" as="xs:double?" tunnel="yes"/>
     <xsl:param name="table-percentage" as="xs:integer?" tunnel="yes"/>
     <xsl:choose>
