@@ -49,7 +49,8 @@
   
   <xsl:key name="l10n-string" match="l10n:string" use="@id"/>
   <xsl:key name="rule-by-name" match="css:rule" use="@name"/>
-  
+  <xsl:key name="by-id" match="*[@id | @xml:id]" use="@id | @xml:id"/>
+
   <xsl:template match="* | @*" mode="expand-css clean-up table-widths epub-alternatives" priority="-0.5">
     <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@* | node()" mode="#current" />  
@@ -662,19 +663,18 @@
     </p>
   </xsl:template>
   
+  <xsl:template match="hi[@rendition  = ('subscript', 'superscript')]" mode="tei2html" priority="2.5">
+    <xsl:element name="{if (@rendition = 'superscript') then 'sup' else 'sub'}">
+      <xsl:next-match/>
+    </xsl:element>
+  </xsl:template>
+  
   <xsl:template match="hi" mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
     </span>
   </xsl:template>
   
-  <xsl:template match="sup | sub" mode="tei2html">
-    <xsl:element name="{name()}">
-      <xsl:next-match/>
-    </xsl:element>
-  </xsl:template>
-  
-    
   <xsl:template match="ref | link" mode="tei2html" priority="5">
     <a>
       <xsl:attribute name="href" select="@target"/>
@@ -686,21 +686,6 @@
     </a>
   </xsl:template>
   
-<!--  <xsl:template match="ref[@id]/node()[last()]" mode="tei2html">
-    <xsl:next-match/>
-    <xsl:text>&#x2002;</xsl:text>
-    <xsl:for-each select="key('by-rid', ../@id)">
-      <a href="#xref_{@id}">
-        <xsl:number format="a" value="position()"/>
-      </a>
-      <xsl:if test="position() ne last()">
-        <xsl:text xml:space="preserve">, </xsl:text>
-      </xsl:if>
-    </xsl:for-each>
-  </xsl:template>
-
--->
-  
   <xsl:template match="seg" mode="tei2html">
     <span>
       <xsl:next-match/>
@@ -710,8 +695,6 @@
   <xsl:template match="@rend" mode="tei2html">
     <xsl:attribute name="class" select="."/>
   </xsl:template>
-  
-
   
   <xsl:template match="pb" mode="tei2html">
     <div class="{local-name()}">
@@ -840,8 +823,6 @@
       </span>
     </xsl:if>
   </xsl:template>
-  
-  <xsl:key name="by-id" match="*[@id]" use="@id"/>
   
   <xsl:template match="html:a[@class eq 'it'][@href]" mode="clean-up">
     <xsl:copy copy-namespaces="no">
@@ -1058,95 +1039,8 @@
     <xsl:copy/>
   </xsl:template>
   
-   
-  <xsl:key name="by-id" match="*[@id]" use="@id"/>
-  <xsl:key name="by-rid" match="*[@rid]" use="@rid"/>
-  
   <xsl:variable name="root" select="/" as="document-node()"/>
 
-  <xsl:template match="xref" mode="tei2html">
-    <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
-    <xsl:variable name="linked-items" as="element(linked-item)*">
-      <xsl:apply-templates select="key('by-id', tokenize(@rid, '\s+'), $root)" mode="linked-item"/>
-    </xsl:variable>
-    <xsl:choose>
-      <xsl:when test="node()">
-        <!-- explicit referring text -->
-        <xsl:choose>
-          <xsl:when test="$in-toc">
-            <xsl:apply-templates mode="#current"/>
-          </xsl:when>
-          <xsl:when test="count($linked-items) eq 1">
-            <xsl:if test="$linked-items[1]/@ref-type = 'ref'">
-              <span class="cit">
-                <xsl:text>[</xsl:text>
-                <xsl:number format="a" 
-                  value="index-of(for $xr in key('by-rid', @rid, $root) return $xr/@id, @id)"/>
-                <xsl:text>]</xsl:text>
-              </span>
-            </xsl:if>
-            <a href="#{$linked-items[1]/@id}" id="xref_{@id}">
-              <!--<xsl:if test=". is (key('by-rid', $linked-items[1]/@id, $root))[1]">
-                <xsl:attribute name="id" select="concat('xref_', $linked-items[1]/@id)"/>
-              </xsl:if>-->
-              <xsl:apply-templates mode="#current"/>
-            </a>
-          </xsl:when>
-          <xsl:when test="count($linked-items) eq 0">
-            <xsl:apply-templates mode="#current"/>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:message>Cannot link: multiple resolutions for xref with an explicit link text. <xsl:copy-of select="."
-              /></xsl:message>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:when>
-      <xsl:otherwise>
-        <!-- generate referring text -->
-        <xsl:call-template name="render-rids">
-          <xsl:with-param name="linked-items" select="$linked-items"/>
-          <xsl:with-param name="in-toc" select="$in-toc" tunnel="yes"/>
-        </xsl:call-template>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>
-  
-  <xsl:template name="render-rids">
-    <xsl:param name="linked-items" as="element(linked-item)*"/>
-    <xsl:variable name="grouped-items" as="element(linked-items)" xmlns="">
-      <linked-items  xmlns="http://www.tei-c.org/ns/1.0">
-        <xsl:for-each-group select="$linked-items" group-by="@ref-type">
-          <ref-type-group type="{current-grouping-key()}">
-            <xsl:for-each-group select="current-group()" group-adjacent="tei2html:link-rendering-type(., ('label', 'number', 'title', 'teaser'))">
-              <rendering type="{current-grouping-key()}">
-                <xsl:variable name="context" select="." as="element(*)"/>
-                <xsl:for-each select="current-group()/(@* | *)[name() = current-grouping-key()]">
-                  <item id="{$context/@id}">
-                    <xsl:apply-templates select="." mode="render-xref"/>
-                  </item>
-                </xsl:for-each>
-              </rendering>
-            </xsl:for-each-group>  
-          </ref-type-group>
-        </xsl:for-each-group>    
-      </linked-items>
-    </xsl:variable>    
-    <xsl:apply-templates select="$grouped-items" mode="render-xref"/>
-  </xsl:template>
-
-  <xsl:function name="tei2html:ref-type" as="xs:string">
-    <xsl:param name="elt" as="element(*)"/>
-    <xsl:choose>
-      <xsl:when test="$elt/self::book-part">
-        <xsl:sequence select="($elt/@book-part-type, $elt/name())[1]"/>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:sequence select="$elt/name()"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:function>
-
-  
   <xsl:template match="title | alt-title[@alt-title-type eq 'xref']" mode="linked-item" xmlns="">
     <title>
       <xsl:apply-templates mode="render-xref"/>
@@ -1158,17 +1052,6 @@
         <xsl:attribute name="class" select="@rend"/>
         <xsl:apply-templates select="node()" mode="#current"/>     
       </p>
-  </xsl:template>
-  
-  <xsl:function name="tei2html:link-rendering-type" as="xs:string">
-    <xsl:param name="elt" as="element(linked-item)"/>
-    <!-- preference: sequence of 'number', 'title', 'label', 'teaser' --> 
-    <xsl:param name="preference" as="xs:string*"/>
-    <xsl:sequence select="(for $p in $preference return $elt/(@* | *)[name() eq $p]/name(), '')[1]"/>
-  </xsl:function>
-
-  <xsl:template match="linked-items | ref-type-group" mode="render-xref">
-    <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
   <xsl:template match="sp" mode="tei2html">
