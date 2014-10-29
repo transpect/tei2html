@@ -524,8 +524,8 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates select="head" mode="#current"/>
-          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'preface', 'part')]
-            | parent::divGen[@type ='index']
+          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'part')]
+            | parent::div[@type = 'preface'][not(@rend = ('about-contrib', 'frontispiz', 'frontispiz2', 'title-page', 'copyright-page', 'dedication'))] | parent::divGen[@type ='index']
             ]
             [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']])])]
             [not(ancestor::divGen[@type ='toc'])]
@@ -619,16 +619,24 @@
     </xsl:copy>
   </xsl:template>
   -->
-  <xsl:variable name="tei2html:dissolve-br-in-toc-head" as="xs:boolean" select="false()"/>
+  <xsl:param name="tei2html:dissolve-br-in-toc-head" as="xs:boolean" select="false()"/>
   
-  <xsl:template match="*:head/*:lb[$tei2html:dissolve-br-in-toc-head]" mode="strip-indexterms-etc">
+  <xsl:template match="*:head/*:lb" mode="strip-indexterms-etc">
+    <xsl:param name="tei2html:dissolve-br-in-toc-head" tunnel="yes"/>
     <xsl:choose>
-      <xsl:when test="preceding-sibling::node()[1]/(self::text()) and matches(preceding-sibling::node()[1], '\s$') or
-        following-sibling::node()[1]/(self::text()) and matches(following-sibling::node()[1], '^\s')"/>
+      <xsl:when test="$tei2html:dissolve-br-in-toc-head">
+        <xsl:choose>
+          <xsl:when test="preceding-sibling::node()[1]/(self::text()) and matches(preceding-sibling::node()[1], '\s$') or
+            following-sibling::node()[1]/(self::text()) and matches(following-sibling::node()[1], '^\s')"/>
+          <xsl:otherwise>
+            <xsl:sequence select="'&#160;'"/>
+          </xsl:otherwise>
+        </xsl:choose> 
+      </xsl:when>
       <xsl:otherwise>
-        <xsl:sequence select="'&#160;'"/>
+        <xsl:next-match/>
       </xsl:otherwise>
-    </xsl:choose>  
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="index/term | fn" mode="strip-indexterms-etc"/>
