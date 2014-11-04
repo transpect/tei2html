@@ -677,6 +677,8 @@
     </xsl:element>
   </xsl:template>
   
+  <xsl:template match="@rendition[.  = ('subscript', 'superscript')]" mode="tei2html"/>
+  
   <xsl:template match="hi" mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
