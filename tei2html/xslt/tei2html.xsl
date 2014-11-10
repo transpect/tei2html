@@ -149,9 +149,9 @@
   
   <xsl:template match="css:rule[css:attic[@css:display = 'list-item']]" mode="epub-alternatives">
     <xsl:copy copy-namespaces="no">
-      <xsl:copy-of select="@*"/>
+      <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:copy-of select="css:attic/@css:list-style-type"/>
-      <xsl:copy-of select="node()" copy-namespaces="no"/>
+      <xsl:apply-templates select="node()"  mode="#current"/>
     </xsl:copy>
   </xsl:template>
     
