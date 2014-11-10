@@ -147,6 +147,14 @@
     <xsl:apply-templates select="." mode="hub2htm:css"/>
   </xsl:template>
   
+  <xsl:template match="css:rules[css:attic/@css:display = 'list-item']" mode="epub-alternatives">
+    <xsl:copy copy-namespaces="no">
+      <xsl:copy-of select="@*"/>
+      <xsl:copy-of select="css:attic/@list-style-type"/>
+      <xsl:copy-of select="node()"/>
+    </xsl:copy>
+  </xsl:template>
+    
   <xsl:template name="html-body">
     <xsl:apply-templates select="text" mode="#current">
       <xsl:with-param name="footnote-ids" select="//note[@type = 'footnote']/@xml:id" as="xs:string*" tunnel="yes"/>
@@ -441,20 +449,7 @@
   </xsl:template>
 
   <xsl:template match="list[@type eq 'bulleted']" mode="tei2html">
-    <xsl:variable name="style" as="xs:string">
-      <xsl:choose>
-        <xsl:when test="@style = '-'">
-          <xsl:value-of select="'dash'"/>
-        </xsl:when>
-        <xsl:when test="@style = '•'">
-          <xsl:value-of select="'bullet'"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:value-of select="'square'"/>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
-    <ul class="{string-join((descendant::p[1]/@rend, $style), '_-_')}">
+    <ul class="{descendant::p[1]/@rend}">
       <xsl:apply-templates mode="#current"/>
     </ul>
   </xsl:template>
