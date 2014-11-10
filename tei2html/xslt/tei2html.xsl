@@ -147,11 +147,11 @@
     <xsl:apply-templates select="." mode="hub2htm:css"/>
   </xsl:template>
   
-  <xsl:template match="css:rules[css:attic/@css:display = 'list-item']" mode="epub-alternatives">
+  <xsl:template match="css:rule[css:attic[@css:display = 'list-item']]" mode="epub-alternatives">
     <xsl:copy copy-namespaces="no">
       <xsl:copy-of select="@*"/>
-      <xsl:copy-of select="css:attic/@list-style-type"/>
-      <xsl:copy-of select="node()"/>
+      <xsl:copy-of select="css:attic/@css:list-style-type"/>
+      <xsl:copy-of select="node()" copy-namespaces="no"/>
     </xsl:copy>
   </xsl:template>
     
