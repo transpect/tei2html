@@ -206,11 +206,7 @@
   
   <xsl:template match="keywords/term" mode="tei2html"/>
   
-  <xsl:template match="keywords/term[@key = 'source-dir-uri']" mode="tei2html" priority="2">
-    <meta name="{@key}" content="{.}"/>
-  </xsl:template>
-  
-  <xsl:template match="keywords/term[@key = 'source-basename']" mode="tei2html" priority="2">
+  <xsl:template match="keywords/term[@key = ('source-dir-uri', 'source-basename', 'source-type')]" mode="tei2html" priority="2">
     <meta name="{@key}" content="{.}"/>
   </xsl:template>
   
