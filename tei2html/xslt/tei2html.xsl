@@ -441,7 +441,20 @@
   </xsl:template>
 
   <xsl:template match="list[@type eq 'bulleted']" mode="tei2html">
-    <ul class="{descendant::p[1]/@rend}">
+    <xsl:variable name="style" as="xs:string">
+      <xsl:choose>
+        <xsl:when test="@style = '-'">
+          <xsl:value-of select="'dash'"/>
+        </xsl:when>
+        <xsl:when test="@style = '•'">
+          <xsl:value-of select="'bullet'"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="'square'"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+    <ul class="{string-join((descendant::p[1]/@rend, $style), '_-_')}">
       <xsl:apply-templates mode="#current"/>
     </ul>
   </xsl:template>
