@@ -722,7 +722,8 @@
   <xsl:function name="letex:create-epub-type-attribute" as="attribute()?">
     <xsl:param name="tei2html:epub-type" as="xs:string"/>
     <xsl:param name="context" as="element(*)"/>
-    <xsl:if test="$tei2html:epub-type eq '3'">
+    <!-- always useful -->
+<!--    <xsl:if test="$tei2html:epub-type eq '3'">-->
       <xsl:choose>
         <xsl:when test="$context[self::*:pb]">
           <xsl:attribute name="epub:type" select="'pagebreak'"/>
@@ -766,7 +767,7 @@
           <xsl:attribute name="epub:type" namespace="http://www.idpf.org/2007/ops" select="$context/@type"/>
         </xsl:when>
       </xsl:choose>
-    </xsl:if>
+    <!--</xsl:if>-->
   </xsl:function>
   
   <xsl:template match="lb" mode="tei2html">
