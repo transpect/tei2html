@@ -99,16 +99,7 @@
   <xsl:template match="/TEI" mode="tei2html">
     <html>
       <head>
-        <link href="{$css-location}" type="text/css" rel="stylesheet"/>
-        <xsl:if test="$publisher-path">
-          <link href="{$publisher-path}/css/overrides.css" type="text/css" rel="stylesheet"/>
-        </xsl:if>
-        <xsl:if test="$series-path">
-          <link href="{$series-path}/css/overrides.css" type="text/css" rel="stylesheet"/>
-        </xsl:if>
-        <xsl:if test="$work-path">
-          <link href="{$work-path}/css/overrides.css" type="text/css" rel="stylesheet"/>
-        </xsl:if>
+        <xsl:call-template name="stylesheet-links"/>
         <title>
           <xsl:apply-templates select="//titlePart[@type = 'main']/text()"
             mode="#current">
@@ -125,6 +116,19 @@
         <xsl:call-template name="html-body"/>
       </body>
     </html>
+  </xsl:template>
+  
+  <xsl:template name="stylesheet-links">
+    <link href="{$css-location}" type="text/css" rel="stylesheet"/>
+    <xsl:if test="$publisher-path">
+      <link href="{$publisher-path}/css/overrides.css" type="text/css" rel="stylesheet"/>
+    </xsl:if>
+    <xsl:if test="$series-path">
+      <link href="{$series-path}/css/overrides.css" type="text/css" rel="stylesheet"/>
+    </xsl:if>
+    <xsl:if test="$work-path">
+      <link href="{$work-path}/css/overrides.css" type="text/css" rel="stylesheet"/>
+    </xsl:if>
   </xsl:template>
   
   <xsl:template match="titlePage" mode="tei2html"/>
