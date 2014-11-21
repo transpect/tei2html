@@ -165,12 +165,12 @@
     </xsl:apply-templates>
   </xsl:template>
   
-  <xsl:template match="body" mode="tei2html">
+  <xsl:template match="text" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
     <xsl:call-template name="tei2html:footnotes"/>
   </xsl:template>
   
-  <xsl:template match="text | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal'))] | div1 | div2" mode="tei2html">
+  <xsl:template match="body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal'))] | div1 | div2" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
