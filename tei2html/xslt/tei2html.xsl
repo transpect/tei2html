@@ -355,7 +355,7 @@
 
   
   <xsl:template match="label[not(parent::item)]" mode="tei2html" priority="0.5">
-    <span class="label">
+    <span class="{if (@srcpath) then 'label block' else 'label'}">
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </span>
   </xsl:template>
