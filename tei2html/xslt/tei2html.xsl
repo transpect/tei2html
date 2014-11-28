@@ -170,7 +170,7 @@
     <xsl:call-template name="tei2html:footnotes"/>
   </xsl:template>
   
-  <xsl:template match="body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal'))] | div1 | div2" mode="tei2html">
+  <xsl:template match="text | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal', 'motto'))] | div1 | div2" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
@@ -243,9 +243,16 @@
   </xsl:template>
   
   <xsl:template match="epigraph" mode="tei2html">
-    <div class="motto">
-      <xsl:apply-templates mode="#current"/>
-    </div>
+    <xsl:choose>
+      <xsl:when test="parent::*[self::div[@type = 'motto']]">
+        <xsl:apply-templates select="node()" mode="#current"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <div class="motto">
+          <xsl:apply-templates select="node()" mode="#current"/>
+        </div>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="floatingText" mode="tei2html">
@@ -754,7 +761,7 @@
               <xsl:attribute name="epub:type" select="'letex:about-the-book'"/>
             </xsl:when>
             <xsl:when test="matches($context/@rend, 'dedication')">
-              <xsl:attribute name="epub:type" select="'fulltitle'"/>
+              <xsl:attribute name="epub:type" select="'dedication'"/>
             </xsl:when>
           </xsl:choose>
         </xsl:when>
@@ -763,6 +770,9 @@
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'marginal']]">
           <xsl:attribute name="epub:type" select="'sidebar'"/>
+        </xsl:when>
+        <xsl:when test="$context[self::*:div[@type = 'motto']]">
+          <xsl:attribute name="epub:type" select="'motto'"/>
         </xsl:when>
         <xsl:when test="$context[self::*:divGen[@type = ('index', 'toc')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
