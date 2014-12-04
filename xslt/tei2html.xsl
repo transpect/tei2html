@@ -410,9 +410,16 @@
     <xsl:if test="not($in-toc)">
       <span class="note-anchor" id="fna_{@xml:id}">
         <a href="#fn_{@xml:id}">
-          <sup>
-            <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
-          </sup>
+          <xsl:choose>
+            <xsl:when test="ancestor::*[local-name() = ('hi', 'sup')]">
+              <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
+            </xsl:when>
+            <xsl:otherwise>
+              <sup>
+                <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
+              </sup>
+            </xsl:otherwise>
+          </xsl:choose>
         </a>
       </span>
     </xsl:if>
