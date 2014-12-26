@@ -24,10 +24,30 @@
   <xsl:param name="debug" select="'yes'"/>
   <xsl:param name="debug-dir-uri" select="'debug'"/>
   
-  <xsl:param name="common-path" />
-  <xsl:param name="publisher-path" />
-  <xsl:param name="series-path" />
-  <xsl:param name="work-path" />
+  <xsl:param name="s9y1-path" as="xs:string?"/>
+  <xsl:param name="s9y2-path" as="xs:string?"/>
+  <xsl:param name="s9y3-path" as="xs:string?"/>
+  <xsl:param name="s9y4-path" as="xs:string?"/>
+  <xsl:param name="s9y5-path" as="xs:string?"/>
+  <xsl:param name="s9y6-path" as="xs:string?"/>
+  <xsl:param name="s9y7-path" as="xs:string?"/>
+  <xsl:param name="s9y8-path" as="xs:string?"/>
+  <xsl:param name="s9y9-path" as="xs:string?"/>
+  <xsl:param name="s9y1-role" as="xs:string?"/>
+  <xsl:param name="s9y2-role" as="xs:string?"/>
+  <xsl:param name="s9y3-role" as="xs:string?"/>
+  <xsl:param name="s9y4-role" as="xs:string?"/>
+  <xsl:param name="s9y5-role" as="xs:string?"/>
+  <xsl:param name="s9y6-role" as="xs:string?"/>
+  <xsl:param name="s9y7-role" as="xs:string?"/>
+  <xsl:param name="s9y8-role" as="xs:string?"/>
+  <xsl:param name="s9y9-role" as="xs:string?"/>
+
+  <xsl:variable name="paths" as="xs:string*" 
+    select="($s9y1-path, $s9y2-path, $s9y3-path, $s9y4-path, $s9y5-path, $s9y6-path, $s9y7-path, $s9y8-path, $s9y9-path)"/>
+  <xsl:variable name="roles" as="xs:string*" 
+    select="($s9y1-role, $s9y2-role, $s9y3-role, $s9y4-role, $s9y5-role, $s9y6-role, $s9y7-role, $s9y8-role, $s9y9-role)"/>
+  <xsl:variable name="common-path" as="xs:string?" select="$paths[position() = index-of($roles, 'common')]"/>
   
   <xsl:param name="divify-sections" select="'no'"/>
 
@@ -120,15 +140,11 @@
   
   <xsl:template name="stylesheet-links">
     <link href="{$css-location}" type="text/css" rel="stylesheet"/>
-    <xsl:if test="$publisher-path">
-      <link href="{$publisher-path}/css/overrides.css" type="text/css" rel="stylesheet"/>
-    </xsl:if>
-    <xsl:if test="$series-path">
-      <link href="{$series-path}/css/overrides.css" type="text/css" rel="stylesheet"/>
-    </xsl:if>
-    <xsl:if test="$work-path">
-      <link href="{$work-path}/css/overrides.css" type="text/css" rel="stylesheet"/>
-    </xsl:if>
+    <xsl:for-each select="reverse($paths)[not(. = $common-path)]">
+      <xsl:if test="unparsed-text-available(concat(., 'css/overrides.css'))">
+        <link href="{.}css/overrides.css" type="text/css" rel="stylesheet"/>
+      </xsl:if>
+    </xsl:for-each>
   </xsl:template>
   
   <xsl:template match="titlePage" mode="tei2html"/>
