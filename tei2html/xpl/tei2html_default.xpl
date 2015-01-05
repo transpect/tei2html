@@ -3,7 +3,6 @@
   xmlns:c="http://www.w3.org/ns/xproc-step"  
   xmlns:cx="http://xmlcalabash.com/ns/extensions" 
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-  xmlns:bc="http://transpect.le-tex.de/book-conversion"
   xmlns:transpect="http://www.le-tex.de/namespace/transpect"  
   xmlns:letex="http://www.le-tex.de/namespace"
   version="1.0"
