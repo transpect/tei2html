@@ -5,7 +5,7 @@
   xmlns:cx="http://xmlcalabash.com/ns/extensions"
   xmlns:letex="http://www.le-tex.de/namespace"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
-  xmlns:bc="http://transpect.le-tex.de/book-conversion"
+  xmlns:transpect="http://www.le-tex.de/namespace/transpect"
   xmlns:tei2html="http://www.le-tex.de/namespace/tei2html"  
   version="1.0"
   name="tei2html"
@@ -45,7 +45,7 @@
     <p:with-option name="status-dir-uri" select="$status-dir-uri"/>
   </letex:simple-progress-msg>
   
-  <bc:dynamic-transformation-pipeline load="tei2html/tei2html-driver"
+  <transpect:dynamic-transformation-pipeline load="tei2html/tei2html-driver"
     fallback-xsl="http://transpect.le-tex.de/tei2html/xsl/tei2html.xsl"
     fallback-xpl="http://transpect.le-tex.de/tei2html/xpl/tei2html_default.xpl">
     <p:with-option name="debug" select="$debug"/>
@@ -54,7 +54,7 @@
       <p:pipe port="additional-inputs" step="tei2html"/>
     </p:input>
     <p:input port="options"><p:empty/></p:input>
-  </bc:dynamic-transformation-pipeline>
+  </transpect:dynamic-transformation-pipeline>
   
   <letex:simple-progress-msg name="success-msg" file="tei2html-success.txt">
     <p:input port="msgs">
