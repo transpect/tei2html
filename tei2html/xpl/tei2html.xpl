@@ -15,6 +15,7 @@
   <p:option name="srcpaths" required="false" select="'no'"/>
   <p:option name="debug" required="false" select="'no'"/>
   <p:option name="debug-dir-uri" required="false" select="'debug'"/>
+  <p:option name="status-dir-uri" select="'status'"/>
   
   <p:input port="source" primary="true" />
   <p:input port="additional-inputs" sequence="true">
@@ -31,7 +32,7 @@
   <p:import href="http://transpect.le-tex.de/book-conversion/converter/xpl/dynamic-transformation-pipeline.xpl"/>
   <p:import href="http://transpect.le-tex.de/book-conversion/converter/xpl/simple-progress-msg.xpl"/>
   
-  <p:variable name="status-dir-uri" select="concat($debug-dir-uri, '/status')"/>
+<!--  <p:variable name="status-dir-uri" select="concat($debug-dir-uri, '/status')"/>-->
   
   <letex:simple-progress-msg name="start-msg" file="tei2html-start.txt">
     <p:input port="msgs">
