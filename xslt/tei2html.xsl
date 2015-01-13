@@ -930,6 +930,8 @@
     </img>
   </xsl:template>  
   
+  <xsl:template match="graphic/@url | graphic/@rend" mode="tei2html"/>
+  
 <!--  <xsl:template match="@url | @type [. = 'tab']" mode="tei2html" priority="-0.5"/>-->
   
   <xsl:template match="graphic/@xlink:href" mode="tei2html">
