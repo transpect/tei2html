@@ -547,6 +547,8 @@
     </xsl:if>
   </xsl:template>
   
+  <xsl:variable name="frontmatter-parts" as="xs:string+" select="('title-page', 'copyright-page', 'about-contrib', 'about-book', 'series', 'additional-info','dedication')"/>
+  
   <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
     <xsl:element name="{if ($tei2html:epub-type = '2') then 'div' else 'nav'}">
       <xsl:attribute name="class" select="'toc'"/>
@@ -563,7 +565,7 @@
         <xsl:otherwise>
           <xsl:apply-templates select="head" mode="#current"/>
           <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'part')]
-            | parent::div[@type = 'preface'][not(@rend = ('about-contrib', 'frontispiz', 'frontispiz2', 'title-page', 'copyright-page', 'dedication'))] | parent::divGen[@type ='index']
+            | parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)] | parent::divGen[@type ='index']
             ]
             [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']])])]
             [not(ancestor::divGen[@type ='toc'])]
@@ -765,7 +767,7 @@
         <xsl:when test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
-        <xsl:when test="$context[self::*:div[@type = 'preface'][matches(@rend, '(title-page|copyright-page|about-contrib|frontispiz2?|dedication)')]]">
+        <xsl:when test="$context[self::*:div[@type = 'preface'][some $class in $frontmatter-parts satisfies matches($class, @rend)]]">
           <xsl:choose>
             <xsl:when test="matches($context/@rend, 'title-page')">
               <xsl:attribute name="epub:type" select="'fulltitle'"/>
@@ -777,10 +779,13 @@
               <xsl:attribute name="epub:type" select="'letex:bio'"/>
             </xsl:when>
             <!-- additional Info in title -->
-            <xsl:when test="matches($context/@rend, 'frontispiz2')">
-              <xsl:attribute name="epub:type" select="''"/>
+            <xsl:when test="matches($context/@rend, 'additional-info')">
+              <xsl:attribute name="epub:type" select="'letex:additional-info'"/>
             </xsl:when>
-            <xsl:when test="matches($context/@rend, 'frontispiz$')">
+            <xsl:when test="matches($context/@rend, 'series')">
+              <xsl:attribute name="epub:type" select="'letex:additional-info'"/>
+            </xsl:when>
+            <xsl:when test="matches($context/@rend, 'about-book')">
               <xsl:attribute name="epub:type" select="'letex:about-the-book'"/>
             </xsl:when>
             <xsl:when test="matches($context/@rend, 'dedication')">
@@ -788,7 +793,7 @@
             </xsl:when>
           </xsl:choose>
         </xsl:when>
-        <xsl:when test="$context[self::*:div[@type = 'preface'][not(matches(@rend, '(title-page|copyright-page|about-contrib|frontispiz2?|dedication)'))]]">
+        <xsl:when test="$context[self::*:div[@type = 'preface'][not(matches(@rend, string-join($frontmatter-parts, '|')))]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'marginal']]">
