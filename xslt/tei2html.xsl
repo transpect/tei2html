@@ -688,17 +688,6 @@
     <xsl:text>&#160;</xsl:text>
   </xsl:template>
   
-  <xsl:template match="contrib-group/contrib" mode="tei2html">
-<!--    <p class="{string-join((@contrib-type, local-name()), ' ')}">-->
-      <xsl:apply-templates mode="#current"/>
-<!--    </p>-->
-  </xsl:template>
-
-  <xsl:template match="string-name" mode="tei2html">
-    <xsl:apply-templates mode="#current"/>
-  </xsl:template>
-  
-  
   <xsl:template match="p" mode="tei2html">
     <p>
       <xsl:next-match/>
