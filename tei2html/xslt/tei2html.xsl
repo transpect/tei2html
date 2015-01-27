@@ -915,13 +915,13 @@
   
     
   <xsl:template match="graphic" mode="tei2html">
-    <img>
-      <xsl:attribute name="alt" select="replace(@url, '^.*?/([^/]+)$', '$1')"/>
-      <xsl:attribute name="src" select="resolve-uri(@url)"/>
-      <xsl:apply-templates select="@rend" mode="class-att"/>
-      <xsl:copy-of select="@* except (@url, @rend)"/>
-      <xsl:call-template name="css:content"/>
-    </img>
+      <img>
+        <xsl:attribute name="alt" select="replace(@url, '^.*?/([^/]+)$', '$1')"/>
+        <xsl:attribute name="src" select="resolve-uri(@url)"/>
+        <xsl:apply-templates select="@rend" mode="class-att"/>
+        <xsl:copy-of select="@* except (@url, @rend)"/>
+        <xsl:call-template name="css:content"/>
+      </img>
   </xsl:template>  
   
   <xsl:template match="graphic/@url | graphic/@rend" mode="tei2html"/>
