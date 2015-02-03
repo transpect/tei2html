@@ -186,7 +186,7 @@
     <xsl:call-template name="tei2html:footnotes"/>
   </xsl:template>
   
-  <xsl:template match="body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal', 'motto'))] | div1 | div2" mode="tei2html">
+  <xsl:template match="body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal', 'motto'))] | div1 | div2 | back" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
@@ -753,7 +753,7 @@
         <xsl:when test="$context[self::*:pb]">
           <xsl:attribute name="epub:type" select="'pagebreak'"/>
         </xsl:when>
-        <xsl:when test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication')]]">
+        <xsl:when test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication', 'appendix')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'preface'][some $class in $frontmatter-parts satisfies matches($class, @rend)]]">
