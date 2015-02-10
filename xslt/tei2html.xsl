@@ -557,7 +557,8 @@
         the nav would have to be an ordered list (ol). Currently it’s only p elements
         with class attributes according to the to heading level, which is not permitted 
         (must be ol). -->
-<!--      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>-->
+      <!-- The above comment is no longer true. The Epubtools werde changed, so now the attribute is needed -->
+      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:choose>
         <xsl:when test="exists(* except head)">
           <!-- explicitly rendered toc -->
