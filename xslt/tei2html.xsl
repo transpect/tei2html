@@ -550,7 +550,7 @@
   <xsl:variable name="frontmatter-parts" as="xs:string+" select="('title-page', 'copyright-page', 'about-contrib', 'about-book', 'series', 'additional-info','dedication')"/>
   
   <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
-    <xsl:variable name="toc_level" as="xs:integer" select="@rendition"/>
+    <xsl:variable name="toc_level" as="xs:integer?" select="@rendition"/>
     <xsl:element name="{if ($tei2html:epub-type = '2') then 'div' else 'nav'}">
       <xsl:attribute name="class" select="'toc'"/>
       <!-- don’t create an epub:type attribute even for EPUB3 because the content of 
