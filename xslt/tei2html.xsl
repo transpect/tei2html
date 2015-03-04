@@ -605,7 +605,8 @@
   </xsl:template>
   
   <xsl:template match="head[@type = 'sub'][preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']]] |
-                       head[ancestor::*[self::floatingText]]" mode="tei2html" priority="2">
+                       head[ancestor::*[self::floatingText]] | 
+                       head[@type = 'sub'][preceding-sibling::*[1][self::head[@type = 'sub']]]" mode="tei2html" priority="2">
     <p>
       <xsl:call-template name="css:content"/>
       <!--<xsl:apply-templates select="@* except @rend" mode="#current"/>
@@ -614,6 +615,7 @@
     </p>
   </xsl:template>
   
+
  <xsl:template match="label[../head union ../caption/head]" mode="tei2html">
     <xsl:param name="actually-process-it" as="xs:boolean?"/>
     <xsl:if test="$actually-process-it">
