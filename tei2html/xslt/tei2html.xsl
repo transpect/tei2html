@@ -88,6 +88,8 @@
   
   <!-- handle conditional texts -->
   <xsl:template match="*[@rendition = 'PrintOnly']" mode="epub-alternatives"/>
+  <!-- no longer needed here -->
+  <xsl:template match="@rendition[. = 'EOnly']" mode="epub-alternatives"/>
   
   <xsl:template match="*[p[ancestor-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives" priority="2">
     <xsl:copy copy-namespaces="no">
