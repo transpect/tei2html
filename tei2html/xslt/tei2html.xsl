@@ -737,6 +737,15 @@
     </span>
   </xsl:template>
   
+  
+  <xsl:template match="formula" mode="tei2html">
+    <xsl:element name="{if (@rend = 'inline') then 'span' else 'p'}">
+     <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </xsl:element>
+  </xsl:template>
+  
+  <xsl:template match="formula/@n" mode="tei2html"/>
+  
   <xsl:template match="@rend" mode="tei2html">
     <xsl:attribute name="class" select="."/>
   </xsl:template>
