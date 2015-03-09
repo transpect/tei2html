@@ -123,7 +123,7 @@
       <head>
         <xsl:call-template name="stylesheet-links"/>
         <title>
-          <xsl:apply-templates select="//titlePart[@type = 'main']/text()"
+          <xsl:apply-templates select="(//titlePart[@type = 'main'], teiHeader/fileDesc/titleStmt/title)[1]/text()"
             mode="#current">
             <!-- suppress replicated target with id: -->
             <xsl:with-param name="in-toc" select="true()" tunnel="yes"/>
