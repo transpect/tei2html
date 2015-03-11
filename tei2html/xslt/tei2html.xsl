@@ -100,6 +100,13 @@
   <xsl:template match="*[preceding-sibling::p[descendant-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives"
     priority="2"/>
   
+  <xsl:template match="/html:html[some $t in .//@epub:type satisfies (starts-with($t, 'letex:'))]" mode="clean-up">
+    <xsl:copy>
+      <xsl:attribute name="epub:prefix" select="'letex: http://www.le-tex.de/namespace'"/>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </xsl:copy>
+  </xsl:template>
+  
   <xsl:template match="html:span[not(@*)]" mode="clean-up">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
@@ -817,7 +824,7 @@
           <xsl:attribute name="epub:type" select="'sidebar'"/>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'motto']]">
-          <xsl:attribute name="epub:type" select="'motto'"/>
+          <xsl:attribute name="epub:type" select="'letex:motto'"/>
         </xsl:when>
         <xsl:when test="$context[self::*:divGen[@type = ('index', 'toc')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
