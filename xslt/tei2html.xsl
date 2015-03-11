@@ -573,7 +573,9 @@
             ]
             [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']])])]
             [not(ancestor::divGen[@type ='toc'])]
-            [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]" mode="toc"/>
+            [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]
+            | //*[self::*:seg or self::*:p][matches(@rend, '_-_TOC[1-6]')]" mode="toc"/>
+        <!--  <xsl:message select="'~~~~~~~~~~~~~~~~~', "></xsl:message>-->
         </xsl:otherwise>
       </xsl:choose>
     </xsl:element>
@@ -583,6 +585,17 @@
     <div class="imprint">
       <xsl:apply-templates mode="#current"/>
     </div>
+  </xsl:template>
+  
+  <xsl:template match="*[self::*:seg or self::*:p]" mode="toc">
+    <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
+    <p>
+      <xsl:attribute name="class" select="replace(@rend, '^(.+)?_-_TOC(\d+)(_-_.+)?$', 'toc$2-nolabel')"/>
+      <a href="#{(@id, generate-id())[1]}">
+        <xsl:value-of select="."/>
+      </a>
+    </p>
+    
   </xsl:template>
   
   <xsl:template match="head[not(@type = 'sub')]" mode="toc">
