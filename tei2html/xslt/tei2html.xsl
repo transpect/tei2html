@@ -250,7 +250,7 @@
     And don’t ever change the priority unless you’ve made sure that no other template
     relies on this value to be 0.25.
     -->
-  <xsl:template match="head | quote | seg | p |  table | caption | note | italic | bold |
+  <xsl:template match="head | quote | seg | p | table | caption | note | italic | bold |
     underline | sub | sup | l | lg | hi | argument" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
@@ -999,6 +999,19 @@
     </xsl:element>
   </xsl:template>  
 
+  <!-- table that is rendered as image due to reader contraints -->
+  <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]]" mode="tei2html" priority="5">
+    <div class="table-wrapper">
+      <xsl:apply-templates select="head" mode="#current">
+        <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
+      </xsl:apply-templates>
+      <xsl:element name="img" exclude-result-prefixes="#all">
+        <xsl:attribute name="src" select="@rendition"/>
+        <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(@rendition, '^.+/([^/])$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
+      </xsl:element>
+    </div>
+  </xsl:template>
+  
   <xsl:template match="table[not(matches(@css:width, '(pt|mm)$'))]" mode="tei2html">
     <div class="table-wrapper">
       <xsl:apply-templates select="head" mode="#current">
