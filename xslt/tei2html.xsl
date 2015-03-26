@@ -740,7 +740,7 @@
     </span>
   </xsl:template>
   
-  <xsl:template match="ref | link" mode="tei2html" priority="5">
+  <xsl:template match="ref | ptr" mode="tei2html" priority="5">
     <a>
       <xsl:attribute name="href" select="@target"/>
       <xsl:attribute name="class" select="name()"/>
