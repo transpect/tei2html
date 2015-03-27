@@ -530,7 +530,7 @@
       <xsl:apply-templates select="node()" mode="#current"/>
   </xsl:template>
   
-  <xsl:template match="figure/head" mode="tei2html">
+  <xsl:template match="figure/head | lg/head" mode="tei2html">
     <p>
       <xsl:call-template name="css:content"/>
     </p>
@@ -648,7 +648,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="head[not(@type = 'sub')][not(ancestor::*[self::figure or self::table or self::floatingText])]" mode="tei2html">
+  <xsl:template match="head[not(@type = 'sub')][not(ancestor::*[self::figure or self::table or self::floatingText or self::lg])]" mode="tei2html">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
     <xsl:element name="{concat('h', $heading-level)}">
