@@ -1198,7 +1198,7 @@
             <xsl:sequence select="$custom"/>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:message>No heading level for <xsl:copy-of select="$elt/.."/></xsl:message>    
+            <xsl:message>(tei2html) No heading level for <xsl:copy-of select="$elt/.."/></xsl:message>    
           </xsl:otherwise>
         </xsl:choose>
       </xsl:otherwise>
