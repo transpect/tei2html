@@ -471,17 +471,22 @@
     </dl>
   </xsl:template>
   
-  <xsl:template match="item[parent::list[@type eq 'gloss']]" mode="tei2html">
+  <xsl:template match="item[tei2html:is-varlistentry(.)]" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
-  <xsl:template match="item[parent::list[@type eq 'gloss']]/label" mode="tei2html">
+  <xsl:function name="tei2html:is-varlistentry" as="xs:boolean">
+    <xsl:param name="item" as="element(item)"/>
+    <xsl:sequence select="$item/parent::list[@type eq 'gloss'] or $item/@rend = 'varlistentry'"/>
+  </xsl:function>
+
+  <xsl:template match="item[tei2html:is-varlistentry(.)]/label" mode="tei2html">
     <dt>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </dt>
   </xsl:template>
   
-  <xsl:template match="item[parent::list[@type eq 'gloss']]/gloss" mode="tei2html">
+  <xsl:template match="item[tei2html:is-varlistentry(.)]/gloss" mode="tei2html">
     <dd>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </dd>
