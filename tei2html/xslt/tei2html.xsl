@@ -406,8 +406,12 @@
   
   <xsl:template match="byline" mode="tei2html">
     <p>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:call-template name="css:content"/>
     </p>
+  </xsl:template>
+
+  <xsl:template match="byline" mode="class-att">
+    <xsl:attribute name="class" select="local-name()"/>
   </xsl:template>
     
   <xsl:template match="*" mode="notes">
@@ -610,7 +614,7 @@
     
   </xsl:template>
   
-  <xsl:template match="head[not(@type = 'sub')]" mode="toc">
+  <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))]" mode="toc">
     <p class="toc{tei2html:heading-level(.)}">
       <a href="#{(@id, generate-id())[1]}">
         <xsl:if test="label">
@@ -653,7 +657,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="head[not(@type = 'sub')][not(ancestor::*[self::figure or self::table or self::floatingText or self::lg])]" mode="tei2html">
+  <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))][not(ancestor::*[self::figure or self::table or self::floatingText or self::lg])]" mode="tei2html">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
     <xsl:element name="{concat('h', $heading-level)}">
@@ -956,7 +960,11 @@
     
   <xsl:template match="graphic" mode="tei2html">
       <img>
-        <xsl:attribute name="alt" select="replace(@url, '^.*?/([^/]+)$', '$1')"/>
+        <xsl:attribute name="alt" 
+          select="(
+                    normalize-space(../figDesc),
+                    replace(@url, '^.*?/([^/]+)$', '$1')
+                  )[normalize-space()][1]"/>
         <xsl:attribute name="src" select="resolve-uri(@url)"/>
         <xsl:apply-templates select="@rend" mode="class-att"/>
         <xsl:copy-of select="@* except (@url, @rend)"/>
