@@ -404,6 +404,16 @@
     </p>
   </xsl:template>
   
+  <xsl:template match="docAuthor" mode="tei2html">
+    <p>
+      <xsl:call-template name="css:content"/>
+    </p>
+  </xsl:template>
+  
+  <xsl:template match="docAuthor/persName" mode="tei2html">
+     <xsl:apply-templates select="node()" mode="#current"/>
+  </xsl:template>
+  
   <xsl:template match="byline" mode="tei2html">
     <p>
       <xsl:call-template name="css:content"/>
