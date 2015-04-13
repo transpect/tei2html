@@ -1138,6 +1138,9 @@
     <xsl:param name="table-twips" as="xs:double?" tunnel="yes"/>
     <xsl:param name="table-percentage" as="xs:integer?" tunnel="yes"/>
     <xsl:choose>
+      <xsl:when test="matches(., '[\d.]+%$')">
+        <xsl:attribute name="css:width" select="."/>
+      </xsl:when>
       <xsl:when test="not($table-twips) or not($table-percentage)">
         <xsl:attribute name="css:width" select="."/>
       </xsl:when>
