@@ -1029,10 +1029,12 @@
       <xsl:apply-templates select="head" mode="#current">
         <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
       </xsl:apply-templates>
-      <xsl:element name="img" exclude-result-prefixes="#all">
-        <xsl:attribute name="src" select="@rendition"/>
-        <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(@rendition, '^.+/([^/])$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
-      </xsl:element>
+      <xsl:for-each select="tokenize(@rendition, ' ')">
+        <xsl:element name="img" exclude-result-prefixes="#all">
+          <xsl:attribute name="src" select="."/>
+          <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/([^/])$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
+        </xsl:element>
+      </xsl:for-each>
     </div>
   </xsl:template>
   
