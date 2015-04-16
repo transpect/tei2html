@@ -374,7 +374,8 @@
     <a id="{@xml:id}"/>
   </xsl:template>
   
-  <xsl:template match="@xml:id" mode="clean-up">
+  <!-- This was in mode clean-up which led to complaints about unhandled @xml:id attributes in mode tei2html -->
+  <xsl:template match="@xml:id" mode="tei2html">
     <xsl:attribute name="id" select="."/>
   </xsl:template>
   
@@ -410,8 +411,8 @@
     </p>
   </xsl:template>
   
-  <xsl:template match="docAuthor/persName" mode="tei2html">
-     <xsl:apply-templates select="node()" mode="#current"/>
+  <xsl:template match="persName" mode="tei2html">
+     <xsl:apply-templates select="@*, node()" mode="#current"/>
   </xsl:template>
   
   <xsl:template match="byline" mode="tei2html">
