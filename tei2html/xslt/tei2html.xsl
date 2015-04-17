@@ -353,7 +353,7 @@
 <!--  <xsl:template match="@rend" mode="tei2html"/>-->
 
   <xsl:variable name="default-structural-containers" as="xs:string+"
-    select="('part', 'front-matter-part', 'section', 'appendix', 'acknowledgements', 'ref-list', 'dedication', 'preface')"/>
+    select="('part', 'front-matter-part', 'section', 'appendix', 'acknowledgements', 'dedication', 'preface')"/>
 
   <!-- everything that goes into a div (except footnote-like content): -->
   <xsl:template match="  *[name() = $default-structural-containers][$divify-sections = 'yes']
@@ -412,7 +412,9 @@
   </xsl:template>
   
   <xsl:template match="persName" mode="tei2html">
-     <xsl:apply-templates select="@*, node()" mode="#current"/>
+    <span>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </span>
   </xsl:template>
   
   <xsl:template match="byline" mode="tei2html">
