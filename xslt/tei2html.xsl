@@ -453,7 +453,7 @@
       <span class="note-anchor" id="fna_{@xml:id}">
         <a href="#fn_{@xml:id}">
           <xsl:choose>
-            <xsl:when test="ancestor::*[local-name() = ('hi', 'sup')]">
+            <xsl:when test="exists(ancestor::*[local-name() = ('hi', 'sup')])">
               <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
             </xsl:when>
             <xsl:otherwise>
@@ -680,24 +680,26 @@
       <xsl:if test="not($in-toc)">
         <a id="{generate-id()}" />  
       </xsl:if>
-      <xsl:sequence select="tei2html:heading-content(.)"/>
+      <xsl:call-template name="heading-content"/>
     </xsl:element>
   </xsl:template>
   
 
   <xsl:function name="tei2html:heading-title" as="xs:string?">
     <xsl:param name="context"/>
-    <xsl:value-of select="tei2html:heading-content($context)"/>  
+    <xsl:variable name="content">
+      <xsl:call-template name="heading-content"/>
+    </xsl:variable>
+    <xsl:value-of select="$content"/>
   </xsl:function>
   
-  <xsl:function name="tei2html:heading-content">
-    <xsl:param name="context"/>
-    <xsl:if test="$context/label">
-      <xsl:apply-templates select="$context/label/node()" mode="strip-indexterms-etc"/>
-      <xsl:apply-templates select="$context/label" mode="label-sep"/>
+  <xsl:template name="heading-content">
+    <xsl:if test="label">
+      <xsl:apply-templates select="label/node()" mode="strip-indexterms-etc"/>
+      <xsl:apply-templates select="label" mode="label-sep"/>
     </xsl:if>
-    <xsl:apply-templates select="$context/node() except $context/label" mode="tei2html"/>
-  </xsl:function>
+    <xsl:apply-templates select="node() except label" mode="tei2html"/>
+  </xsl:template>
   
   <xsl:variable name="tei:anonymous-chapter-regex" select="'p_h_anonym'" as="xs:string"/>
 <!--  <xsl:template match="head[matches(@rend, $tei:anonymous-chapter-regex)]" mode="tei2html">
