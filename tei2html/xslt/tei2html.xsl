@@ -357,7 +357,7 @@
 
   <!-- everything that goes into a div (except footnote-like content): -->
   <xsl:template match="  *[name() = $default-structural-containers][$divify-sections = 'yes']
-                       | figure | caption | abstract | verse-group" 
+                       | figure | caption | abstract | lg" 
     mode="tei2html" priority="2">
     <div class="{name()}">
       <xsl:copy-of select="@*"/>
@@ -426,27 +426,40 @@
   <xsl:template match="byline" mode="class-att">
     <xsl:attribute name="class" select="local-name()"/>
   </xsl:template>
-    
-  <xsl:template match="*" mode="notes">
+  
+  <!-- Footnotes -->
+  <xsl:template match="note" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
-    <div class="{name()}" id="fn_{@xml:id}">
-      <p class="footnote-marker">
-        <sup>
-         <a href="#fna_{@xml:id}">
-             <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
-         </a>
-        </sup>
-        <xsl:text>&#160;</xsl:text>
-      </p>
-      <div class="footnote-text">
-        <xsl:apply-templates  select="* except (*:p[1]/label, *:p[1]/seg[@type = 'tab'])" mode="tei2html"/>
-      </div>
-    </div>
+    <table class="{name()}" id="fn_{@xml:id}">
+      <xsl:apply-templates select="@* except @xml:id, @rend" mode="tei2html"/>
+      <tr>
+        <td class="marker">
+          <span class="footnote-marker">
+            <sup>
+              <a href="#fna_{@xml:id}">
+                <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
+              </a>
+              <xsl:text>&#160;</xsl:text>
+            </sup>
+          </span>
+        </td>
+        <td>
+          <xsl:apply-templates select="node()" mode="tei2html"/>
+        </td>
+      </tr>
+    </table>
   </xsl:template>
+  
+  <xsl:template match="  *:seg[@type = 'tab'][ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]
+                       | *:p/*:label[ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]] 
+                       | *:seg[matches(string-join(.//text(), ''), '^\p{Zs}*$')][ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]" 
+                mode="notes"/>
+  
+  <xsl:template match=" *:note/@xml:id" mode="tei2html"/>
   
   <xsl:template match="*:seg[@type = 'tab'][preceding-sibling::*[1][self::*:label]][ancestor::*:note]" mode="tei2html"/>
   
-  <xsl:template match="note[@type = 'footnote']" mode="tei2html">
+<!--  <xsl:template match="note[@type = 'footnote']" mode="tei2html">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
     <xsl:param name="in-toc" tunnel="yes" as="xs:boolean?"/>
     <xsl:if test="not($in-toc)">
@@ -465,7 +478,7 @@
         </a>
       </span>
     </xsl:if>
-  </xsl:template>
+  </xsl:template>-->
  
   <xsl:template match="gloss" mode="tei2html">
     <xsl:choose>
@@ -729,7 +742,7 @@
     </xsl:choose>
   </xsl:template>
   
-  <xsl:template match="index/term | fn" mode="strip-indexterms-etc"/>
+  <xsl:template match="index/term | note[matches(@type, '(foot|end)note')]" mode="strip-indexterms-etc"/>
   
   <!-- Discard certain css markup on titles that would otherwise survive on paras: -->
   <xsl:template match="title/@css:*[matches(local-name(), '^(margin-|text-align)')]" mode="tei2html"/>
