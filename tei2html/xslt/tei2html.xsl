@@ -79,9 +79,9 @@
   
   <!-- collateral. Otherwise the generated IDs might differ due to temporary trees / variables 
     when transforming the content -->  
-  <xsl:template match="index/term | xref | note" mode="epub-alternatives">
+  <xsl:template match="index/term | xref | note[not(@xml:id)]" mode="epub-alternatives">
     <xsl:copy copy-namespaces="no">
-      <xsl:attribute name="id" select="generate-id()"/>
+      <xsl:attribute name="xml:id" select="generate-id()"/>
       <xsl:apply-templates select="@* except @xml:id, node()" mode="#current"/>
     </xsl:copy>
   </xsl:template>
@@ -193,7 +193,7 @@
     
   <xsl:template name="html-body">
     <xsl:apply-templates select="text" mode="#current">
-      <xsl:with-param name="footnote-ids" select="//note[@type = 'footnote']/@id" as="xs:string*" tunnel="yes"/>
+      <xsl:with-param name="footnote-ids" select="//note[@type = 'footnote']/@xml:id" as="xs:string*" tunnel="yes"/>
     </xsl:apply-templates>
   </xsl:template>
   
@@ -352,11 +352,11 @@
     <xsl:attribute name="class" select="'label'"/>
   </xsl:template>
   
-  <xsl:template match="@id | @srcpath" mode="tei2html">
+  <xsl:template match="@xml:id | @srcpath" mode="tei2html">
     <xsl:copy/>
   </xsl:template>
   
-  <xsl:template match="table[@id = ../@id]/@id" mode="tei2html"/>
+  <xsl:template match="table[@xml:id = ../@xml:id]/@xml:id" mode="tei2html"/>
   
   <xsl:template match="@css:* | @xml:lang" mode="tei2html_DISABLED">
     <xsl:copy/>
@@ -505,7 +505,7 @@
                        | *:seg[matches(string-join(.//text(), ''), '^\p{Zs}*$')][ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]" 
                 mode="notes"/>
   
-  <xsl:template match=" *:note/@xml:id | *:note/@id" mode="tei2html"/>
+  <xsl:template match=" *:note/@xml:id" mode="tei2html"/>
   
   <xsl:template match="*:seg[@type = 'tab'][preceding-sibling::*[1][self::*:label]][ancestor::*:note]" mode="tei2html"/>
   
@@ -513,15 +513,15 @@
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
     <xsl:param name="in-toc" tunnel="yes" as="xs:boolean?"/>
     <xsl:if test="not($in-toc)">
-      <span class="note-anchor" id="fna_{@id}">
+      <span class="note-anchor" id="fna_{@xml:id}">
         <a href="#fn_{@xml:id}">
           <xsl:choose>
             <xsl:when test="exists(ancestor::*[local-name() = ('hi', 'sup')])">
-              <xsl:value-of select="index-of($footnote-ids, @id)"/>
+              <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
             </xsl:when>
             <xsl:otherwise>
               <sup>
-                <xsl:value-of select="index-of($footnote-ids, @id[1])"/>
+                <xsl:value-of select="index-of($footnote-ids, @xml:id[1])"/>
               </sup>
             </xsl:otherwise>
           </xsl:choose>
@@ -683,7 +683,7 @@
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <p>
       <xsl:attribute name="class" select="replace(@rend, '^(.+)?_-_TOC(\d+)(_-_.+)?$', 'toc$2-nolabel')"/>
-      <a href="#{(@id, generate-id())[1]}">
+      <a href="#{(@xml:id, generate-id())[1]}">
         <xsl:value-of select="."/>
       </a>
     </p>
@@ -692,7 +692,7 @@
   
   <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))]" mode="toc">
     <p class="toc{tei2html:heading-level(.)}">
-      <a href="#{(@id, generate-id())[1]}">
+      <a href="#{(@xml:id, generate-id())[1]}">
         <xsl:if test="label">
           <xsl:apply-templates select="label/node()" mode="strip-indexterms-etc"/>
           <xsl:apply-templates select="label" mode="label-sep"/>
@@ -704,7 +704,8 @@
     </p>
   </xsl:template>
   
-  <xsl:template match="target[@id]" mode="tei2html" priority="2">
+  <!-- @id or @xml:id? In mode tei2html it should be @xml:id since this mode processes TEI -->
+  <xsl:template match="target[@xml:id]" mode="tei2html" priority="2">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:if test="not($in-toc)">
       <xsl:next-match/>
@@ -975,7 +976,7 @@
       <xsl:value-of select="current-grouping-key()"/>
       <xsl:text>&#x2002;</xsl:text>
       <xsl:for-each select="current-group()[not(term)]">
-        <a href="#it_{@id}" id="ie_{@id}">
+        <a href="#it_{@xml:id}" id="ie_{@xml:id}">
           <xsl:value-of select="position()"/>
         </a>
         <xsl:if test="position() ne last()">
@@ -992,11 +993,11 @@
   <xsl:template match="index[not(parent::index)]" mode="tei2html">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:if test="not($in-toc)">
-      <span class="indexterm" id="it_{descendant-or-self::term[last()]/@id}">
+      <span class="indexterm" id="it_{descendant-or-self::term[last()]/@xml:id}">
         <xsl:attribute name="title">
           <xsl:apply-templates select="term" mode="#current"/>
         </xsl:attribute>
-        <a href="#ie_{descendant-or-self::term[last()]/@id}" class="it"/>
+        <a href="#ie_{descendant-or-self::term[last()]/@xml:id}" class="it"/>
       </span>
     </xsl:if>
   </xsl:template>
