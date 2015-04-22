@@ -186,7 +186,7 @@
     
   <xsl:template name="html-body">
     <xsl:apply-templates select="text" mode="#current">
-      <xsl:with-param name="footnote-ids" select="//note[@type = 'footnote']/@xml:id" as="xs:string*" tunnel="yes"/>
+      <xsl:with-param name="footnote-ids" select="//note[@type = 'footnote']/@id" as="xs:string*" tunnel="yes"/>
     </xsl:apply-templates>
   </xsl:template>
   
@@ -430,14 +430,14 @@
   <!-- Footnotes -->
   <xsl:template match="note" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
-      <table class="{name()}" id="fn_{(@xml:id, @id)[1]}">
-        <xsl:apply-templates select="@* except @xml:id, @id, @rend" mode="tei2html"/>
+      <table class="{name()}" id="fn_{@id}">
+        <xsl:apply-templates select="@* except @id, @rend" mode="tei2html"/>
         <tr>
           <td class="marker">
             <span class="footnote-marker">
               <sup>
-                <a href="#fna_{@xml:id}">
-                  <xsl:value-of select="index-of($footnote-ids, (@xml:id, @id)[1])"/>
+                <a href="#fna_{@id}">
+                  <xsl:value-of select="index-of($footnote-ids, @id)"/>
                 </a>
                 <xsl:text>&#160;</xsl:text>
               </sup>
@@ -463,15 +463,15 @@
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
     <xsl:param name="in-toc" tunnel="yes" as="xs:boolean?"/>
     <xsl:if test="not($in-toc)">
-      <span class="note-anchor" id="fna_{(@xml:id, @id)[1]}">
+      <span class="note-anchor" id="fna_{@id}">
         <a href="#fn_{@xml:id}">
           <xsl:choose>
             <xsl:when test="exists(ancestor::*[local-name() = ('hi', 'sup')])">
-              <xsl:value-of select="index-of($footnote-ids, (@xml:id, @id)[1])"/>
+              <xsl:value-of select="index-of($footnote-ids, @id)"/>
             </xsl:when>
             <xsl:otherwise>
               <sup>
-                <xsl:value-of select="index-of($footnote-ids, (@xml:id, @id)[1])"/>
+                <xsl:value-of select="index-of($footnote-ids, @id[1])"/>
               </sup>
             </xsl:otherwise>
           </xsl:choose>
