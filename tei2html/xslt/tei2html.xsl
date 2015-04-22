@@ -79,7 +79,7 @@
   
   <!-- collateral. Otherwise the generated IDs might differ due to temporary trees / variables 
     when transforming the content -->  
-  <xsl:template match="index/term | xref | fn" mode="epub-alternatives">
+  <xsl:template match="index/term | xref | note" mode="epub-alternatives">
     <xsl:copy copy-namespaces="no">
       <xsl:attribute name="id" select="generate-id()"/>
       <xsl:apply-templates select="@* except @xml:id, node()" mode="#current"/>
@@ -360,7 +360,7 @@
                        | figure | caption | abstract | lg" 
     mode="tei2html" priority="2">
     <div class="{name()}">
-      <xsl:copy-of select="@*"/>
+      <xsl:copy-of select="@* except @type"/>
       <xsl:next-match/>
     </div>
   </xsl:template>
@@ -430,24 +430,24 @@
   <!-- Footnotes -->
   <xsl:template match="note" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
-    <table class="{name()}" id="fn_{@xml:id}">
-      <xsl:apply-templates select="@* except @xml:id, @rend" mode="tei2html"/>
-      <tr>
-        <td class="marker">
-          <span class="footnote-marker">
-            <sup>
-              <a href="#fna_{@xml:id}">
-                <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
-              </a>
-              <xsl:text>&#160;</xsl:text>
-            </sup>
-          </span>
-        </td>
-        <td>
-          <xsl:apply-templates select="node()" mode="tei2html"/>
-        </td>
-      </tr>
-    </table>
+      <table class="{name()}" id="fn_{(@xml:id, @id)[1]}">
+        <xsl:apply-templates select="@* except @xml:id, @id, @rend" mode="tei2html"/>
+        <tr>
+          <td class="marker">
+            <span class="footnote-marker">
+              <sup>
+                <a href="#fna_{@xml:id}">
+                  <xsl:value-of select="index-of($footnote-ids, (@xml:id, @id)[1])"/>
+                </a>
+                <xsl:text>&#160;</xsl:text>
+              </sup>
+            </span>
+          </td>
+          <td>
+            <xsl:apply-templates select="node()" mode="tei2html"/>
+          </td>
+        </tr>
+      </table>
   </xsl:template>
   
   <xsl:template match="  *:seg[@type = 'tab'][ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]
@@ -455,30 +455,30 @@
                        | *:seg[matches(string-join(.//text(), ''), '^\p{Zs}*$')][ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]" 
                 mode="notes"/>
   
-  <xsl:template match=" *:note/@xml:id" mode="tei2html"/>
+  <xsl:template match=" *:note/@xml:id | *:note/@id" mode="tei2html"/>
   
   <xsl:template match="*:seg[@type = 'tab'][preceding-sibling::*[1][self::*:label]][ancestor::*:note]" mode="tei2html"/>
   
-<!--  <xsl:template match="note[@type = 'footnote']" mode="tei2html">
+  <xsl:template match="note[@type = 'footnote']" mode="tei2html">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
     <xsl:param name="in-toc" tunnel="yes" as="xs:boolean?"/>
     <xsl:if test="not($in-toc)">
-      <span class="note-anchor" id="fna_{@xml:id}">
+      <span class="note-anchor" id="fna_{(@xml:id, @id)[1]}">
         <a href="#fn_{@xml:id}">
           <xsl:choose>
             <xsl:when test="exists(ancestor::*[local-name() = ('hi', 'sup')])">
-              <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
+              <xsl:value-of select="index-of($footnote-ids, (@xml:id, @id)[1])"/>
             </xsl:when>
             <xsl:otherwise>
               <sup>
-                <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
+                <xsl:value-of select="index-of($footnote-ids, (@xml:id, @id)[1])"/>
               </sup>
             </xsl:otherwise>
           </xsl:choose>
         </a>
       </span>
     </xsl:if>
-  </xsl:template>-->
+  </xsl:template>
  
   <xsl:template match="gloss" mode="tei2html">
     <xsl:choose>
@@ -1203,9 +1203,7 @@
   </xsl:template> 
   
   <xsl:template match="lg" mode="tei2html">
-    <div class="{@type}">
       <xsl:apply-templates select="node()" mode="#current"/>
-    </div>
   </xsl:template> 
   
   <xsl:template match="l" mode="tei2html">
