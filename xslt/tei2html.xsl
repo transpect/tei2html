@@ -125,8 +125,15 @@
     </xsl:message>
   </xsl:template>
   
+  <xsl:template match="/*/@*[name() = ('xml:lang', 'source-dir-uri', 'xml:base')]" mode="tei2html">
+    <xsl:copy/>
+  </xsl:template>
+
+  <xsl:template match="/*/@*[name() = ('version')]" mode="tei2html"/>
+  
   <xsl:template match="/TEI" mode="tei2html">
     <html>
+      <xsl:apply-templates select="@*" mode="#current"/>
       <head>
         <xsl:call-template name="stylesheet-links"/>
         <title>
@@ -205,6 +212,7 @@
       <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:attribute name="class" select="if (@rend) then concat(@rend, ' ', @type) else @type"/>
+      <xsl:comment>schnurz</xsl:comment>
       <xsl:apply-templates select="node()" mode="#current"/>
     </div>
   </xsl:template>
@@ -305,8 +313,12 @@
   
   <xsl:template match="*" mode="class-att"/>
 
+  <!-- Is this template needed? Report the occurrence of foobar="hurz" to Gerrit -->
   <xsl:template match="*[@rend][not(local-name() = 'head')]" mode="class-att">
+    <!-- matching an attribute is non-standard for class-att. It is meant as a means
+      to transform it to an eponymous class attribute -->
     <xsl:apply-templates select="@rend" mode="#current"/>
+    <xsl:attribute name="foobar" select="'hurz'"></xsl:attribute>
   </xsl:template>
 
 <!--  <xsl:template match="verse-line[@content-type | @style-type]" mode="class-att" priority="2">
@@ -322,11 +334,12 @@
     select="'^(NormalParagraphStyle|Hyperlink)$'"
     as="xs:string"/>
 
-  <xsl:template match="@rend" mode="class-att">
+  <!-- Is this needed? class-att is a mode that is meant to match elements. -->
+  <!--<xsl:template match="@rend" mode="class-att">
     <xsl:if test="not(matches(., $tei2html:ignore-style-name-regex-x, 'x'))">
       <xsl:attribute name="class" select="replace(., ':', '_')"/>  
     </xsl:if>
-  </xsl:template>
+  </xsl:template>-->
   
   <xsl:template match="title[not($divify-sections = 'yes')]" mode="class-att" priority="2">
     <xsl:attribute name="class" select="(parent::title-group[not(ends-with(../name(), 'meta'))],
@@ -359,9 +372,8 @@
   <xsl:template match="  *[name() = $default-structural-containers][$divify-sections = 'yes']
                        | figure | caption | abstract | lg" 
     mode="tei2html" priority="2">
-    <div class="{name()}">
-      <xsl:copy-of select="@* except @type"/>
-      <xsl:next-match/>
+    <div>
+      <xsl:call-template name="css:content"/>
     </div>
   </xsl:template>
 
@@ -413,10 +425,14 @@
   
   <xsl:template match="persName" mode="tei2html">
     <span>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:call-template name="css:content"/>
     </span>
   </xsl:template>
-  
+
+  <xsl:template match="persName" mode="class-att">
+    <xsl:attribute name="class" select="local-name()"/>
+  </xsl:template>
+
   <xsl:template match="byline" mode="tei2html">
     <p>
       <xsl:call-template name="css:content"/>
@@ -430,6 +446,24 @@
   <!-- Footnotes -->
   <xsl:template match="note" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
+
+    <div class="{name()}" id="fn_{@xml:id}">
+      <p class="footnote-marker">
+        <sup>
+         <a href="#fna_{@xml:id}">
+             <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
+         </a>
+        </sup>
+        <xsl:text>&#160;</xsl:text>
+      </p>
+      <div class="footnote-text">
+        <xsl:apply-templates mode="tei2html">
+          <xsl:with-param name="in-notes" tunnel="yes" select="true()"/>
+        </xsl:apply-templates>
+      </div>
+    </div>
+
+    <!--
       <table class="{name()}" id="fn_{@id}">
         <xsl:apply-templates select="@* except @id, @rend" mode="tei2html"/>
         <tr>
@@ -447,7 +481,23 @@
             <xsl:apply-templates select="node()" mode="tei2html"/>
           </td>
         </tr>
-      </table>
+      </table>-->
+  
+  </xsl:template>
+  
+
+  <xsl:template match="note[@type = 'footnote']/p" mode="tei2html">
+    <p>
+      <xsl:variable name="atts" as="attribute(*)*">
+        <xsl:apply-templates select="@*" mode="#current"/>
+      </xsl:variable>
+      <xsl:variable name="class" as="xs:string+">
+        <xsl:sequence select="string-join(($atts[name() = 'class'], 'footnote'), ' ')"/>
+      </xsl:variable>
+      <xsl:sequence select="$atts"/>
+      <xsl:attribute name="class" select="$class"/>
+      <xsl:apply-templates mode="#current"/>
+    </p>
   </xsl:template>
   
   <xsl:template match="  *:seg[@type = 'tab'][ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]
@@ -666,9 +716,6 @@
                        head[@type = 'sub'][preceding-sibling::*[1][self::head[@type = 'sub']]]" mode="tei2html" priority="2">
     <p>
       <xsl:call-template name="css:content"/>
-      <!--<xsl:apply-templates select="@* except @rend" mode="#current"/>
-      <xsl:attribute name="class" select="if (@type = 'sub') then concat(@rend, ' subtitle') else concat(@rend, ' ', normalize-space((ancestor::*[self::floatingText]/@type)[1]), '-head')"/>
-      <xsl:apply-templates select="node()" mode="#current"/>-->
     </p>
   </xsl:template>
   
@@ -803,9 +850,21 @@
   
   <xsl:template match="formula/@n" mode="tei2html"/>
   
+  <!-- This is only meant for elements that don’t create their class attribute using mode="class-att".
+       If @rend creates a class attribute und mode="tei2html", it may become next to impossible to
+       suppress class attribute generation in certain contexts unless both the @rend based and the class-att
+       templates return nothing. -->
   <xsl:template match="@rend" mode="tei2html">
-    <xsl:attribute name="class" select="."/>
+    <xsl:apply-templates select=".." mode="class-att"/>
   </xsl:template>
+  <xsl:template match="*[@rend]" mode="class-att">
+    <xsl:attribute name="class" select="@rend"/>
+  </xsl:template>
+  <!-- Is this a suitable replacement for line 309? -->
+  <xsl:template match="head[@type = 'main'][@rend]" mode="class-att" priority="0.5001">
+    <!-- priority is slightly higher than the identical calculated values, 0.5, for *[@rend] and head[@rend] -->
+  </xsl:template>
+  
   
   <xsl:template match="pb" mode="tei2html">
     <div class="{local-name()}">
@@ -950,6 +1009,15 @@
       <xsl:text>)</xsl:text>
     </xsl:copy>
   </xsl:template>
+  
+  <!-- for sub and sup (but not limited to them) -->
+  <xsl:template match="html:*[html:span[@srcpath][count(@*) = 1]][count(node()) = 1]" mode="clean-up">
+    <xsl:copy copy-namespaces="no">
+      <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:attribute name="srcpath" select="string-join((@srcpath, html:span/@srcpath), ' ')"/>
+      <xsl:apply-templates mode="#current"/>
+    </xsl:copy>
+  </xsl:template>
 
   <xsl:template match="term" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
@@ -994,7 +1062,7 @@
                     replace(@url, '^.*?/([^/]+)$', '$1')
                   )[normalize-space()][1]"/>
         <xsl:attribute name="src" select="resolve-uri(@url)"/>
-        <xsl:apply-templates select="@rend" mode="class-att"/>
+        <xsl:apply-templates select="@rend" mode="#current"/>
         <xsl:copy-of select="@* except (@url, @rend)"/>
         <xsl:call-template name="css:content"/>
       </img>
@@ -1202,8 +1270,8 @@
     </div>
   </xsl:template> 
   
-  <xsl:template match="lg" mode="tei2html">
-      <xsl:apply-templates select="node()" mode="#current"/>
+  <xsl:template match="lg" mode="class-att">
+    <xsl:attribute name="class" select="(@type, local-name())[1]"/>
   </xsl:template> 
   
   <xsl:template match="l" mode="tei2html">
