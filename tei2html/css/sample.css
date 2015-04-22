@@ -1,0 +1,30 @@
+@charset "UTF-8";
+
+/* Footnotes */
+div.note p {
+  margin: 0 0 0.5em 0;
+}
+div.note p.footnote-marker { 
+  display: inline-block;
+  width: 2em;
+  float:left;
+  background-color: #fee;
+  vertical-align:top; 
+  text-align: right;
+  padding-right: 0.4em;
+}
+div.note div.footnote-text {
+  margin:0;
+  padding:0;
+  overflow:hidden; /* creates a new BFC, http://stackoverflow.com/questions/1260122/expand-div-to-take-remaining-width/1767270#answer-1767270 */
+  padding-left: 0.5em;
+  background-color:#eef;
+  border:1px solid blue;
+  vertical-align:top; 
+}
+div.note {
+  margin:0;
+  padding:0;
+  vertical-align:top;
+}
+
