@@ -314,11 +314,11 @@
   <xsl:template match="*" mode="class-att"/>
 
   <!-- Is this template needed? Report the occurrence of foobar="hurz" to Gerrit -->
-  <xsl:template match="*[@rend][not(local-name() = 'head')]" mode="class-att">
+  <xsl:template match="*[@rend][not(local-name() = 'head')]" mode="class-att" 
+    priority="0.2" xmlns:tei2html-uv-rend-not-head="tei2html-uv-rend-not-head">
     <!-- matching an attribute is non-standard for class-att. It is meant as a means
       to transform it to an eponymous class attribute -->
     <xsl:apply-templates select="@rend" mode="#current"/>
-    <xsl:attribute name="foobar" select="'hurz'"></xsl:attribute>
   </xsl:template>
 
 <!--  <xsl:template match="verse-line[@content-type | @style-type]" mode="class-att" priority="2">
@@ -352,7 +352,7 @@
     <xsl:attribute name="class" select="'label'"/>
   </xsl:template>
   
-  <xsl:template match="@xml:id | @srcpath" mode="tei2html">
+  <xsl:template match="@srcpath" mode="tei2html">
     <xsl:copy/>
   </xsl:template>
   
@@ -861,7 +861,7 @@
   <xsl:template match="*[@rend]" mode="class-att">
     <xsl:attribute name="class" select="@rend"/>
   </xsl:template>
-  <!-- Is this a suitable replacement for line 309? -->
+  <!-- Is this a suitable replacement for line 316? -->
   <xsl:template match="head[@type = 'main'][@rend]" mode="class-att" priority="0.5001">
     <!-- priority is slightly higher than the identical calculated values, 0.5, for *[@rend] and head[@rend] -->
   </xsl:template>
