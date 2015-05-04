@@ -937,6 +937,12 @@
     <br/>
   </xsl:template>
 
+  <xsl:template match="bibl" mode="tei2html">
+    <p>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </p>
+  </xsl:template>
+  
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
     <div class="{local-name()}">
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
