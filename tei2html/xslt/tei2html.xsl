@@ -1351,4 +1351,46 @@
     <xsl:sequence select="$item = tokenize($space-sep-list, '\s+', 's')" />
   </xsl:function>
 
+
+  <xsl:template match="*[local-name() = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6')][*:span[@class = 'label']]" mode="clean-up" exclude-result-prefixes="#all">
+    <xsl:variable name="label" select="*:span[@class = 'label']"/>
+    <xsl:copy copy-namespaces="no">
+      <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:for-each-group select="node()" group-ending-with="html:span[@class = 'label']">
+        <xsl:choose>
+          <xsl:when test="current-group()[. &gt;&gt; $label]">
+            <span class="justifier">
+              <xsl:apply-templates select="current-group()" mode="#current"/>
+            </span>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:apply-templates select="current-group()" mode="#current"/>
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each-group>
+    </xsl:copy>
+  </xsl:template>  
+  
+  <xsl:function name="tei2html:label-width" as="xs:string">
+    <xsl:param name="string" as="xs:string*"/>
+    <xsl:variable name="length" as="xs:integer?">
+      <xsl:sequence select="xs:integer(string-length($string))"/>
+    </xsl:variable>
+    <xsl:choose>
+      <xsl:when test="$length le 5">
+        <xsl:value-of select="' width-5'"/>
+      </xsl:when>
+      <xsl:when test="$length le 10">
+        <xsl:value-of select="' width-10'"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:value-of select="' width-15'"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:function> 
+  
+  <xsl:template match="*:span[@class = 'label']/@class" mode="clean-up" priority="3">
+    <xsl:attribute name="{name()}" select="concat(., tei2html:label-width(..))"/>
+  </xsl:template> 
+  
 </xsl:stylesheet>
