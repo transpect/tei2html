@@ -660,7 +660,7 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates select="head" mode="#current"/>
-          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'part')]
+          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'part', 'index')]
             | parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)] | parent::divGen[@type ='index']
             ]
             [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']])])]
