@@ -352,6 +352,10 @@
     <xsl:attribute name="class" select="'label'"/>
   </xsl:template>
   
+  <xsl:template match="table[@class = 'hub:right-tab']" mode="class-att">
+    <xsl:attribute name="class" select="'right-tab'"/>
+  </xsl:template>
+  
   <xsl:template match="@srcpath" mode="tei2html">
     <xsl:copy/>
   </xsl:template>
@@ -448,7 +452,8 @@
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
 
     <div class="{name()}" id="fn_{@xml:id}">
-      <p class="footnote-marker">
+      <xsl:variable name="note-marker-width" select="if (string-length(xs:string(index-of($footnote-ids, @xml:id))) gt 2) then ' large' else ' narrow'" as="xs:string?"/>
+      <p class="{concat('footnote-marker', $note-marker-width)}">
         <sup>
          <a href="#fna_{@xml:id}">
              <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
@@ -462,27 +467,6 @@
         </xsl:apply-templates>
       </div>
     </div>
-
-    <!--
-      <table class="{name()}" id="fn_{@id}">
-        <xsl:apply-templates select="@* except @id, @rend" mode="tei2html"/>
-        <tr>
-          <td class="marker">
-            <span class="footnote-marker">
-              <sup>
-                <a href="#fna_{@id}">
-                  <xsl:value-of select="index-of($footnote-ids, @id)"/>
-                </a>
-                <xsl:text>&#160;</xsl:text>
-              </sup>
-            </span>
-          </td>
-          <td>
-            <xsl:apply-templates select="node()" mode="tei2html"/>
-          </td>
-        </tr>
-      </table>-->
-  
   </xsl:template>
   
 
