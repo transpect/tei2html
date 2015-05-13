@@ -454,11 +454,9 @@
     <div class="{name()}" id="fn_{@xml:id}">
       <xsl:variable name="note-marker-width" select="if (string-length(xs:string(index-of($footnote-ids, @xml:id))) gt 2) then ' large' else ' narrow'" as="xs:string?"/>
       <p class="{concat('footnote-marker', $note-marker-width)}">
-        <sup>
          <a href="#fna_{@xml:id}">
              <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
          </a>
-        </sup>
         <xsl:text>&#160;</xsl:text>
       </p>
       <div class="footnote-text">
