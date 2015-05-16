@@ -288,6 +288,17 @@
     </xsl:choose>
   </xsl:template>
   
+  <xsl:template match="postscript" mode="tei2html">
+    <div>
+      <xsl:call-template name="css:content"/>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="postscript" mode="class-att">
+    <xsl:attribute name="class" separator=" "
+      select="distinct-values(tokenize(string-join((local-name(), @type, @rend), ' '), '\s+'))"/>
+  </xsl:template>
+  
   <xsl:template match="floatingText" mode="tei2html">
     <div>
       <xsl:if test="@rend or @type">
@@ -1097,7 +1108,7 @@
     </xsl:element>
   </xsl:template>  
 
-  <!-- table that is rendered as image due to reader contraints -->
+  <!-- table that is rendered as image due to reader constraints -->
   <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]]" mode="tei2html" priority="5">
     <div class="table-wrapper">
       <xsl:apply-templates select="head" mode="#current">
@@ -1109,17 +1120,25 @@
           <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/([^/])$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
         </xsl:element>
       </xsl:for-each>
+      <xsl:apply-templates select="postscript" mode="#current"/>
     </div>
   </xsl:template>
   
   <xsl:template match="table[not(matches(@css:width, '(pt|mm)$'))]" mode="tei2html">
-    <div class="table-wrapper">
+    <xsl:variable name="atts" as="attribute(*)*">
+      <xsl:call-template name="css:other-atts"/>
+    </xsl:variable>
+    <div class="{string-join(('table-wrapper', $atts[name() = 'class']), ' ')}">
+      <!-- We duplicate the class attribute on the wrapper since some classes belong to 
+        the wrapper and some to the contained table -->
       <xsl:apply-templates select="head" mode="#current">
         <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
       </xsl:apply-templates>
       <xsl:element name="{local-name()}" exclude-result-prefixes="#all">
-        <xsl:call-template name="css:content"/>
+        <xsl:sequence select="$atts"/>
+        <xsl:apply-templates select="* except (head | postscript)" mode="#current"/>
       </xsl:element>
+      <xsl:apply-templates select="postscript" mode="#current"/>
     </div>
   </xsl:template>
   
