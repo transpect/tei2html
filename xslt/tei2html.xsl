@@ -79,7 +79,7 @@
   
   <!-- collateral. Otherwise the generated IDs might differ due to temporary trees / variables 
     when transforming the content -->  
-  <xsl:template match="index/term | xref | note[not(@xml:id)]" mode="epub-alternatives">
+  <xsl:template match="index | xref | note[not(@xml:id)]" mode="epub-alternatives">
     <xsl:copy copy-namespaces="no">
       <xsl:attribute name="xml:id" select="generate-id()"/>
       <xsl:apply-templates select="@* except @xml:id, node()" mode="#current"/>
@@ -944,27 +944,55 @@
     <div>
       <xsl:apply-templates select="." mode="class-att"/>
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
-       <xsl:apply-templates select="@*, node()" mode="#current"/>
-      <xsl:for-each-group select="//index/term[not(parent::term)]" group-by="substring(., 1, 1)"
+      <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:call-template name="tei2html:title-group"/>
+      <xsl:for-each-group select="//index[not(parent::index)][term]" group-by="tei2html:index-grouping-key(term)"
         collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary">
         <xsl:sort select="current-grouping-key()" 
           collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
-        <h4>
-          <xsl:value-of select="upper-case(tei2html:strip-combining(current-grouping-key()))"/>
-        </h4>
-        <xsl:call-template name="group-index-terms">
-          <xsl:with-param name="level" select="1"/>
-          <xsl:with-param name="index-terms" select="current-group()"/>
-        </xsl:call-template>
+        <xsl:variable name="processed" as="element(*)*">
+          <h4>
+            <xsl:value-of select="current-grouping-key()"/>
+          </h4>
+          <xsl:call-template name="group-index-terms">
+            <xsl:with-param name="level" select="1"/>
+            <xsl:with-param name="index-terms" select="current-group()"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <xsl:choose>
+          <xsl:when test="$divify-sections = 'yes'">
+            <div class="ie1"> 
+              <xsl:sequence select="$processed"/>
+            </div>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:sequence select="$processed"/>
+          </xsl:otherwise>
+        </xsl:choose>
       </xsl:for-each-group>
     </div>
   </xsl:template>
+
+  <!-- override this for actual grouping -->
+  <xsl:template name="tei2html:title-group">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+
+  <xsl:function name="tei2html:index-grouping-key" as="xs:string">
+    <xsl:param name="term" as="xs:string"/>
+    <xsl:sequence select="substring(tei2html:normalize-for-index($term), 1, 1)"/>
+  </xsl:function>
+  
+  <xsl:function name="tei2html:normalize-for-index" as="xs:string">
+    <xsl:param name="term" as="xs:string"/>
+    <xsl:sequence select="upper-case(tei2html:strip-combining($term))"/>
+  </xsl:function>
   
   <xsl:template name="group-index-terms">
     <xsl:param name="level" as="xs:integer"/>
-    <xsl:param name="index-terms" as="element(term)*"/>
+    <xsl:param name="index-terms" as="element(index)*"/>
     <!-- §§§ We need to know a book’s main language! -->
-    <xsl:for-each-group select="$index-terms" group-by="."
+    <xsl:for-each-group select="$index-terms" group-by="tei2html:normalize-for-index(term)"
       collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=identical">
       <xsl:sort collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
       <xsl:sort collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=identical"/>
@@ -975,11 +1003,14 @@
   </xsl:template>
   
   <xsl:template name="index-entry">
+    <!-- context: tei:index element -->
     <xsl:param name="level" as="xs:integer"/>
     <p class="ie ie{$level}">
-      <xsl:value-of select="current-grouping-key()"/>
+      <span class="ie-term">
+        <xsl:apply-templates select="term/node()"/>  
+      </span>
       <xsl:text>&#x2002;</xsl:text>
-      <xsl:for-each select="current-group()[not(term)]">
+      <xsl:for-each select="current-group()[not(index)]">
         <a href="#it_{@xml:id}" id="ie_{@xml:id}">
           <xsl:value-of select="position()"/>
         </a>
@@ -989,7 +1020,7 @@
       </xsl:for-each>
     </p>
     <xsl:call-template name="group-index-terms">
-      <xsl:with-param name="index-terms" select="current-group()/term"/>
+      <xsl:with-param name="index-terms" select="current-group()/index"/>
       <xsl:with-param name="level" select="$level + 1"/>
     </xsl:call-template>
   </xsl:template>
@@ -997,22 +1028,26 @@
   <xsl:template match="index[not(parent::index)]" mode="tei2html">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:if test="not($in-toc)">
-      <span class="indexterm" id="it_{descendant-or-self::term[last()]/@xml:id}">
+      <span class="indexterm" id="it_{descendant-or-self::index[last()]/@xml:id}">
         <xsl:attribute name="title">
           <xsl:apply-templates select="term" mode="#current"/>
         </xsl:attribute>
-        <a href="#ie_{descendant-or-self::term[last()]/@xml:id}" class="it"/>
+        <a href="#ie_{descendant-or-self::index[last()]/@xml:id}" class="it"/>
       </span>
     </xsl:if>
   </xsl:template>
   
   <xsl:template match="html:a[@class eq 'it'][@href]" mode="clean-up">
-    <xsl:copy copy-namespaces="no">
-      <xsl:apply-templates select="@*" mode="#current"/>
-      <xsl:text>(</xsl:text>
-      <xsl:value-of select="key('by-id', substring-after(@href, '#'))"/>
-      <xsl:text>)</xsl:text>
-    </xsl:copy>
+    <xsl:variable name="matching-entry" as="element(*)?" select="key('by-id', substring-after(@href, '#'))"/>
+    <xsl:if test="exists($matching-entry)">
+      <xsl:copy copy-namespaces="no">
+        <xsl:attribute name="title" select="$matching-entry/ancestor-or-self::html:p/html:span[@class='ie-term']"/>
+        <xsl:apply-templates select="@*" mode="#current"/>
+        <xsl:text>(</xsl:text>
+        <xsl:value-of select="key('by-id', substring-after(@href, '#'))"/>
+        <xsl:text>)</xsl:text>
+      </xsl:copy>  
+    </xsl:if>
   </xsl:template>
   
   <!-- for sub and sup (but not limited to them) -->
