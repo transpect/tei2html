@@ -936,8 +936,13 @@
     </p>
   </xsl:template>
   
+  <xsl:template match="divGen[@type= 'index']" mode="class-att">
+    <xsl:attribute name="class" select="local-name()"/>
+  </xsl:template>
+  
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
-    <div class="{local-name()}">
+    <div>
+      <xsl:apply-templates select="." mode="class-att"/>
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
        <xsl:apply-templates select="@*, node()" mode="#current"/>
       <xsl:for-each-group select="//index/term[not(parent::term)]" group-by="substring(., 1, 1)"
