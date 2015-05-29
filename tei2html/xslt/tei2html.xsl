@@ -158,6 +158,20 @@
     </html>
   </xsl:template>
   
+  <xsl:template match="textClass/keywords[@rendition]" mode="tei2html">
+    <xsl:variable name="keywords" select="string-join(term/text(), ', ')"/>
+    <xsl:variable name="zahl" select="5" as="xs:integer"/>
+    <div class="keywords">
+      <p class="{local-name()}">
+        <b>
+          <xsl:value-of select="letex:unescape-uri(@rendition)"/>
+        </b>
+        <xsl:text> </xsl:text>
+        <xsl:value-of select="$keywords"/>
+      </p>
+    </div>
+  </xsl:template>
+  
   <xsl:template name="stylesheet-links">
     <link href="{$css-location}" type="text/css" rel="stylesheet"/>
     <xsl:for-each select="reverse($paths)[not(. = $common-path)]">
@@ -201,7 +215,13 @@
     </xsl:apply-templates>
   </xsl:template>
   
+  <xsl:variable name="tei2html:abstract-and-keyword-rendering" as="xs:boolean" select="false()"/>
+  
   <xsl:template match="text" mode="tei2html">
+    <xsl:if test="$tei2html:abstract-and-keyword-rendering">
+      <xsl:apply-templates select="/*/teiHeader/profileDesc/abstract" mode="#current"/>
+      <xsl:apply-templates select="/*/teiHeader/profileDesc/textClass/keywords[@rendition]" mode="#current"/>
+    </xsl:if>
     <xsl:apply-templates mode="#current"/>
     <xsl:call-template name="tei2html:footnotes"/>
   </xsl:template>
@@ -234,7 +254,7 @@
   <xsl:template name="meta">
     <!-- warum matcht langUsage nicht? -->
     <xsl:apply-templates select="teiHeader/profileDesc/langUsage" mode="#current"/>    
-    <xsl:apply-templates select="teiHeader/profileDesc/textClass/keywords" mode="#current"/>
+    <xsl:apply-templates select="teiHeader/profileDesc/textClass/keywords[not(@rendition)]" mode="#current"/>
   </xsl:template>
 
   <xsl:template match="keywords" mode="tei2html">
@@ -363,10 +383,6 @@
                                                  (name(), @book-part-type)[last()]"/>
   </xsl:template>
     
-  <xsl:template match="label" mode="class-att">
-    <xsl:attribute name="class" select="'label'"/>
-  </xsl:template>
-  
   <xsl:template match="table[@class = 'hub:right-tab']" mode="class-att">
     <xsl:attribute name="class" select="'right-tab'"/>
   </xsl:template>
@@ -410,14 +426,6 @@
     <xsl:attribute name="id" select="."/>
   </xsl:template>
   
-<!--  <xsl:template match="boxed-text[@content-type eq 'marginalia']" mode="tei2html">
-     <div class="{@content-type}">
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
-    </div>   
-  </xsl:template>
--->
-
-  
   <xsl:template match="label[not(parent::item)]" mode="tei2html" priority="0.5">
     <span class="{if (@srcpath) then 'label block' else 'label'}">
       <xsl:apply-templates select="@*, node()" mode="#current"/>
@@ -448,7 +456,7 @@
     </span>
   </xsl:template>
 
-  <xsl:template match="persName" mode="class-att">
+  <xsl:template match="persName | abstract | byline | label" mode="class-att">
     <xsl:attribute name="class" select="local-name()"/>
   </xsl:template>
 
@@ -458,10 +466,6 @@
     </p>
   </xsl:template>
 
-  <xsl:template match="byline" mode="class-att">
-    <xsl:attribute name="class" select="local-name()"/>
-  </xsl:template>
-  
   <!-- Footnotes -->
   <xsl:template match="note" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
@@ -940,8 +944,8 @@
     </p>
   </xsl:template>
   
-  <xsl:template match="divGen[@type= 'index']" mode="class-att">
-    <xsl:attribute name="class" select="local-name()"/>
+  <xsl:template match="divGen[@type = 'index']" mode="class-att">
+    <xsl:attribute name="class" select="@type"/>
   </xsl:template>
   
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
@@ -955,7 +959,7 @@
         <xsl:sort select="current-grouping-key()" 
           collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
         <xsl:variable name="processed" as="element(*)*">
-          <h4>
+          <h4 class="index-subject-heading">
             <xsl:value-of select="current-grouping-key()"/>
           </h4>
           <xsl:call-template name="group-index-terms">
