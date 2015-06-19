@@ -325,10 +325,16 @@
   
   <xsl:template match="floatingText" mode="tei2html">
     <div>
-      <xsl:if test="@rend or @type">
+      <xsl:if test="@rend or @type or @rendition">
       <xsl:attribute name="class">
         <xsl:choose>
+          <xsl:when test="@rendition and @rendition[matches(., '\.(png|jpe?g)$', 'i')]">
+            <xsl:value-of select="'alt-image'"/>
+          </xsl:when>
           <xsl:when test="not(@rend)">
+            <xsl:value-of select="if (@type) then @type else ''"/>
+          </xsl:when>
+          <xsl:when test="@rendition and @rendition[matches(., '\.(png|jpe?g)$', 'i')]">
             <xsl:value-of select="if (@type) then @type else ''"/>
           </xsl:when>
           <xsl:otherwise>
@@ -337,8 +343,37 @@
         </xsl:choose>
       </xsl:attribute>
       </xsl:if>
-      <xsl:apply-templates select="@* except (@rend, @type), node()" mode="#current"/>
+      <xsl:choose>
+        <xsl:when test="@rendition">
+          <xsl:for-each select="tokenize(@rendition, ' ')">
+            <xsl:element name="img" exclude-result-prefixes="#all">
+              <xsl:attribute name="src" select="."/>
+              <xsl:attribute name="class" select="'alt-image'"/>
+              <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/([^/])$', '$1'),'« of the original box. Due to displaying constraints of ePub readers it is delivered as an image only.')"/>
+            </xsl:element>
+          </xsl:for-each>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates select="@* except (@rend, @type, @rendition), node()" mode="#current"/>
+        </xsl:otherwise>
+      </xsl:choose>
    </div>
+  </xsl:template>
+  
+  <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]]" mode="tei2html" priority="5">
+    <div class="table-wrapper">
+      <xsl:apply-templates select="head" mode="#current">
+        <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
+      </xsl:apply-templates>
+      <xsl:for-each select="tokenize(@rendition, ' ')">
+        <xsl:element name="img" exclude-result-prefixes="#all">
+          <xsl:attribute name="src" select="."/>
+          <xsl:attribute name="class" select="'alt-image'"/>
+          <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/([^/])$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
+        </xsl:element>
+      </xsl:for-each>
+      <xsl:apply-templates select="postscript" mode="#current"/>
+    </div>
   </xsl:template>
   
   <xsl:function name="tei2html:strip-combining" as="xs:string">
@@ -552,6 +587,8 @@
     </dl>
   </xsl:template>
   
+  <xsl:template match="item/@n" mode="tei2html"/>
+  
   <xsl:template match="item[tei2html:is-varlistentry(.)]" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
@@ -585,6 +622,28 @@
     </ol>
   </xsl:template>
     
+  <!-- ordered list whose first list item doesn't start wit 1. will be displayed as definition list then. -->  
+  <xsl:template match="list[@type eq 'ordered'][item[1][not(matches(@n, '^[1a]\.?$'))]]" mode="tei2html" priority="3">
+    <dl class="{@style}">
+      <xsl:apply-templates mode="#current"/>
+    </dl>
+  </xsl:template>
+  
+  <xsl:template match="item[parent::list[@type eq 'ordered'][item[1][not(matches(@n, '^[1a]\.?$'))]]]" mode="tei2html" priority="3">
+    <dt>
+      <xsl:value-of select="@n"/>
+    </dt>
+    <dd>
+      <xsl:apply-templates mode="#current"/>
+    </dd>
+  </xsl:template>
+  
+  <xsl:template match="item[not(parent::list[@type eq 'gloss'])][not(tei2html:is-varlistentry(.))]" mode="tei2html">
+    <li>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </li>
+  </xsl:template>
+  
   <xsl:template match="item" mode="tei2html">
     <li>
       <xsl:if test="@n">
@@ -1033,6 +1092,8 @@
     </xsl:call-template>
   </xsl:template>
 
+  <xsl:variable name="tei2html:create-inde-term-backlink" as="xs:boolean" select="true()"/>
+  
   <xsl:template match="index[not(parent::index)]" mode="tei2html">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:if test="not($in-toc)">
@@ -1040,7 +1101,9 @@
         <xsl:attribute name="title">
           <xsl:apply-templates select="term" mode="#current"/>
         </xsl:attribute>
-        <a href="#ie_{descendant-or-self::index[last()]/@xml:id}" class="it"/>
+        <xsl:if test="$tei2html:create-inde-term-backlink">
+          <a href="#ie_{descendant-or-self::index[last()]/@xml:id}" class="it"/>
+        </xsl:if>
       </span>
     </xsl:if>
   </xsl:template>
@@ -1156,18 +1219,30 @@
     </xsl:element>
   </xsl:template>  
 
-  <!-- table that is rendered as image due to reader constraints -->
+  <xsl:variable name="tei2html:table-head-before-table" as="xs:boolean" select="true()"/>
+  
+  <xsl:template name="table-heading">
+    <xsl:apply-templates select="head" mode="#current">
+      <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  
+  <!-- changeable order of figure elements-->
   <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]]" mode="tei2html" priority="5">
     <div class="table-wrapper">
-      <xsl:apply-templates select="head" mode="#current">
-        <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
-      </xsl:apply-templates>
+      <xsl:if test="$tei2html:table-head-before-table">
+        <xsl:call-template name="table-heading"/>
+      </xsl:if>
       <xsl:for-each select="tokenize(@rendition, ' ')">
         <xsl:element name="img" exclude-result-prefixes="#all">
           <xsl:attribute name="src" select="."/>
+          <xsl:attribute name="class" select="'alt-image'"/>
           <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/([^/])$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
         </xsl:element>
       </xsl:for-each>
+      <xsl:if test="not($tei2html:table-head-before-table)">
+        <xsl:call-template name="table-heading"/>
+      </xsl:if>
       <xsl:apply-templates select="postscript" mode="#current"/>
     </div>
   </xsl:template>
@@ -1179,13 +1254,16 @@
     <div class="{string-join(('table-wrapper', $atts[name() = 'class']), ' ')}">
       <!-- We duplicate the class attribute on the wrapper since some classes belong to 
         the wrapper and some to the contained table -->
-      <xsl:apply-templates select="head" mode="#current">
-        <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
-      </xsl:apply-templates>
+      <xsl:if test="$tei2html:table-head-before-table">
+        <xsl:call-template name="table-heading"/>
+      </xsl:if>
       <xsl:element name="{local-name()}" exclude-result-prefixes="#all">
         <xsl:sequence select="$atts"/>
         <xsl:apply-templates select="* except (head | postscript)" mode="#current"/>
       </xsl:element>
+      <xsl:if test="not($tei2html:table-head-before-table)">
+        <xsl:call-template name="table-heading"/>
+      </xsl:if>
       <xsl:apply-templates select="postscript" mode="#current"/>
     </div>
   </xsl:template>
