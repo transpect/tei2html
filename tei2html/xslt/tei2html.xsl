@@ -945,7 +945,7 @@
         <xsl:when test="$context[self::*:pb]">
           <xsl:attribute name="epub:type" select="'pagebreak'"/>
         </xsl:when>
-        <xsl:when test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication', 'appendix')]]">
+        <xsl:when test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication', 'appendix', 'index')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'preface'][some $class in $frontmatter-parts satisfies matches($class, @rend)]]">
@@ -1003,7 +1003,7 @@
     </p>
   </xsl:template>
   
-  <xsl:template match="divGen[@type = 'index']" mode="class-att">
+  <xsl:template match="divGen[@type = 'index'] | div[@type = 'index']" mode="class-att">
     <xsl:attribute name="class" select="@type"/>
   </xsl:template>
   
