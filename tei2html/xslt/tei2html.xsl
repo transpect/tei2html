@@ -1004,7 +1004,7 @@
   </xsl:template>
   
   <xsl:template match="divGen[@type = 'index'] | div[@type = 'index']" mode="class-att">
-    <xsl:attribute name="class" select="@type"/>
+    <xsl:attribute name="class" select="string-join((@type, @rend), ' ')"/>
   </xsl:template>
   
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
@@ -1092,7 +1092,7 @@
     </xsl:call-template>
   </xsl:template>
 
-  <xsl:variable name="tei2html:create-inde-term-backlink" as="xs:boolean" select="true()"/>
+  <xsl:variable name="tei2html:create-index-term-backlink" as="xs:boolean" select="true()"/>
   
   <xsl:template match="index[not(parent::index)]" mode="tei2html">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
@@ -1101,7 +1101,7 @@
         <xsl:attribute name="title">
           <xsl:apply-templates select="term" mode="#current"/>
         </xsl:attribute>
-        <xsl:if test="$tei2html:create-inde-term-backlink">
+        <xsl:if test="$tei2html:create-index-term-backlink">
           <a href="#ie_{descendant-or-self::index[last()]/@xml:id}" class="it"/>
         </xsl:if>
       </span>
