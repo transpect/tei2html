@@ -432,9 +432,6 @@
     <xsl:copy/>
   </xsl:template>
   
-  <!-- will be handled by class-att mode -->
-<!--  <xsl:template match="@rend" mode="tei2html"/>-->
-
   <xsl:variable name="default-structural-containers" as="xs:string+"
     select="('part', 'front-matter-part', 'section', 'appendix', 'acknowledgements', 'dedication', 'preface')"/>
 
