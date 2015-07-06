@@ -724,7 +724,6 @@
             [not(ancestor::divGen[@type ='toc'])]
             [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]
             | //*[self::*:seg or self::*:p][matches(@rend, '_-_TOC[1-6]')]" mode="toc"/>
-        <!--  <xsl:message select="'~~~~~~~~~~~~~~~~~', "></xsl:message>-->
         </xsl:otherwise>
       </xsl:choose>
     </xsl:element>
@@ -744,8 +743,11 @@
         <xsl:value-of select="."/>
       </a>
     </p>
-    
   </xsl:template>
+ 
+  <!-- no HTML toc entry for special headings--> 
+  <xsl:variable name="tei2html:no-toc-style-regex" as="xs:string" select="'_notoc'"/>
+  <xsl:template match="head[matches(@rend, $tei2html:no-toc-style-regex)]" mode="toc" priority="2"/>
   
   <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))]" mode="toc">
     <p class="toc{tei2html:heading-level(.)}">
