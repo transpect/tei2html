@@ -975,6 +975,9 @@
             <xsl:when test="matches($context/@rend, 'dedication')">
               <xsl:attribute name="epub:type" select="'dedication'"/>
             </xsl:when>
+            <xsl:when test="matches($context/@rend, 'motto')">
+              <xsl:attribute name="epub:type" select="'letex:motto'"/>
+            </xsl:when>
           </xsl:choose>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'preface'][not(matches(@rend, string-join($frontmatter-parts, '|')))]]">
