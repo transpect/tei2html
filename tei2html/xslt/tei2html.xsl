@@ -133,6 +133,10 @@
     <xsl:copy/>
   </xsl:template>
 
+  <xsl:template match="@xml:lang" mode="tei2html" priority="2">
+    <xsl:attribute name="lang" select="."/>
+  </xsl:template>
+  
   <xsl:template match="/*/@*[name() = ('version')]" mode="tei2html"/>
   
   <xsl:template match="/TEI" mode="tei2html">
@@ -428,7 +432,7 @@
   
   <xsl:template match="table[@xml:id = ../@xml:id]/@xml:id" mode="tei2html"/>
   
-  <xsl:template match="@css:* | @xml:lang" mode="tei2html_DISABLED">
+  <xsl:template match="@css:*" mode="tei2html_DISABLED">
     <xsl:copy/>
   </xsl:template>
   
