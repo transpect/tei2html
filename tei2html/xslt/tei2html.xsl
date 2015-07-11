@@ -862,6 +862,8 @@
     <xsl:text>&#160;</xsl:text>
   </xsl:template>
   
+  <xsl:template match="label[node()[last()]/self::lb]" mode="label-sep"/>
+  
   <xsl:template match="p" mode="tei2html">
     <p>
       <xsl:next-match/>
