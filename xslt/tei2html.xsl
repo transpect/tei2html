@@ -862,7 +862,12 @@
     <xsl:text>&#160;</xsl:text>
   </xsl:template>
   
-  <xsl:template match="label[node()[last()]/self::lb]" mode="label-sep"/>
+  <xsl:template match="label[node()[last()]/self::lb]" mode="label-sep">
+    <xsl:param name="in-toc" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$in-toc">
+      <xsl:text>&#160;</xsl:text>
+    </xsl:if>
+  </xsl:template>
   
   <xsl:template match="p" mode="tei2html">
     <p>
