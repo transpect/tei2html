@@ -812,12 +812,15 @@
   <xsl:function name="tei2html:heading-title" as="xs:string?">
     <xsl:param name="context"/>
     <xsl:variable name="content">
-      <xsl:call-template name="heading-content"/>
+      <xsl:call-template name="heading-content">
+        <xsl:with-param name="in-toc" select="true()" tunnel="yes"/>
+      </xsl:call-template>
     </xsl:variable>
     <xsl:value-of select="$content"/>
   </xsl:function>
   
   <xsl:template name="heading-content">
+    <xsl:param name="in-toc" tunnel="yes" select="false()"/>
     <xsl:if test="label">
       <xsl:apply-templates select="label/node()" mode="strip-indexterms-etc"/>
       <xsl:apply-templates select="label" mode="label-sep"/>
