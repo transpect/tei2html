@@ -1036,13 +1036,16 @@
   </xsl:template>
   
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
-    <xsl:variable name="property" select="@property" as="xs:string?"/>
-    <div>
+    <xsl:variable name="subtype" select="@subtype" as="xs:string?"/>
+    <div id="{string-join(('index', $subtype), '-')}">
       <xsl:apply-templates select="." mode="class-att"/>
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:call-template name="tei2html:title-group"/>
-      <xsl:for-each-group select="//index[@indexName = $property][not(parent::index)]" group-by="tei2html:index-grouping-key(term)"
+      <xsl:for-each-group select="//index[if ($subtype) 
+                                          then @indexName = $subtype
+                                          else not(@indexName)
+                                         ][not(parent::index)]" group-by="tei2html:index-grouping-key(term)"
         collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary">
         <xsl:sort select="current-grouping-key()" 
           collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
