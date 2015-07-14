@@ -364,11 +364,12 @@
    </div>
   </xsl:template>
   
+  <!-- changeable order of figure elements-->
   <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]]" mode="tei2html" priority="5">
     <div class="table-wrapper">
-      <xsl:apply-templates select="head" mode="#current">
-        <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
-      </xsl:apply-templates>
+      <xsl:if test="$tei2html:table-head-before-table">
+        <xsl:call-template name="table-heading"/>
+      </xsl:if>
       <xsl:for-each select="tokenize(@rendition, ' ')">
         <xsl:element name="img" exclude-result-prefixes="#all">
           <xsl:attribute name="src" select="."/>
@@ -376,8 +377,19 @@
           <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/([^/])$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
         </xsl:element>
       </xsl:for-each>
+      <xsl:if test="not($tei2html:table-head-before-table)">
+        <xsl:call-template name="table-heading"/>
+      </xsl:if>
       <xsl:apply-templates select="postscript" mode="#current"/>
     </div>
+  </xsl:template>
+  
+  <xsl:variable name="tei2html:table-head-before-table" as="xs:boolean" select="true()"/>
+  
+  <xsl:template name="table-heading">
+    <xsl:apply-templates select="head" mode="#current">
+      <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
+    </xsl:apply-templates>
   </xsl:template>
   
   <xsl:function name="tei2html:strip-combining" as="xs:string">
@@ -1019,17 +1031,18 @@
     </p>
   </xsl:template>
   
-  <xsl:template match="divGen[@type = 'index'] | div[@type = 'index']" mode="class-att">
+  <xsl:template match="divGen[@type = 'index'] | div[@type = 'index']" mode="class-att" priority="2">
     <xsl:attribute name="class" select="string-join((@type, @rend), ' ')"/>
   </xsl:template>
   
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
+    <xsl:variable name="property" select="@property" as="xs:string?"/>
     <div>
       <xsl:apply-templates select="." mode="class-att"/>
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:call-template name="tei2html:title-group"/>
-      <xsl:for-each-group select="//index[not(parent::index)][term]" group-by="tei2html:index-grouping-key(term)"
+      <xsl:for-each-group select="//index[@indexName = $property][not(parent::index)]" group-by="tei2html:index-grouping-key(term)"
         collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary">
         <xsl:sort select="current-grouping-key()" 
           collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
@@ -1234,34 +1247,6 @@
       <xsl:call-template name="css:content"/>
     </xsl:element>
   </xsl:template>  
-
-  <xsl:variable name="tei2html:table-head-before-table" as="xs:boolean" select="true()"/>
-  
-  <xsl:template name="table-heading">
-    <xsl:apply-templates select="head" mode="#current">
-      <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
-    </xsl:apply-templates>
-  </xsl:template>
-  
-  <!-- changeable order of figure elements-->
-  <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]]" mode="tei2html" priority="5">
-    <div class="table-wrapper">
-      <xsl:if test="$tei2html:table-head-before-table">
-        <xsl:call-template name="table-heading"/>
-      </xsl:if>
-      <xsl:for-each select="tokenize(@rendition, ' ')">
-        <xsl:element name="img" exclude-result-prefixes="#all">
-          <xsl:attribute name="src" select="."/>
-          <xsl:attribute name="class" select="'alt-image'"/>
-          <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/([^/])$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
-        </xsl:element>
-      </xsl:for-each>
-      <xsl:if test="not($tei2html:table-head-before-table)">
-        <xsl:call-template name="table-heading"/>
-      </xsl:if>
-      <xsl:apply-templates select="postscript" mode="#current"/>
-    </div>
-  </xsl:template>
   
   <xsl:template match="table[not(matches(@css:width, '(pt|mm)$'))]" mode="tei2html">
     <xsl:variable name="atts" as="attribute(*)*">
