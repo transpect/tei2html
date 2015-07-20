@@ -1037,10 +1037,11 @@
   
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
     <xsl:variable name="subtype" select="@subtype" as="xs:string?"/>
-    <div id="{string-join(('index', $subtype), '-')}">
+    <div>
       <xsl:apply-templates select="." mode="class-att"/>
       <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:attribute name="id" select="string-join(((@id, @xml:id)[1], $subtype), '-')"/>
       <xsl:call-template name="tei2html:title-group"/>
       <xsl:for-each-group select="//index[if ($subtype) 
                                           then @indexName = $subtype
