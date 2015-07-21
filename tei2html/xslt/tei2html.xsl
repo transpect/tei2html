@@ -858,7 +858,7 @@
           <xsl:when test="preceding-sibling::node()[1]/(self::text()) and matches(preceding-sibling::node()[1], '\s$') or
             following-sibling::node()[1]/(self::text()) and matches(following-sibling::node()[1], '^\s')"/>
           <xsl:otherwise>
-            <xsl:sequence select="'&#160;'"/>
+            <xsl:text>&#160;</xsl:text>
           </xsl:otherwise>
         </xsl:choose> 
       </xsl:when>
