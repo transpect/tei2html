@@ -367,6 +367,9 @@
   <!-- changeable order of figure elements-->
   <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]]" mode="tei2html" priority="5">
     <div class="table-wrapper">
+      <xsl:if test="matches(@xml:id, '^(cell)?page_')">
+        <a id="{@xml:id}"/>
+      </xsl:if>
       <xsl:if test="$tei2html:table-head-before-table">
         <xsl:call-template name="table-heading"/>
       </xsl:if>
@@ -787,9 +790,9 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="head[@type = 'sub'][preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']]] |
-                       head[ancestor::*[self::floatingText]] | 
-                       head[@type = 'sub'][preceding-sibling::*[1][self::head[@type = 'sub']]]" mode="tei2html" priority="2">
+  
+  
+  <xsl:template match="head[@type = 'sub'] | head[ancestor::*[self::floatingText]]" mode="tei2html" priority="2">
     <p>
       <xsl:call-template name="css:content"/>
     </p>
@@ -926,7 +929,6 @@
       <xsl:next-match/>
     </span>
   </xsl:template>
-  
   
   <xsl:template match="formula" mode="tei2html">
     <xsl:element name="{if (@rend = 'inline') then 'span' else 'p'}">
