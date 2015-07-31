@@ -50,7 +50,9 @@
   <xsl:variable name="common-path" as="xs:string?" select="$paths[position() = index-of($roles, 'common')]"/>
   
   <xsl:param name="divify-sections" select="'no'"/>
-
+  <xsl:param name="calculate-table-width" as="xs:boolean" select="true()">
+    <!-- If this parameter is set true, table width is calculated based on percentage of page width (not type area width) -->
+  </xsl:param>
   <xsl:param name="css-location" select="concat($common-path, '/css/stylesheet.css')"/>
 
   <!-- for calculating whether a table covers the whole width or only part of it: -->
@@ -1277,7 +1279,7 @@
   
   <xsl:template match="td/@css:width" mode="hub2htm:css-style-overrides" priority="3"/>
   
-  <xsl:template match="table[matches(@*[local-name() = 'width'], '(pt|mm)$')]" mode="tei2html">
+  <xsl:template match="table[matches(@*[local-name() = 'width'], '(pt|mm)$')][$calculate-table-width]" mode="tei2html" priority="3">
     <xsl:variable name="conditional-percent-widths" as="element(table)">
       <xsl:apply-templates select="." mode="table-widths"/>
     </xsl:variable>
@@ -1319,7 +1321,7 @@
     </xsl:element>
   </xsl:template>  
   
-  <xsl:template match="cell/@css:width" mode="table-widths">
+  <xsl:template match="cell/@css:width | *:td/@css:width" mode="table-widths">
     <xsl:variable name="cell-width" select="if (matches(., '(pt|mm)$')) then letex:length-to-unitless-twip(.) else ."/>
     <xsl:variable name="table-width" select="if (ancestor::table[1]/@css:width) then letex:length-to-unitless-twip(ancestor::table[1]/@css:width) else '5000'"/>
     <xsl:attribute name="css:width" select="replace((xs:string((100 * $cell-width) div $table-width)), '(\d+)(\.?)(\d{2})?(\d*)', '$1$2$3%')"/>    
@@ -1353,9 +1355,6 @@
       <xsl:when test="not($table-twips) or not($table-percentage)">
         <xsl:copy/>
       </xsl:when>
-      <xsl:when test="$table-percentage eq 0">
-        <xsl:copy/>
-      </xsl:when>
       <xsl:otherwise>
         <xsl:attribute name="css:width" select="concat($table-percentage, '%')"/>    
       </xsl:otherwise>
@@ -1363,17 +1362,14 @@
   </xsl:template>
 
   <xsl:template match="table[not(col | colgroup)][@css:width]/*/row/*/@css:width
-    | table[exists(col | colgroup)][@css:width]//col/@*[local-name() = 'width']" mode="table-widths">
+                      | table[exists(col | colgroup)][@css:width]//col/@*[local-name() = 'width']" mode="table-widths">
     <xsl:param name="table-twips" as="xs:double?" tunnel="yes"/>
     <xsl:param name="table-percentage" as="xs:integer?" tunnel="yes"/>
     <xsl:choose>
-      <xsl:when test="matches(., '[\d.]+%$')">
+      <xsl:when test="matches(., '[\d]+(\.\d+)?%$')">
         <xsl:attribute name="css:width" select="."/>
       </xsl:when>
       <xsl:when test="not($table-twips) or not($table-percentage)">
-        <xsl:attribute name="css:width" select="."/>
-      </xsl:when>
-      <xsl:when test="$table-percentage eq 0">
         <xsl:attribute name="css:width" select="."/>
       </xsl:when>
       <xsl:otherwise>
@@ -1461,19 +1457,19 @@
   <xsl:template match="*" mode="tei2html_heading-level" as="xs:integer?"/>
 
   <xsl:function name="tei2html:table-width-grid" as="xs:integer">
-    <!-- returns 0, 50, or 100. It should be interpreted and used as a width
+    <!-- returns original width, 50, or 100. It should be interpreted and used as a width
       percentage, except when it’s 0. Then the original widths should be kept. -->
-    <xsl:param name="page-width-twip" as="xs:double"/>
     <xsl:param name="object-width-twip" as="xs:double"/>
+    <xsl:param name="page-width-twip" as="xs:double"/>
     <xsl:choose>
-      <xsl:when test="$object-width-twip gt 0.75 * $page-width-twip">
+      <xsl:when test="$object-width-twip gt (0.75 * $page-width-twip)">
         <xsl:sequence select="100"/>
       </xsl:when>
-      <xsl:when test="$object-width-twip gt 0.4 * $page-width-twip">
+      <xsl:when test="$object-width-twip gt (0.4 * $page-width-twip)">
         <xsl:sequence select="50"/>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:sequence select="0"/>
+        <xsl:sequence select="xs:integer(floor(($object-width-twip * 100) div $page-width-twip))"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:function>
