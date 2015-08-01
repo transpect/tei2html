@@ -524,7 +524,7 @@
   <xsl:template match="note" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
 
-    <div class="{name()}" id="fn_{@xml:id}">
+    <div class="{name()}" id="fn_{@xml:id}" epub:type="rearnote">
       <xsl:variable name="note-marker-width" select="if (string-length(xs:string(index-of($footnote-ids, @xml:id))) gt 2) then ' large' else ' narrow'" as="xs:string?"/>
       <p class="{concat('footnote-marker', $note-marker-width)}">
          <a href="#fna_{@xml:id}">
