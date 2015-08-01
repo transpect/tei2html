@@ -297,8 +297,7 @@
     <xsl:apply-templates select="." mode="class-att"/>
     <xsl:call-template name="css:remaining-atts">
       <xsl:with-param name="remaining-atts" 
-        select="@*[not(namespace-uri() = 'http://www.w3.org/1996/css' or self::attribute(xml:lang))]
-                  [not(css:map-att-to-elt(., ..))]"/>
+        select="@*[not(css:map-att-to-elt(., ..))]"/>
     </xsl:call-template>
   </xsl:template>
 
