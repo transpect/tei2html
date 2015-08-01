@@ -294,12 +294,14 @@
   </xsl:template>
   
   <xsl:template name="css:other-atts">
-    <!-- In the context of an element with CSSa attributes -->
-    <xsl:apply-templates select="@*[not(namespace-uri() = 'http://www.w3.org/1996/css' or self::attribute(xml:lang))]
-                                   [not(css:map-att-to-elt(., ..))]" mode="#current"/>
     <xsl:apply-templates select="." mode="class-att"/>
-    <xsl:sequence select="hub2htm:style-overrides(.)"/>
+    <xsl:call-template name="css:remaining-atts">
+      <xsl:with-param name="remaining-atts" 
+        select="@*[not(namespace-uri() = 'http://www.w3.org/1996/css' or self::attribute(xml:lang))]
+                  [not(css:map-att-to-elt(., ..))]"/>
+    </xsl:call-template>
   </xsl:template>
+
 
   <xsl:template match="html:span[(count(@*) eq 1) and (@srcpath)]" mode="clean-up">
     <xsl:apply-templates select="node()" mode="#current"/>
