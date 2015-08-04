@@ -642,13 +642,13 @@
   </xsl:template>
     
   <!-- ordered list whose first list item doesn't start wit 1. will be displayed as definition list then. -->  
-  <xsl:template match="list[@type eq 'ordered'][item[1][not(matches(@n, '^[1a]\.?$'))]]" mode="tei2html" priority="3">
+  <xsl:template match="list[@type eq 'ordered'][item[1][not(matches(@n, '^[1a][\.\)]?$'))]]" mode="tei2html" priority="3">
     <dl class="{@style}">
       <xsl:apply-templates mode="#current"/>
     </dl>
   </xsl:template>
   
-  <xsl:template match="item[parent::list[@type eq 'ordered'][item[1][not(matches(@n, '^[1a]\.?$'))]]]" mode="tei2html" priority="3">
+  <xsl:template match="item[parent::list[@type eq 'ordered'][item[1][not(matches(@n, '^[1a][\.\)]?$'))]]]" mode="tei2html" priority="3">
     <dt>
       <xsl:value-of select="@n"/>
     </dt>
