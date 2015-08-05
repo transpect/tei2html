@@ -840,9 +840,11 @@
   <xsl:function name="tei2html:heading-title" as="xs:string?">
     <xsl:param name="context"/>
     <xsl:variable name="content">
-      <xsl:call-template name="heading-content">
-        <xsl:with-param name="in-toc" select="true()" tunnel="yes"/>
-      </xsl:call-template>
+      <xsl:for-each select="$context">
+        <xsl:call-template name="heading-content">
+          <xsl:with-param name="in-toc" select="true()" tunnel="yes"/>
+        </xsl:call-template>
+      </xsl:for-each>
     </xsl:variable>
     <xsl:value-of select="$content"/>
   </xsl:function>
