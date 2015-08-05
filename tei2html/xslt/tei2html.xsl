@@ -640,15 +640,25 @@
       <xsl:apply-templates mode="#current"/>
     </ol>
   </xsl:template>
-    
-  <!-- ordered list whose first list item doesn't start wit 1. will be displayed as definition list then. -->  
-  <xsl:template match="list[@type eq 'ordered'][item[1][not(matches(@n, '^[1a][\.\)]?$'))]]" mode="tei2html" priority="3">
+  
+  <xsl:param name="tei2html:change-orderer-to-deflist" as="xs:boolean" select="true()"/>  
+  <xsl:variable name="tei2html:ordered-to-def-list-regex" select="'^[1a][\.\)]?$'" as="xs:string"/>
+  
+  <!-- ordered list whose first list item doesn't start with "1.", "1)", "a." or "a)" will be displayed as definition list then. 
+       Only if the parameter change-orderer-to-deflist is set true.
+        The regex to determine which ordered list items are changed is $ordered-to-def-list-regex. 
+        For example if it is important that 1) is displayed as "1)" and not "1." in HTML you have to create a definition list.-->  
+  <xsl:template match="list[$tei2html:change-orderer-to-deflist]
+                           [@type eq 'ordered']
+                           [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]" mode="tei2html" priority="3">
     <dl class="{@style}">
       <xsl:apply-templates mode="#current"/>
     </dl>
   </xsl:template>
   
-  <xsl:template match="item[parent::list[@type eq 'ordered'][item[1][not(matches(@n, '^[1a][\.\)]?$'))]]]" mode="tei2html" priority="3">
+  <xsl:template match="item[$tei2html:change-orderer-to-deflist]
+                           [parent::list[@type eq 'ordered']
+                           [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]]" mode="tei2html" priority="3">
     <dt>
       <xsl:value-of select="@n"/>
     </dt>
