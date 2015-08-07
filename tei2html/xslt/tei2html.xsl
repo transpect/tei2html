@@ -992,6 +992,10 @@
         <xsl:when test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication', 'appendix', 'index')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
+        <xsl:when test="$context[self::*:div[@type = 'preface'][not(@rend)
+                                                                or not(matches(@rend, string-join($frontmatter-parts, '|')))]]">
+          <xsl:attribute name="epub:type" select="$context/@type"/>
+        </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'preface'][some $class in $frontmatter-parts satisfies matches($class, @rend)]]">
           <xsl:choose>
             <xsl:when test="matches($context/@rend, 'title-page')">
@@ -1020,9 +1024,6 @@
               <xsl:attribute name="epub:type" select="'letex:motto'"/>
             </xsl:when>
           </xsl:choose>
-        </xsl:when>
-        <xsl:when test="$context[self::*:div[@type = 'preface'][not(matches(@rend, string-join($frontmatter-parts, '|')))]]">
-          <xsl:attribute name="epub:type" select="$context/@type"/>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'marginal']]">
           <xsl:attribute name="epub:type" select="'sidebar'"/>
