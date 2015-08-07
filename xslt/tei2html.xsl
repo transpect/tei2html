@@ -1052,6 +1052,8 @@
     <xsl:attribute name="class" select="string-join((@type, @rend), ' ')"/>
   </xsl:template>
   
+  <xsl:variable name="indexterm-cstyle-regex" as="xs:string" select="'#([ibth]|ti|hi|tb|hb)#'"/>
+  
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
     <xsl:variable name="subtype" select="@subtype" as="xs:string?"/>
     <div>
@@ -1102,7 +1104,7 @@
   
   <xsl:function name="tei2html:normalize-for-index" as="xs:string">
     <xsl:param name="term" as="xs:string"/>
-    <xsl:sequence select="upper-case(tei2html:strip-combining($term))"/>
+    <xsl:sequence select="upper-case(replace(tei2html:strip-combining($term),concat('^(',$indexterm-cstyle-regex, ')'),''))"/>
   </xsl:function>
   
   <xsl:template name="group-index-terms">
@@ -1124,7 +1126,7 @@
     <xsl:param name="level" as="xs:integer"/>
     <p class="ie ie{$level}">
       <span class="ie-term">
-        <xsl:apply-templates select="term/node()"/>  
+        <xsl:apply-templates select="term" mode="indexterms"/>  
       </span>
       <xsl:text>&#x2002;</xsl:text>
       <xsl:for-each select="current-group()[not(index)]">
@@ -1141,6 +1143,56 @@
       <xsl:with-param name="level" select="$level + 1"/>
     </xsl:call-template>
   </xsl:template>
+  
+  <xsl:template match="term" mode="indexterms">
+   <xsl:analyze-string select="text()" regex="{concat($indexterm-cstyle-regex, '([^#]*)', $indexterm-cstyle-regex)}">
+    <xsl:matching-substring>
+      <xsl:choose>
+        <xsl:when test="regex-group(1) eq 'i'">
+          <i>
+            <xsl:value-of select="regex-group(2)"/>
+          </i>
+        </xsl:when>
+        <xsl:when test="regex-group(1) eq 'b'">
+          <b>
+            <xsl:value-of select="regex-group(2)"/>
+          </b>
+        </xsl:when>
+        <xsl:when test="matches(regex-group(1), 't')">
+          <sub>
+            <xsl:choose>
+              <xsl:when test="matches(regex-group(1), 't[ib]')">
+                <xsl:element name="{replace(regex-group(1), 't', '')}">
+                  <xsl:value-of select="regex-group(2)"/>
+                </xsl:element>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="regex-group(2)"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </sub>
+        </xsl:when>
+        <xsl:when test="matches(regex-group(1), 'h')">
+          <sup>
+            <xsl:choose>
+              <xsl:when test="matches(regex-group(1), 'h[ib]')">
+                <xsl:element name="{replace(regex-group(1), 'h', '')}">
+                  <xsl:value-of select="regex-group(2)"/>
+                </xsl:element>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:value-of select="regex-group(2)"/>
+              </xsl:otherwise>
+            </xsl:choose>
+          </sup>
+        </xsl:when>
+      </xsl:choose>
+     </xsl:matching-substring>
+     <xsl:non-matching-substring>
+       <xsl:value-of select="."/>
+     </xsl:non-matching-substring>
+   </xsl:analyze-string>  
+  </xsl:template>
 
   <xsl:variable name="tei2html:create-index-term-backlink" as="xs:boolean" select="true()"/>
   
@@ -1148,9 +1200,7 @@
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:if test="not($in-toc)">
       <span class="indexterm" id="it_{descendant-or-self::index[last()]/@xml:id}">
-        <xsl:attribute name="title">
-          <xsl:apply-templates select="term" mode="#current"/>
-        </xsl:attribute>
+        <xsl:attribute name="title" select="replace(term, $indexterm-cstyle-regex, '')"/>
         <xsl:if test="$tei2html:create-index-term-backlink">
           <a href="#ie_{descendant-or-self::index[last()]/@xml:id}" class="it"/>
         </xsl:if>
