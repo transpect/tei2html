@@ -66,6 +66,8 @@
 
   <xsl:param name="lang" select="(/*/@xml:lang, 'en')[1]" as="xs:string"/>
   
+  <xsl:param name="apply-cstyles-in-indexterms" select="false()" as="xs:boolean"/>
+  
   <xsl:variable name="l10n" select="document(concat('l10n.', ($lang, 'en')[1], '.xml'))"
     as="document-node(element(l10n:l10n))"/>
   
@@ -1126,7 +1128,14 @@
     <xsl:param name="level" as="xs:integer"/>
     <p class="ie ie{$level}">
       <span class="ie-term">
-        <xsl:apply-templates select="term" mode="indexterms"/>  
+        <xsl:choose>
+          <xsl:when test="$apply-cstyles-in-indexterms">
+            <xsl:apply-templates select="term" mode="indexterms"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:apply-templates select="term/node()" mode="#current"/>
+          </xsl:otherwise>
+        </xsl:choose>
       </span>
       <xsl:text>&#x2002;</xsl:text>
       <xsl:for-each select="current-group()[not(index)]">
@@ -1144,7 +1153,7 @@
     </xsl:call-template>
   </xsl:template>
   
-  <xsl:template match="term" mode="indexterms">
+  <xsl:template match="term[normalize-space()]" mode="indexterms">
    <xsl:analyze-string select="text()" regex="{concat($indexterm-cstyle-regex, '([^#]*)', $indexterm-cstyle-regex)}">
     <xsl:matching-substring>
       <xsl:choose>
