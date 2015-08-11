@@ -237,10 +237,14 @@
   <xsl:template match="body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal', 'motto'))] | div1 | div2 | back" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
-  
+
+  <xsl:variable name="tei2html:create-lox" as="xs:boolean" select="true()"/>
+
   <xsl:template match="/TEI/text/body" mode="tei2html">
-    <xsl:call-template name="lof"/>
-    <xsl:call-template name="lot"/>
+    <xsl:if test="$tei2html:create-lox">
+      <xsl:call-template name="lof"/>
+      <xsl:call-template name="lot"/>
+    </xsl:if>
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
