@@ -238,7 +238,54 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
+  <xsl:template match="/TEI/text/body" mode="tei2html">
+    <xsl:call-template name="lof"/>
+    <xsl:call-template name="lot"/>
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
   
+  <!-- List of Figures, List of Tables 
+    It is expected that the location in the document, the headings, and classes will be adapted
+    by another XSLT (e.g., htmltemplates)
+  -->
+  
+  <xsl:template name="lof">
+    <xsl:if test="//figure[head]">
+      <div epub:type="loi" class="lox">
+        <h2>List of Figures</h2>
+        <xsl:apply-templates select="//figure[head]" mode="lox"/>
+      </div>  
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="figure" mode="lox">
+    <p>
+      <a href="#{@xml:id}">
+        <xsl:apply-templates select="(head[@type = 'titleabbrev'], head[not(@type)])[1]/node()" 
+          mode="strip-indexterms-etc"/>  
+      </a>
+    </p>
+  </xsl:template>
+
+  <xsl:template name="lot">
+    <xsl:if test="//table[head]">
+      <div epub:type="lot" class="lox">
+        <h2>List of Tables</h2>
+        <xsl:apply-templates select="//table[head]" mode="lox"/>
+      </div>  
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="table" mode="lox">
+    <p>
+      <a href="#{@xml:id}">
+        <xsl:apply-templates select="(head[@type = 'titleabbrev'], head[not(@type)])[1]/node()" 
+          mode="strip-indexterms-etc"/>  
+      </a>
+    </p>
+  </xsl:template>
+  
+
   <xsl:template match="div[@type]" mode="tei2html" priority="3">
     <div>
       <xsl:apply-templates select="@* except @rend" mode="#current"/>
