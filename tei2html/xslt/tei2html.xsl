@@ -71,6 +71,10 @@
   <xsl:variable name="l10n" select="document(concat('l10n.', ($lang, 'en')[1], '.xml'))"
     as="document-node(element(l10n:l10n))"/>
   
+  <xsl:variable name="tei2html:auxiliary-table-style-regex" as="xs:string" select="'letex_aux-table'">
+    <!-- table style name for  auxiliary tables (without borders) -->
+  </xsl:variable>  
+  
   <xsl:key name="l10n-string" match="l10n:string" use="@id"/>
   <xsl:key name="rule-by-name" match="css:rule" use="@name"/>
   <xsl:key name="by-id" match="*[@id | @xml:id]" use="@id | @xml:id"/>
@@ -1462,7 +1466,7 @@
         <xsl:copy copy-namespaces="no">
           <xsl:apply-templates select="@*, node()" mode="#current">
             <xsl:with-param name="table-twips" select="$twips" tunnel="yes"/>
-            <xsl:with-param name="table-percentage" select="tei2html:table-width-grid($twips, $page-width-twips)" tunnel="yes"/>
+            <xsl:with-param name="table-percentage" select="if (tei2html:display-table-in-whole-width(.)) then 100 else tei2html:table-width-grid($twips, $page-width-twips)" tunnel="yes"/>
           </xsl:apply-templates>
         </xsl:copy>    
       </xsl:when>
@@ -1586,7 +1590,7 @@
     <xsl:param name="object-width-twip" as="xs:double"/>
     <xsl:param name="page-width-twip" as="xs:double"/>
     <xsl:choose>
-      <xsl:when test="$object-width-twip gt (0.75 * $page-width-twip)">
+      <xsl:when test="($object-width-twip gt (0.75 * $page-width-twip))">
         <xsl:sequence select="100"/>
       </xsl:when>
       <xsl:when test="$object-width-twip gt (0.4 * $page-width-twip)">
@@ -1597,8 +1601,20 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:function>
-    
-
+  
+  <xsl:function name="tei2html:display-table-in-whole-width" as="xs:boolean">
+    <!-- this function can be used to map special tables to 100% width. For example fake tables. (Instead of tabular tables, like timetables). Overwrite this in your adaptions.. -->
+    <xsl:param name="table" as="element(table)"/>
+    <xsl:choose>
+      <xsl:when test="matches($table/@rend, $tei2html:auxiliary-table-style-regex)">
+        <xsl:sequence select="true()"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence select="false()"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:function>
+  
   <xsl:function name="letex:contains" as="xs:boolean">
     <xsl:param name="space-sep-list" as="xs:string?" />
     <xsl:param name="item" as="xs:string+" />
