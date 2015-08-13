@@ -490,13 +490,6 @@
     </xsl:if>
   </xsl:template>-->
   
-  <xsl:template match="title[not($divify-sections = 'yes')]" mode="class-att" priority="2">
-    <xsl:attribute name="class" select="(parent::title-group[not(ends-with(../name(), 'meta'))],
-                                         ancestor::*[ends-with(name(), 'meta')], 
-                                         .)[1]/../
-                                                 (name(), @book-part-type)[last()]"/>
-  </xsl:template>
-    
   <xsl:template match="table[@class = 'hub:right-tab']" mode="class-att">
     <xsl:attribute name="class" select="'right-tab'"/>
   </xsl:template>
@@ -1662,5 +1655,11 @@
   <xsl:template match="*:span[@class = 'label']/@class" mode="clean-up" priority="3">
     <xsl:attribute name="{name()}" select="concat(., tei2html:label-width(..))"/>
   </xsl:template> 
-  
+
+  <xsl:function name="tei2html:contains-token" as="xs:boolean">
+    <xsl:param name="string" as="xs:string?"/>
+    <xsl:param name="token" as="xs:string+"/>
+    <xsl:sequence select="tokenize($string, '\s+') = $token"/>
+  </xsl:function>
+
 </xsl:stylesheet>
