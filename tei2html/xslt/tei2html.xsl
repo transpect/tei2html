@@ -259,7 +259,7 @@
   
   <xsl:template name="lof">
     <xsl:if test="//figure[head]">
-      <div epub:type="loi" class="lox">
+      <div epub:type="loi" class="lox loi">
         <h2>List of Figures</h2>
         <xsl:apply-templates select="//figure[head]" mode="lox"/>
       </div>  
@@ -277,7 +277,7 @@
 
   <xsl:template name="lot">
     <xsl:if test="//table[head]">
-      <div epub:type="lot" class="lox">
+      <div epub:type="lot" class="lox lot">
         <h2>List of Tables</h2>
         <xsl:apply-templates select="//table[head]" mode="lox"/>
       </div>  
