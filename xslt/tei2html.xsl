@@ -137,14 +137,20 @@
     </xsl:message>
   </xsl:template>
   
-  <xsl:template match="/*/@*[name() = ('xml:lang', 'source-dir-uri', 'xml:base')]" mode="tei2html">
+  <xsl:template match="/*/@*[name() = ('source-dir-uri', 'xml:base')]" mode="tei2html">
     <xsl:copy/>
   </xsl:template>
 
-  <xsl:template match="@xml:lang" mode="tei2html" priority="2">
+  <xsl:template match="@xml:lang" mode="hub2htm:css-style-overrides tei2html hub2htm:css-style-defs" priority="2">
     <xsl:attribute name="lang" select="."/>
+    <xsl:copy/>
   </xsl:template>
-  
+
+  <xsl:template match="@xml:lang[. = ../ancestor::*[@xml:lang][1]/@xml:lang]" 
+    mode="clean-up" priority="3"/>
+  <xsl:template match="@lang[. = ../ancestor::*[@lang][1]/@lang]" 
+    mode="clean-up" priority="3"/>
+
   <xsl:template match="/*/@*[name() = ('version')]" mode="tei2html"/>
   
   <xsl:template match="/TEI" mode="tei2html">
