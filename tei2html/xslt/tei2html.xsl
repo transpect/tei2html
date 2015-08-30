@@ -959,7 +959,7 @@
   <xsl:template match="label[node()[last()]/self::lb]" mode="label-sep">
     <xsl:param name="in-toc" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:if test="$in-toc">
-      <xsl:text>&#160;</xsl:text>
+      <xsl:next-match/>
     </xsl:if>
   </xsl:template>
   
