@@ -907,11 +907,16 @@
   
   <xsl:template name="heading-content">
     <xsl:param name="in-toc" tunnel="yes" select="false()"/>
+    <xsl:variable name="content" as="node()*">
+      <xsl:apply-templates select="node() except label" mode="tei2html"/>
+    </xsl:variable>
     <xsl:if test="label">
       <xsl:apply-templates select="label/node()" mode="strip-indexterms-etc"/>
-      <xsl:apply-templates select="label" mode="label-sep"/>
+      <xsl:if test="exists($content)">
+        <xsl:apply-templates select="label" mode="label-sep"/>
+      </xsl:if>
     </xsl:if>
-    <xsl:apply-templates select="node() except label" mode="tei2html"/>
+    <xsl:sequence select="$content"/>
   </xsl:template>
   
   <xsl:variable name="tei:anonymous-chapter-regex" select="'p_h_anonym'" as="xs:string"/>
