@@ -1181,6 +1181,8 @@
     </xsl:for-each-group>
   </xsl:template>
   
+  <xsl:variable name="tei2html:index-entry-sep" as="xs:string" select="'&#x2002;'"/>
+  
   <xsl:template name="index-entry">
     <!-- context: tei:index element -->
     <xsl:param name="level" as="xs:integer"/>
@@ -1195,7 +1197,7 @@
           </xsl:otherwise>
         </xsl:choose>
       </span>
-      <xsl:text>&#x2002;</xsl:text>
+      <xsl:value-of select="$tei2html:index-entry-sep"/>
       <xsl:for-each select="current-group()[not(index)]">
         <a href="#it_{@xml:id}" id="ie_{@xml:id}">
           <xsl:value-of select="position()"/>
