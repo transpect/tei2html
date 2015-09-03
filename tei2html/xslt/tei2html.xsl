@@ -149,7 +149,7 @@
   <xsl:template match="@xml:lang[. = ../ancestor::*[@xml:lang][1]/@xml:lang]" 
     mode="tei2html" priority="3"/>
   <xsl:template match="@lang[. = ../ancestor::*[@lang][1]/@lang]" 
-    mode="tei2html-up" priority="3"/>
+    mode="tei2html" priority="3"/>
 
   <xsl:template match="/*/@*[name() = ('version')]" mode="tei2html"/>
   
