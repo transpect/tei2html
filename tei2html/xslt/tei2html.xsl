@@ -146,8 +146,14 @@
     <xsl:copy/>
   </xsl:template>
   
+  <xsl:template match="@xml:lang | @lang" mode="tei2html">
+    <xsl:copy/>
+  </xsl:template>
+    
   <xsl:template match="@xml:lang[. = ../ancestor::*[@xml:lang][1]/@xml:lang]" 
-    mode="tei2html" priority="3"/>
+    mode="tei2html" priority="3">
+    <xsl:message select="'-----------lllll', name(..)"/>
+  </xsl:template>
   <xsl:template match="@lang[. = ../ancestor::*[@lang][1]/@lang]" 
     mode="tei2html" priority="3"/>
 
