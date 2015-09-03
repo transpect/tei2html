@@ -141,15 +141,15 @@
     <xsl:copy/>
   </xsl:template>
 
-  <xsl:template match="@xml:lang" mode="hub2htm:css-style-overrides tei2html hub2htm:css-style-defs" priority="2">
+  <xsl:template match="@xml:lang" mode="epub-alternatives hub2htm:css-style-overrides" priority="2">
     <xsl:attribute name="lang" select="."/>
     <xsl:copy/>
   </xsl:template>
-
+  
   <xsl:template match="@xml:lang[. = ../ancestor::*[@xml:lang][1]/@xml:lang]" 
-    mode="clean-up" priority="3"/>
+    mode="tei2html" priority="3"/>
   <xsl:template match="@lang[. = ../ancestor::*[@lang][1]/@lang]" 
-    mode="clean-up" priority="3"/>
+    mode="tei2html-up" priority="3"/>
 
   <xsl:template match="/*/@*[name() = ('version')]" mode="tei2html"/>
   
@@ -210,8 +210,7 @@
   
   <xsl:template match="css:rules" mode="tei2html">
     <xsl:copy copy-namespaces="no">
-      <xsl:copy-of select="@*"/>
-      <xsl:copy-of select="node()"/>
+      <xsl:copy-of select="@*, node()"/>
     </xsl:copy>
   </xsl:template>
   
@@ -1021,7 +1020,7 @@
   <xsl:template match="@rend" mode="tei2html">
     <xsl:apply-templates select=".." mode="class-att"/>
   </xsl:template>
-  <xsl:template match="*[@rend]" mode="class-att">
+  <xsl:template match="*[@rend][@rend != 'title-page']" mode="class-att">
     <xsl:attribute name="class" select="@rend"/>
   </xsl:template>
   <!-- Is this a suitable replacement for line 316? -->
