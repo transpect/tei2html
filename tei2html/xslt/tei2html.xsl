@@ -1275,19 +1275,21 @@
 
   <xsl:variable name="tei2html:create-index-term-backlink" as="xs:boolean" select="true()"/>
   
+  <xsl:variable name="tei2html:indexterm-backlink-class" select="'it'"/>
+  
   <xsl:template match="index[not(parent::index)]" mode="tei2html">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:if test="not($in-toc)">
       <span class="indexterm" id="it_{descendant-or-self::index[last()]/@xml:id}">
         <xsl:attribute name="title" select="replace(term, $indexterm-cstyle-regex, '')"/>
         <xsl:if test="$tei2html:create-index-term-backlink">
-          <a href="#ie_{descendant-or-self::index[last()]/@xml:id}" class="it"/>
+          <a href="#ie_{descendant-or-self::index[last()]/@xml:id}" class="{$tei2html:indexterm-backlink-class}"/>
         </xsl:if>
       </span>
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="html:a[@class eq 'it'][@href]" mode="clean-up">
+  <xsl:template match="html:a[@class = $tei2html:indexterm-backlink-class][@href]" mode="clean-up">
     <xsl:variable name="matching-entry" as="element(*)?" select="key('by-id', substring-after(@href, '#'))"/>
     <xsl:if test="exists($matching-entry)">
       <xsl:copy copy-namespaces="no">
