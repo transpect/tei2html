@@ -58,6 +58,7 @@
   <!-- for calculating whether a table covers the whole width or only part of it: -->
   <xsl:param name="page-width" select="'180mm'"/>
   <xsl:param name="page-width-twips" select="letex:length-to-unitless-twip($page-width)" as="xs:double"/>
+  <xsl:param name="srcpaths" select="'no'"/>
   
   <xsl:output method="xhtml" indent="no" 
     doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
@@ -79,7 +80,7 @@
   <xsl:key name="rule-by-name" match="css:rule" use="@name"/>
   <xsl:key name="by-id" match="*[@id | @xml:id]" use="@id | @xml:id"/>
 
-  <xsl:template match="* | @*" mode="expand-css clean-up table-widths epub-alternatives" priority="-0.5">
+  <xsl:template match="* | @*" mode="expand-css clean-up table-widths epub-alternatives join-segs" priority="-0.5">
     <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@* | node()" mode="#current" />  
     </xsl:copy>
@@ -152,7 +153,7 @@
     
   <xsl:template match="@xml:lang[. = ../ancestor::*[@xml:lang][1]/@xml:lang]" 
     mode="tei2html" priority="3">
-    <xsl:message select="'-----------lllll', name(..)"/>
+<!--    <xsl:message select="'-\-\-\-\-\-\-\-\-\-\-lllll', name(..)"/>-->
   </xsl:template>
   <xsl:template match="@lang[. = ../ancestor::*[@lang][1]/@lang]" 
     mode="tei2html" priority="3"/>
@@ -1686,4 +1687,132 @@
     <xsl:sequence select="tokenize($string, '\s+') = $token"/>
   </xsl:function>
 
+  <!-- MODE: JOIN-SEGS (analog in evolve-hub hub:join-phrases). Important when overrides are discarded earlier. -->
+
+  <xsl:template match="@srcpath[not(tei:boolean-param($srcpaths))]" mode="join-segs" />
+  
+  <xsl:template match="*[*:seg or *:hi[@rendition  = ('subscript', 'superscript')]]" mode="join-segs">
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="#current" />
+      <xsl:attribute name="srcpath" 
+        select="string-join(
+        (@srcpath, 
+        node()[(every $att in current-group()/@* satisfies ($att/name() = 'srcpath')) and 
+        not(self::*:hi[@rendition  = ('subscript', 'superscript')])
+        ]/@srcpath), 
+        '&#x20;'
+        )"/>
+      <xsl:for-each-group select="node()" group-adjacent="tei:phrase-signature(.)">
+        <xsl:choose>
+          <!-- dissolve if no interesting attributes -->
+          <xsl:when test="exists(current-group()/@*) and 
+            (every $att in current-group()/@* satisfies ($att/name() = 'srcpath')) and
+            not(self::*:hi[@rendition  = ('subscript', 'superscript')])">
+            <xsl:apply-templates select="current-group()" mode="join-segs-unwrap" />
+          </xsl:when>
+          <xsl:when test="self::*:seg or self::*:hi[@rendition  = ('subscript', 'superscript')]">
+            <xsl:copy>
+              <xsl:if test="tei:boolean-param($srcpaths) and (current-group()/@srcpath)[. ne ''][1]">
+                <xsl:attribute name="srcpath" select="current-group()/@srcpath[. ne '']" separator=" "/>
+              </xsl:if>
+              <xsl:copy-of select="@* except @srcpath" />
+              <xsl:apply-templates select="current-group()" mode="join-segs-unwrap" />
+            </xsl:copy>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:apply-templates select="current-group()" mode="#current" />
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:for-each-group>
+    </xsl:copy>
+  </xsl:template>
+
+  <xsl:function name="tei:boolean-param" as="xs:boolean">
+    <xsl:param name="input" as="xs:string" />
+    <xsl:sequence select="$input = ('yes', '1', 'true')" />
+  </xsl:function>
+  
+  <xsl:function name="tei:attr-hashes" as="xs:string*">
+    <xsl:param name="elt" as="node()*" />
+    <xsl:perform-sort>
+      <xsl:sort/>
+      <xsl:sequence select="for $a in ($elt/@*[not(name() = $tei:attr-hash-ignorables)]) return tei:attr-hash($a)" />
+    </xsl:perform-sort>
+  </xsl:function>
+  
+  <xsl:variable name="tei:attr-hash-ignorables" as="xs:string*" select="('xml:id', 'srcpath')"/>
+  
+  <xsl:function name="tei:attr-hash" as="xs:string">
+    <xsl:param name="att" as="attribute(*)" />
+    <xsl:sequence select="concat(name($att), '__=__', $att)" />
+  </xsl:function>
+  
+  <xsl:function name="tei:attname" as="xs:string">
+    <xsl:param name="hash" as="xs:string" />
+    <xsl:value-of select="replace($hash, '__=__.+$', '')" />
+  </xsl:function>
+  
+  <xsl:function name="tei:attval" as="xs:string">
+    <xsl:param name="hash" as="xs:string" />
+    <xsl:value-of select="replace($hash, '^.+__=__', '')" />
+  </xsl:function>
+  
+  <xsl:function name="tei:signature" as="xs:string*">
+    <xsl:param name="elt" as="element(*)?" />
+    <xsl:sequence select="if (exists($elt)) 
+      then string-join((name($elt), tei:attr-hashes($elt)), '___')
+      else '' " />
+  </xsl:function>
+  
+  <!-- If a span, return its hash. 
+       If a whitespace text node in between two spans of same hash, return their hash.
+       Otherwise, return the empty string. -->
+  <xsl:function name="tei:phrase-signature" as="xs:string">
+    <xsl:param name="node" as="node()" />
+    <xsl:apply-templates select="$node" mode="seg-signature"/>
+    <!--<xsl:sequence select="if ($node/self::phrase or $node/self::superscript or $node/self::subscript) 
+                          then hub:signature($node)
+                          else 
+                            if ($node/self::*)
+                            then ''
+                            else
+                              if ($node/self::text()
+                                    [matches(., '^[\p{Zs}\s]+$')]
+                                    [hub:signature($node/preceding-sibling::*[1]) eq hub:signature($node/following-sibling::*[1])]
+                                 )
+                              then hub:signature($node/preceding-sibling::*[1])
+                              else ''
+                          " />-->
+  </xsl:function>
+  
+  <xsl:template match="*:seg | *:hi[@rendition  = ('subscript', 'superscript')]" mode="seg-signature" as="xs:string">
+    <xsl:sequence select="tei:signature(.)"/>
+  </xsl:template>
+  
+  <xsl:template match="node()" mode="seg-signature" as="xs:string">
+    <xsl:sequence select="''"/>
+  </xsl:template>
+  
+  <xsl:template match="text()[matches(., '^[\p{Zs}\s]+$')]
+    [tei:signature(preceding-sibling::*[1]) = tei:signature(following-sibling::*[1])]" 
+    mode="seg-signature" as="xs:string">
+    <xsl:sequence select="tei:signature(preceding-sibling::*[1])"/>
+  </xsl:template>
+  
+  <xsl:template match="anchor
+    [tei:signature(preceding-sibling::*[1]) = tei:signature(following-sibling::*[1])]" 
+    mode="seg-signature" as="xs:string">
+    <xsl:sequence select="tei:signature(preceding-sibling::*[1])"/>
+  </xsl:template>
+  
+  <xsl:template match="*:seg | *:hi[@rendition  = ('subscript', 'superscript')]" mode="join-segs-unwrap">
+    <xsl:apply-templates mode="join-segs" />
+  </xsl:template>
+  
+  <xsl:template match="*" mode="join-segs-unwrap">
+    <xsl:copy>
+      <xsl:apply-templates select="@*, node()" mode="join-segs" />  
+    </xsl:copy>
+  </xsl:template>
+  
 </xsl:stylesheet>
