@@ -771,6 +771,8 @@
     </p>
   </xsl:template>
   
+  <xsl:template match="figure/head[letex:contains(@type, 'titleabbrev')]" mode="tei2html" priority="3"/>
+
   <xsl:template match="floatingText//head" mode="tei2html" priority="3">
     <p>
       <xsl:call-template name="css:content"/>
