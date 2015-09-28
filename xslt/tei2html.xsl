@@ -582,6 +582,9 @@
   </xsl:template>
 
   <!-- Footnotes -->
+  
+  <xsl:variable name="tei2html:after-footnote-marker-space" select="'&#xa0;'" as="xs:string"/>
+  
   <xsl:template match="note" mode="notes">
     <xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
 
@@ -591,7 +594,7 @@
          <a href="#fna_{@xml:id}">
              <xsl:value-of select="index-of($footnote-ids, @xml:id)"/>
          </a>
-        <xsl:text>&#160;</xsl:text>
+        <xsl:value-of select="$tei2html:after-footnote-marker-space"/>
       </p>
       <div class="footnote-text">
         <xsl:apply-templates mode="tei2html">
