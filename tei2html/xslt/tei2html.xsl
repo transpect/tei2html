@@ -939,12 +939,16 @@
   </xsl:template>
   -->
   <xsl:param name="tei2html:dissolve-br-in-toc-head" as="xs:boolean" select="false()"/>
-  
-  <xsl:template match="*:head/*:lb" mode="strip-indexterms-etc">
+  <xsl:variable name="tei2html:preserve-breaks-style-regex" select="'transpect-keep-br'" as="xs:string"/>
+    
+  <xsl:template match="*:head//*:lb" mode="strip-indexterms-etc">
     <xsl:param name="tei2html:dissolve-br-in-toc-head" tunnel="yes"/>
     <xsl:choose>
       <xsl:when test="$tei2html:dissolve-br-in-toc-head">
         <xsl:choose>
+          <xsl:when test="parent::*[matches(@rend, $tei2html:preserve-breaks-style-regex)]">
+            <br/>
+          </xsl:when>
           <xsl:when test="preceding-sibling::node()[1]/(self::text()) and matches(preceding-sibling::node()[1], '\s$') or
             following-sibling::node()[1]/(self::text()) and matches(following-sibling::node()[1], '^\s')"/>
           <xsl:otherwise>
