@@ -4,22 +4,22 @@
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:html="http://www.w3.org/1999/xhtml"
   xmlns:tei="http://www.tei-c.org/ns/1.0"
-  xmlns:letex="http://www.le-tex.de/namespace"
   xmlns:saxon="http://saxon.sf.net/"
   xmlns:xlink="http://www.w3.org/1999/xlink" 
   xmlns:css="http://www.w3.org/1996/css"
-  xmlns:hub2htm="http://www.le-tex.de/namespace/hub2htm" 
-  xmlns:tei2html="http://www.le-tex.de/namespace/tei2html" 
-  xmlns:l10n="http://www.le-tex.de/namespace/l10n"
+  xmlns:hub2htm="http://transpect.io/hub2htm" 
+  xmlns:tei2html="http://transpect.io/tei2html" 
+  xmlns:l10n="http://transpect.io/l10n"
+  xmlns:tr="http://transpect.io"
   xmlns:epub="http://www.idpf.org/2007/ops"
   xmlns="http://www.w3.org/1999/xhtml"
   xpath-default-namespace="http://www.tei-c.org/ns/1.0"
   exclude-result-prefixes="#all"
   version="2.0">
 
-  <xsl:import href="http://transpect.le-tex.de/hub2html/xsl/css-rules.xsl"/>
-  <xsl:import href="http://transpect.le-tex.de/xslt-util/lengths/lengths.xsl"/>
-  <xsl:import href="http://transpect.le-tex.de/hub2html/xsl/css-atts2wrap.xsl"/>
+  <xsl:import href="http://transpect.io/hub2html/xsl/css-rules.xsl"/>
+  <xsl:import href="http://transpect.io/xslt-util/lengths/xsl/lengths.xsl"/>
+  <xsl:import href="http://transpect.io/hub2html/xsl/css-atts2wrap.xsl"/>
   
   <xsl:param name="debug" select="'yes'"/>
   <xsl:param name="debug-dir-uri" select="'debug'"/>
@@ -57,7 +57,7 @@
 
   <!-- for calculating whether a table covers the whole width or only part of it: -->
   <xsl:param name="page-width" select="'180mm'"/>
-  <xsl:param name="page-width-twips" select="letex:length-to-unitless-twip($page-width)" as="xs:double"/>
+  <xsl:param name="page-width-twips" select="tr:length-to-unitless-twip($page-width)" as="xs:double"/>
   <xsl:param name="srcpaths" select="'no'"/>
   
   <xsl:output method="xhtml" indent="no" 
@@ -113,9 +113,9 @@
   <xsl:template match="*[preceding-sibling::p[descendant-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives"
     priority="2"/>
   
-  <xsl:template match="/html:html[some $t in .//@epub:type satisfies (starts-with($t, 'letex:'))]" mode="clean-up">
+  <xsl:template match="/html:html[some $t in .//@epub:type satisfies (starts-with($t, 'tr:'))]" mode="clean-up">
     <xsl:copy>
-      <xsl:attribute name="epub:prefix" select="'letex: http://www.le-tex.de/namespace'"/>
+      <xsl:attribute name="epub:prefix" select="'tr: http://www.le-tex.de/namespace'"/>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </xsl:copy>
   </xsl:template>
@@ -188,7 +188,7 @@
     <div class="keywords">
       <p class="{local-name()}">
         <b>
-          <xsl:value-of select="letex:unescape-uri(@rendition)"/>
+          <xsl:value-of select="tr:unescape-uri(@rendition)"/>
         </b>
         <xsl:text> </xsl:text>
         <xsl:value-of select="$keywords"/>
@@ -308,7 +308,7 @@
   <xsl:template match="div[@type]" mode="tei2html" priority="3">
     <div>
       <xsl:apply-templates select="@* except @rend" mode="#current"/>
-      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
+      <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:attribute name="class" select="if (@rend) then concat(@rend, ' ', @type) else @type"/>
       <xsl:comment>schnurz</xsl:comment>
       <xsl:apply-templates select="node()" mode="#current"/>
@@ -774,7 +774,7 @@
     </p>
   </xsl:template>
   
-  <xsl:template match="figure/head[letex:contains(@type, 'titleabbrev')]" mode="tei2html" priority="3"/>
+  <xsl:template match="figure/head[tr:contains(@type, 'titleabbrev')]" mode="tei2html" priority="3"/>
 
   <xsl:template match="floatingText//head" mode="tei2html" priority="3">
     <p>
@@ -790,7 +790,7 @@
     <xsl:variable name="footnotes" select=".//note[@type = 'footnote']" as="element(note)*"/>
     <xsl:if test="$footnotes">
       <div class="notes">
-        <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, $footnotes[1])"/>
+        <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, $footnotes[1])"/>
         <xsl:apply-templates select="$footnotes" mode="notes"/>
       </div>  
     </xsl:if>
@@ -808,7 +808,7 @@
         with class attributes according to the to heading level, which is not permitted 
         (must be ol). -->
       <!-- The above comment is no longer true. The Epubtools werde changed, so now the attribute is needed -->
-      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
+      <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:choose>
         <xsl:when test="exists(* except head)">
           <!-- explicitly rendered toc -->
@@ -1047,14 +1047,14 @@
   
   <xsl:template match="pb" mode="tei2html">
     <div class="{local-name()}">
-      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
+      <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
     </div>
   </xsl:template>
 
   <!-- override this in your adaptions with 3, then epub-types are created -->
   <xsl:variable name="tei2html:epub-type" as="xs:string" select="'2'"/>
   
-  <xsl:function name="letex:create-epub-type-attribute" as="attribute()?">
+  <xsl:function name="tr:create-epub-type-attribute" as="attribute()?">
     <xsl:param name="tei2html:epub-type" as="xs:string"/>
     <xsl:param name="context" as="element(*)"/>
     <!-- always useful -->
@@ -1082,23 +1082,23 @@
               <xsl:attribute name="epub:type" select="'copyright-page'"/>
             </xsl:when>
             <xsl:when test="matches($context/@rend, 'about-contrib')">
-              <xsl:attribute name="epub:type" select="'letex:bio'"/>
+              <xsl:attribute name="epub:type" select="'tr:bio'"/>
             </xsl:when>
             <!-- additional Info in title -->
             <xsl:when test="matches($context/@rend, 'additional-info')">
-              <xsl:attribute name="epub:type" select="'letex:additional-info'"/>
+              <xsl:attribute name="epub:type" select="'tr:additional-info'"/>
             </xsl:when>
             <xsl:when test="matches($context/@rend, 'series')">
-              <xsl:attribute name="epub:type" select="'letex:additional-info'"/>
+              <xsl:attribute name="epub:type" select="'tr:additional-info'"/>
             </xsl:when>
             <xsl:when test="matches($context/@rend, 'about-book')">
-              <xsl:attribute name="epub:type" select="'letex:about-the-book'"/>
+              <xsl:attribute name="epub:type" select="'tr:about-the-book'"/>
             </xsl:when>
             <xsl:when test="matches($context/@rend, 'dedication')">
               <xsl:attribute name="epub:type" select="'dedication'"/>
             </xsl:when>
             <xsl:when test="matches($context/@rend, 'motto')">
-              <xsl:attribute name="epub:type" select="'letex:motto'"/>
+              <xsl:attribute name="epub:type" select="'tr:motto'"/>
             </xsl:when>
           </xsl:choose>
         </xsl:when>
@@ -1106,7 +1106,7 @@
           <xsl:attribute name="epub:type" select="'sidebar'"/>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = 'motto']]">
-          <xsl:attribute name="epub:type" select="'letex:motto'"/>
+          <xsl:attribute name="epub:type" select="'tr:motto'"/>
         </xsl:when>
         <xsl:when test="$context[self::*:divGen[@type = ('index', 'toc')]]">
           <xsl:attribute name="epub:type" select="$context/@type"/>
@@ -1138,7 +1138,7 @@
     <xsl:variable name="subtype" select="@subtype" as="xs:string?"/>
     <div>
       <xsl:apply-templates select="." mode="class-att"/>
-      <xsl:sequence select="letex:create-epub-type-attribute($tei2html:epub-type, .)"/>
+      <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:attribute name="id" select="string-join(((@id, @xml:id)[1], $subtype), '-')"/>
       <xsl:call-template name="tei2html:title-group"/>
@@ -1476,8 +1476,8 @@
   </xsl:template>  
   
   <xsl:template match="cell/@css:width | *:td/@css:width" mode="table-widths">
-    <xsl:variable name="cell-width" select="if (matches(., '(pt|mm)$')) then letex:length-to-unitless-twip(.) else ."/>
-    <xsl:variable name="table-width" select="if (ancestor::table[1]/@css:width) then letex:length-to-unitless-twip(ancestor::table[1]/@css:width) else '5000'"/>
+    <xsl:variable name="cell-width" select="if (matches(., '(pt|mm)$')) then tr:length-to-unitless-twip(.) else ."/>
+    <xsl:variable name="table-width" select="if (ancestor::table[1]/@css:width) then tr:length-to-unitless-twip(ancestor::table[1]/@css:width) else '5000'"/>
     <xsl:attribute name="css:width" select="replace((xs:string((100 * $cell-width) div $table-width)), '(\d+)(\.?)(\d{2})?(\d*)', '$1$2$3%')"/>    
   </xsl:template>
   
@@ -1486,7 +1486,7 @@
     all @css:* will be stripped -->
 
   <xsl:template match="table[@css:width]" mode="table-widths">
-    <xsl:variable name="twips" select="letex:length-to-unitless-twip(@css:width)" as="xs:double?"/>
+    <xsl:variable name="twips" select="tr:length-to-unitless-twip(@css:width)" as="xs:double?"/>
     <xsl:choose>
       <xsl:when test="$twips">
         <xsl:copy copy-namespaces="no">
@@ -1528,7 +1528,7 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:attribute name="css:width" 
-          select="concat(string(xs:integer(1000 * (letex:length-to-unitless-twip(.) div $table-twips)) * 0.1), '%')"/>    
+          select="concat(string(xs:integer(1000 * (tr:length-to-unitless-twip(.) div $table-twips)) * 0.1), '%')"/>    
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -1641,7 +1641,7 @@
     </xsl:choose>
   </xsl:function>
   
-  <xsl:function name="letex:contains" as="xs:boolean">
+  <xsl:function name="tr:contains" as="xs:boolean">
     <xsl:param name="space-sep-list" as="xs:string?" />
     <xsl:param name="item" as="xs:string+" />
     <xsl:sequence select="$item = tokenize($space-sep-list, '\s+', 's')" />
