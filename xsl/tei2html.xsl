@@ -424,7 +424,7 @@
             <xsl:element name="img" exclude-result-prefixes="#all">
               <xsl:attribute name="src" select="."/>
               <xsl:attribute name="class" select="'alt-image'"/>
-              <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/([^/])$', '$1'),'« of the original box. Due to displaying constraints of ePub readers it is delivered as an image only.')"/>
+              <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/(.+?)$', '$1'),'« of the original box. Due to displaying constraints of ePub readers it is delivered as an image only.')"/>
             </xsl:element>
           </xsl:for-each>
         </xsl:when>
@@ -448,7 +448,7 @@
         <xsl:element name="img" exclude-result-prefixes="#all">
           <xsl:attribute name="src" select="."/>
           <xsl:attribute name="class" select="'alt-image'"/>
-          <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/([^/])$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
+          <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/(.+?)$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
         </xsl:element>
       </xsl:for-each>
       <xsl:if test="not($tei2html:table-head-before-table)">
