@@ -115,7 +115,7 @@
   
   <xsl:template match="/html:html[some $t in .//@epub:type satisfies (starts-with($t, 'tr:'))]" mode="clean-up">
     <xsl:copy>
-      <xsl:attribute name="epub:prefix" select="'tr: http://www.le-tex.de/namespace'"/>
+      <xsl:attribute name="epub:prefix" select="'tr: http://transpect.io'"/>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </xsl:copy>
   </xsl:template>
