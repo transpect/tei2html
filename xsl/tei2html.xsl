@@ -43,6 +43,8 @@
   <xsl:param name="s9y8-role" as="xs:string?"/>
   <xsl:param name="s9y9-role" as="xs:string?"/>
 
+  <xsl:param name="tei2html:copy-dt-class-from-dd" select="false()" as="xs:boolean"/>
+  
   <xsl:variable name="paths" as="xs:string*" 
     select="($s9y1-path, $s9y2-path, $s9y3-path, $s9y4-path, $s9y5-path, $s9y6-path, $s9y7-path, $s9y8-path, $s9y9-path)"/>
   <xsl:variable name="roles" as="xs:string*" 
@@ -681,9 +683,13 @@
     <xsl:sequence select="$item/parent::list[@type eq 'gloss'] or $item/@rend = 'varlistentry'"/>
   </xsl:function>
 
-  <xsl:template match="item[tei2html:is-varlistentry(.)]/label" mode="tei2html">
+  <xsl:template match="label[tei2html:is-varlistentry(following-sibling::*[1][self::item])]" mode="tei2html">
     <dt>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:if test="$tei2html:copy-dt-class-from-dd">
+        <xsl:apply-templates select="following-sibling::*[1][self::item]/gloss/@rend" mode="#current"/>
+        <xsl:apply-templates select="node()" mode="#current"/>
+      </xsl:if>
     </dt>
   </xsl:template>
   
