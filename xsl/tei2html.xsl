@@ -688,8 +688,8 @@
       <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:if test="$tei2html:copy-dt-class-from-dd">
         <xsl:apply-templates select="following-sibling::*[1][self::item]/gloss/@rend" mode="#current"/>
-        <xsl:apply-templates select="node()" mode="#current"/>
       </xsl:if>
+      <xsl:apply-templates select="node()" mode="#current"/>
     </dt>
   </xsl:template>
   
