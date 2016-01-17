@@ -679,11 +679,11 @@
   </xsl:template>
 
   <xsl:function name="tei2html:is-varlistentry" as="xs:boolean">
-    <xsl:param name="item" as="element(item)"/>
+    <xsl:param name="item" as="element(item)?"/>
     <xsl:sequence select="$item/parent::list[@type eq 'gloss'] or $item/@rend = 'varlistentry'"/>
   </xsl:function>
 
-  <xsl:template match="label[tei2html:is-varlistentry(following-sibling::*[1][self::item])]" mode="tei2html">
+  <xsl:template match="label[tei2html:is-varlistentry(following-sibling::*[1][self::item])]" mode="tei2html" priority="1">
     <dt>
       <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:if test="$tei2html:copy-dt-class-from-dd">
