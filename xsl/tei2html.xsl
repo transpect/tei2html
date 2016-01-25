@@ -1493,12 +1493,14 @@
 
   <xsl:template match="table[@css:width]" mode="table-widths">
     <xsl:variable name="twips" select="tr:length-to-unitless-twip(@css:width)" as="xs:double?"/>
+    <xsl:variable name="page-width" select="if (/TEI/teiHeader/profileDesc/textClass/keywords/term[@key = 'type-area-width']) then tr:length-to-unitless-twip(concat(/TEI/teiHeader/profileDesc/textClass/keywords/term[@key = 'type-area-width'], 'pt')) else $page-width-twips" as="xs:double?"/>
+   
     <xsl:choose>
       <xsl:when test="$twips">
         <xsl:copy copy-namespaces="no">
           <xsl:apply-templates select="@*, node()" mode="#current">
             <xsl:with-param name="table-twips" select="$twips" tunnel="yes"/>
-            <xsl:with-param name="table-percentage" select="if (tei2html:display-table-in-whole-width(.)) then 100 else tei2html:table-width-grid($twips, $page-width-twips)" tunnel="yes"/>
+            <xsl:with-param name="table-percentage" select="if (tei2html:display-table-in-whole-width(.)) then 100 else tei2html:table-width-grid($twips, $page-width)" tunnel="yes"/>
           </xsl:apply-templates>
         </xsl:copy>    
       </xsl:when>
@@ -1621,7 +1623,7 @@
       percentage, except when it’s 0. Then the original widths should be kept. -->
     <xsl:param name="object-width-twip" as="xs:double"/>
     <xsl:param name="page-width-twip" as="xs:double"/>
-    <xsl:choose>
+     <xsl:choose>
       <xsl:when test="($object-width-twip gt (0.75 * $page-width-twip))">
         <xsl:sequence select="100"/>
       </xsl:when>
