@@ -1493,8 +1493,7 @@
 
   <xsl:template match="table[@css:width]" mode="table-widths">
     <xsl:variable name="twips" select="tr:length-to-unitless-twip(@css:width)" as="xs:double?"/>
-    <xsl:variable name="page-width" select="if (/TEI/teiHeader/profileDesc/textClass/keywords/term[@key = 'type-area-width']) then tr:length-to-unitless-twip(concat(/TEI/teiHeader/profileDesc/textClass/keywords/term[@key = 'type-area-width'], 'pt')) else $page-width-twips" as="xs:double?"/>
-   
+    <xsl:variable name="page-width" select="if (xs:string(number(/TEI/teiHeader/profileDesc/textClass/keywords/term[@key = 'type-area-width'])) != 'NaN') then tr:length-to-unitless-twip(concat(/TEI/teiHeader/profileDesc/textClass/keywords/term[@key = 'type-area-width'], 'pt')) else $page-width-twips" as="xs:double?"/>
     <xsl:choose>
       <xsl:when test="$twips">
         <xsl:copy copy-namespaces="no">
