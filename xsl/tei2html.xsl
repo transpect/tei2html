@@ -1139,6 +1139,7 @@
   </xsl:template>
   
   <xsl:variable name="indexterm-cstyle-regex" as="xs:string" select="'#([ibth]|ti|hi|tb|hb)#'"/>
+  <xsl:variable name="check-indexterm-for-cstyle-regex" as="xs:string" select="concat($indexterm-cstyle-regex, '([^#]*)', $indexterm-cstyle-regex)"/>
   
   <xsl:template match="divGen[@type= 'index']" mode="tei2html">
     <xsl:variable name="subtype" select="@subtype" as="xs:string?"/>
@@ -1240,7 +1241,7 @@
   </xsl:template>
   
   <xsl:template match="term[normalize-space()]" mode="indexterms">
-   <xsl:analyze-string select="text()" regex="{concat($indexterm-cstyle-regex, '([^#]*)', $indexterm-cstyle-regex)}">
+    <xsl:analyze-string select="text()" regex="{$check-indexterm-for-cstyle-regex}">
     <xsl:matching-substring>
       <xsl:choose>
         <xsl:when test="regex-group(1) eq 'i'">
