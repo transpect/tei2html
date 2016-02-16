@@ -1090,6 +1090,9 @@
             <xsl:when test="matches($context/@rend, 'about-contrib')">
               <xsl:attribute name="epub:type" select="'tr:bio'"/>
             </xsl:when>
+            <xsl:when test="matches($context/@rend, 'acknowledgements')">
+              <xsl:attribute name="epub:type" select="'acknowledgements'"/>
+            </xsl:when>
             <!-- additional Info in title -->
             <xsl:when test="matches($context/@rend, 'additional-info')">
               <xsl:attribute name="epub:type" select="'tr:additional-info'"/>
