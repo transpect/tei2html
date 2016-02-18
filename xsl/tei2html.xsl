@@ -1375,7 +1375,9 @@
                   )[normalize-space()][1]"/>
         <xsl:attribute name="src" select="resolve-uri(@url)"/>
         <xsl:apply-templates select="@rend" mode="#current"/>
-        <xsl:copy-of select="@* except (@url, @rend)"/>
+      <!--  <xsl:copy-of select="@* except (@url, @rend)">-->
+          <!-- css:content AND copy duplicates attributes, so i commented it out (mp)-->
+        <!--</xsl:copy-of>-->
         <xsl:call-template name="css:content"/>
       </img>
   </xsl:template>  
