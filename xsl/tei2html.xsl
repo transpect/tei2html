@@ -726,10 +726,17 @@
     </dl>
   </xsl:template>
   
+  <xsl:param name="tei2html:copy-class-from-item-to-dt" as="xs:boolean" select="false()"/>
+  
   <xsl:template match="item[$tei2html:change-orderer-to-deflist]
                            [parent::list[@type eq 'ordered']
                            [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]]" mode="tei2html" priority="3">
     <dt>
+      <xsl:if test="$tei2html:copy-class-from-item-to-dt">
+        <xsl:attribute name="class">
+          <xsl:apply-templates select="*[1]/@rend" mode="#current"/>
+        </xsl:attribute>
+      </xsl:if>
       <xsl:value-of select="@n"/>
     </dt>
     <dd>
