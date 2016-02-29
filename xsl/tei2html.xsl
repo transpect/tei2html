@@ -438,7 +438,7 @@
   </xsl:template>
   
   <!-- changeable order of figure elements-->
-  <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]]" mode="tei2html" priority="5">
+  <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]][not(parent::p)]" mode="tei2html" priority="5">
     <div class="table-wrapper alt-image">
       <xsl:if test="matches(@xml:id, '^(cell)?page_')">
         <a id="{@xml:id}"/>
@@ -458,6 +458,20 @@
       </xsl:if>
       <xsl:apply-templates select="postscript | bibl | p" mode="#current"/>
     </div>
+  </xsl:template>
+  
+  <!-- changeable order of figure elements-->
+  <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]][parent::p]" mode="tei2html" priority="5">
+      <xsl:if test="matches(@xml:id, '^(cell)?page_')">
+        <a id="{@xml:id}"/>
+      </xsl:if>
+      <xsl:for-each select="tokenize(@rendition, ' ')">
+        <xsl:element name="img" exclude-result-prefixes="#all">
+          <xsl:attribute name="src" select="."/>
+          <xsl:attribute name="class" select="'alt-image'"/>
+          <xsl:attribute name="alt" select="concat('This is an alternative image named »', replace(., '^.+/(.+?)$', '$1'),'« of the original table. Due to constraints of ePub readers it is delivered as an image only.')"/>
+        </xsl:element>
+      </xsl:for-each>
   </xsl:template>
   
   <xsl:variable name="tei2html:table-head-before-table" as="xs:boolean" select="true()"/>
@@ -1449,6 +1463,23 @@
       <xsl:apply-templates select="postscript" mode="#current"/>
     </div>
   </xsl:template>
+  
+  
+  <xsl:template match="html:p[html:div[matches(@class, 'table-wrapper')]]" mode="clean-up" priority="3">
+    <!-- tables are not allowed in paras in epub. but sometimes they appear inside (footnotes etc.). So they are dissolved.-->
+    <xsl:choose>
+      <xsl:when test="some $t in (text(), html:span/text()) satisfies matches($t, '\S')">
+        <xsl:apply-templates select="html:div[matches(@class, 'table-wrapper')]" mode="#current"/>
+        <xsl:copy copy-namespaces="no">
+          <xsl:apply-templates select="@*" mode="#current"/>
+          <xsl:apply-templates select="node() except html:div[matches(@class, 'table-wrapper')]" mode="#current"/>
+        </xsl:copy>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates select="node()" mode="#current"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>  
   
   <xsl:template match="td/@css:width" mode="hub2htm:css-style-overrides" priority="3"/>
   
