@@ -360,7 +360,7 @@
     relies on this value to be 0.25.
     -->
   <xsl:template match="head | quote | seg | p | table | caption | note | italic | bold |
-    underline | sub | sup | l | lg | hi | argument" mode="tei2html" priority="-0.25" >
+    underline | sub | sup | l | lg | hi | argument | emph | add" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
   
@@ -1026,7 +1026,7 @@
   
   <xsl:template match="@rendition[.  = ('subscript', 'superscript')]" mode="tei2html"/>
   
-  <xsl:template match="hi" mode="tei2html" priority="2">
+  <xsl:template match="hi | seg | add | emph" mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
     </span>
@@ -1041,12 +1041,6 @@
         <xsl:value-of select="(@xlink:href|@target)[1]"/>
       </xsl:if>
     </a>
-  </xsl:template>
-  
-  <xsl:template match="seg" mode="tei2html">
-    <span>
-      <xsl:next-match/>
-    </span>
   </xsl:template>
   
   <xsl:template match="formula" mode="tei2html">
