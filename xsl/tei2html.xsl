@@ -1026,7 +1026,7 @@
   
   <xsl:template match="@rendition[.  = ('subscript', 'superscript')]" mode="tei2html"/>
   
-  <xsl:template match="hi | seg | add | emph" mode="tei2html" priority="2">
+  <xsl:template match="hi | seg | add | emph | orig" mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
     </span>
