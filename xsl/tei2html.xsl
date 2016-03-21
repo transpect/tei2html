@@ -55,7 +55,7 @@
   <xsl:param name="calculate-table-width" as="xs:boolean" select="true()">
     <!-- If this parameter is set true, table width is calculated based on percentage of page width (not type area width) -->
   </xsl:param>
-  <xsl:param name="css-location" select="concat($common-path, '/css/stylesheet.css')"/>
+  <xsl:param name="css-location" select="concat($common-path, 'css/stylesheet.css')"/>
 
   <!-- for calculating whether a table covers the whole width or only part of it: -->
   <xsl:param name="page-width" select="'180mm'"/>
@@ -360,7 +360,7 @@
     relies on this value to be 0.25.
     -->
   <xsl:template match="head | quote | seg | p | table | caption | note | italic | bold |
-    underline | sub | sup | l | lg | hi | argument | emph | add | orig" mode="tei2html" priority="-0.25" >
+    underline | sub | sup | l | lg | hi | argument | emph | add | orig | date" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
   
@@ -792,7 +792,7 @@
     </blockquote>
   </xsl:template>
   
-  <xsl:template match="figure" mode="tei2html">
+  <xsl:template match="figure | dateline" mode="tei2html">
       <xsl:apply-templates select="node()" mode="#current"/>
   </xsl:template>
   
@@ -917,7 +917,8 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))][not(ancestor::*[self::figure or self::table or self::floatingText or self::lg])]" mode="tei2html">
+  <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))]
+                           [not(ancestor::*[self::figure or self::table or self::floatingText or self::lg])]" mode="tei2html" priority="2">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
     <xsl:element name="{concat('h', $heading-level)}">
@@ -1026,7 +1027,7 @@
   
   <xsl:template match="@rendition[.  = ('subscript', 'superscript')]" mode="tei2html"/>
   
-  <xsl:template match="hi | seg | add | emph | orig" mode="tei2html" priority="2">
+  <xsl:template match="hi | seg | add | emph | orig | date" mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
     </span>
@@ -1047,6 +1048,17 @@
     <xsl:element name="{if (@rend = 'inline') then 'span' else 'p'}">
      <xsl:apply-templates select="@*, node()" mode="#current"/>
     </xsl:element>
+  </xsl:template>
+  
+  <xsl:template match="state" mode="tei2html">
+    <span class="{@type}">
+      <xsl:apply-templates select="node()" mode="#current"/>
+    </span>
+
+  </xsl:template>
+  
+  <xsl:template match="state/label" mode="tei2html" priority="2">
+    <xsl:apply-templates select="node()" mode="#current"/>
   </xsl:template>
   
   <xsl:template match="formula/@n" mode="tei2html"/>
