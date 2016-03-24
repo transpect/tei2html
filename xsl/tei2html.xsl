@@ -715,7 +715,7 @@
   </xsl:template>
 
   <xsl:template match="list[@type eq 'bulleted']" mode="tei2html">
-    <ul class="{descendant::p[1]/@rend}">
+    <ul class="{(descendant::p[1]/@rend, @type)[1]}">
       <xsl:apply-templates mode="#current"/>
     </ul>
   </xsl:template>
@@ -876,14 +876,15 @@
   <xsl:variable name="tei2html:no-toc-style-regex" as="xs:string" select="'_notoc'"/>
   <xsl:template match="head[matches(@rend, $tei2html:no-toc-style-regex)]" mode="toc" priority="2"/>
   
-  <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))]" mode="toc">
+  <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))]" mode="toc" priority="3">
     <p class="toc{tei2html:heading-level(.)}">
       <a href="#{(@xml:id, generate-id())[1]}">
+<!--        <xsl:call-template name="heading-content"/>-->
         <xsl:if test="label">
           <xsl:apply-templates select="label/node()" mode="strip-indexterms-etc"/>
           <xsl:apply-templates select="label" mode="label-sep"/>
         </xsl:if>
-        <xsl:apply-templates mode="tei2html">
+        <xsl:apply-templates select="node() except label" mode="strip-indexterms-etc">
           <xsl:with-param name="in-toc" select="true()" as="xs:boolean" tunnel="yes"/>
         </xsl:apply-templates>
       </a>
