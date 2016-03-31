@@ -1020,8 +1020,8 @@
     </p>
   </xsl:template>
   
-  <xsl:template match="hi[@rendition  = ('subscript', 'superscript')]" mode="tei2html" priority="2.5">
-    <xsl:element name="{if (@rendition = 'superscript') then 'sup' else 'sub'}">
+  <xsl:template match="hi[@rendition  = ('subscript', 'superscript')] | hi[key('rule-by-name', @rend)[@css:vertical-align = ('sub', 'super')]]" mode="tei2html" priority="2.5">
+    <xsl:element name="{if (@rendition = 'superscript' or key('rule-by-name', @rend)[@css:vertical-align = 'super']) then 'sup' else 'sub'}">
       <xsl:next-match/>
     </xsl:element>
   </xsl:template>
