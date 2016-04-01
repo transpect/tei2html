@@ -874,7 +874,7 @@
  
   <!-- no HTML toc entry for special headings--> 
   <xsl:variable name="tei2html:no-toc-style-regex" as="xs:string" select="'_notoc'"/>
-  <xsl:template match="head[matches(@rend, $tei2html:no-toc-style-regex)]" mode="toc" priority="2"/>
+  <xsl:template match="head[matches(@rend, $tei2html:no-toc-style-regex)]" mode="toc" priority="4"/>
   
   <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))]" mode="toc" priority="3">
     <p class="toc{tei2html:heading-level(.)}">
