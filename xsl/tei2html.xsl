@@ -1081,9 +1081,11 @@
   
   
   <xsl:template match="pb" mode="tei2html">
-    <div class="{local-name()}">
-      <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
-    </div>
+    <xsl:if test="not(parent::p | parent::seg)">
+     <div class="{local-name()}">
+       <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
+     </div>
+    </xsl:if>
   </xsl:template>
 
   <!-- override this in your adaptions with 3, then epub-types are created -->
