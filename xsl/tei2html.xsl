@@ -91,7 +91,7 @@
   
   <!-- collateral. Otherwise the generated IDs might differ due to temporary trees / variables 
     when transforming the content -->  
-  <xsl:template match="index | xref | note[not(@xml:id)]" mode="epub-alternatives">
+  <xsl:template match="index | note[not(@xml:id)]" mode="epub-alternatives">
     <xsl:copy copy-namespaces="no">
       <xsl:attribute name="xml:id" select="generate-id()"/>
       <xsl:apply-templates select="@* except @xml:id, node()" mode="#current"/>
@@ -1036,15 +1036,18 @@
   
   <xsl:template match="ref | ptr" mode="tei2html" priority="5">
     <a>
-      <xsl:attribute name="href" select="@target"/>
       <xsl:attribute name="class" select="name()"/>
-      <xsl:apply-templates select="@* except @target, node()" mode="#current"/>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
       <xsl:if test="not(node())">
         <xsl:value-of select="(@xlink:href|@target)[1]"/>
       </xsl:if>
     </a>
   </xsl:template>
   
+  <xsl:template match="ref/@target" mode="tei2html" priority="2">
+    <xsl:attribute name="href" select="."/>
+  </xsl:template>
+    
   <xsl:template match="formula" mode="tei2html">
     <xsl:element name="{if (@rend = 'inline') then 'span' else 'p'}">
      <xsl:apply-templates select="@*, node()" mode="#current"/>
