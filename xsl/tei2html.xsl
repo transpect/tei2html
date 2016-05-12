@@ -1759,11 +1759,11 @@
     <xsl:sequence select="tokenize($string, '\s+') = $token"/>
   </xsl:function>
 
-  <!-- MODE: JOIN-SEGS (analog in evolve-hub hub:join-phrases). Important when overrides are discarded earlier. -->
+  <!-- MODE: JOIN-SEGS (analoguous in evolve-hub hub:join-phrases). Important when overrides are discarded earlier. -->
 
   <xsl:template match="@srcpath[not(tei:boolean-param($srcpaths))]" mode="join-segs" />
   
-  <xsl:template match="*[*:seg or *:hi[@rendition  = ('subscript', 'superscript')]]" mode="join-segs">
+  <xsl:template match="*[*:seg or *:hi[@rendition  = ('subscript', 'superscript')]][count(*) gt 1]" mode="join-segs">
     <xsl:copy>
       <xsl:apply-templates select="@*" mode="#current" />
       <xsl:attribute name="srcpath" 
