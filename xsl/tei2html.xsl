@@ -1086,7 +1086,7 @@
   
   
   <xsl:template match="pb" mode="tei2html">
-    <xsl:if test="not(parent::p | parent::seg)">
+    <xsl:if test="parent::*[not(self::p | self::seg)]">
      <div class="{local-name()}">
        <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
      </div>
@@ -1248,6 +1248,8 @@
   </xsl:template>
   
   <xsl:variable name="tei2html:index-entry-sep" as="xs:string" select="'&#x2002;'"/>
+  <xsl:variable name="tei2html:index-entry-see-string" as="xs:string" select="'see '"/>
+  <xsl:variable name="tei2html:index-entry-seealso-string" as="xs:string" select="'see also'"/>
   
   <xsl:template name="index-entry">
     <!-- context: tei:index element -->
@@ -1258,21 +1260,38 @@
           <xsl:when test="$apply-cstyles-in-indexterms">
             <xsl:apply-templates select="term" mode="indexterms"/>
           </xsl:when>
+          <xsl:when test="term[@type = 'see']">
+            <span class="localize see">
+             <xsl:value-of select="$tei2html:index-entry-see-string"/>
+             <xsl:apply-templates select="term/node()" mode="#current"/>
+            </span>
+          </xsl:when>
+          <xsl:when test="term[@type = 'seealso']">
+            <span class="localize see-also">
+              <xsl:value-of select="$tei2html:index-entry-seealso-string"/>
+              <xsl:apply-templates select="term/node()" mode="#current"/>
+            </span>
+          </xsl:when>
           <xsl:otherwise>
             <xsl:apply-templates select="term/node()" mode="#current"/>
           </xsl:otherwise>
         </xsl:choose>
       </span>
       <xsl:value-of select="$tei2html:index-entry-sep"/>
-      <xsl:for-each select="current-group()[not(index)]">
-        <a href="#it_{@xml:id}" id="ie_{@xml:id}">
-          <xsl:value-of select="position()"/>
-        </a>
-        <xsl:if test="position() ne last()">
-          <xsl:text xml:space="preserve">, </xsl:text>
-        </xsl:if>
-      </xsl:for-each>
-    </p>
+      <xsl:choose>  
+        <xsl:when test="descendant-or-self::*[term[@type = ('see', 'seealso')]]"/>
+        <xsl:otherwise>
+          <xsl:for-each select="current-group()[not(index)]">
+            <a href="#it_{@xml:id}" id="ie_{@xml:id}">
+              <xsl:value-of select="position()"/>
+            </a>
+            <xsl:if test="position() ne last()">
+              <xsl:text xml:space="preserve">, </xsl:text>
+            </xsl:if>
+          </xsl:for-each>
+        </xsl:otherwise>
+     </xsl:choose>
+     </p>
     <xsl:call-template name="group-index-terms">
       <xsl:with-param name="index-terms" select="current-group()/index"/>
       <xsl:with-param name="level" select="$level + 1"/>
