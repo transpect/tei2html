@@ -559,11 +559,17 @@
   </xsl:template>
   
   <!-- Formerly label classes were created when a label had a srcpath. This was done to handle lables that were a para once (chapter numbers e.g.). 
-    When converting tei2epub or after joining segs this inforrmation can be wrong. Therefore the template is changed. -->
+    When converting tei2epub or after joining segs this information can be wrong. Therefore the template is changed. -->
   <xsl:template match="label[not(parent::item)]" mode="tei2html" priority="0.5">
-    <span class="{if (@rend) then concat(@rend, ' label block') else 'label'}">
-      <xsl:apply-templates select="@* except @rend, node()" mode="#current"/>
+    <span>
+      <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:apply-templates select="." mode="class-att"/>
+      <xsl:apply-templates select="node()" mode="#current"/>
     </span>
+  </xsl:template>
+  
+  <xsl:template match="label[not(parent::item)]" mode="class-att">
+    <xsl:attribute name="class" select="if (@rend) then concat(@rend, ' label block') else 'label'"/>
   </xsl:template>
   
   <xsl:template match="*:label[ancestor::*:note]" mode="tei2html" priority="1.5"/>
