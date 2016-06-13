@@ -526,6 +526,9 @@
     <xsl:copy/>
   </xsl:template>
   
+  
+	<xsl:template match="@css:version | @css:rule-selection-attribute" mode="tei2html"/>
+	
   <xsl:template match="table[@xml:id = ../@xml:id]/@xml:id" mode="tei2html"/>
   
   <xsl:template match="@css:*" mode="tei2html_DISABLED">
