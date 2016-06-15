@@ -252,7 +252,7 @@
     <xsl:call-template name="tei2html:footnotes"/>
   </xsl:template>
   
-  <xsl:template match="body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal', 'motto'))] | div1 | div2 | back" mode="tei2html">
+  <xsl:template match="body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal', 'motto'))] | div1 | div2 | back | listBibl" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
@@ -360,7 +360,7 @@
     relies on this value to be 0.25.
     -->
   <xsl:template match="head | quote | seg | p | table | caption | note | italic | bold |
-    underline | sub | sup | l | lg | hi | argument | emph | add | orig | date" mode="tei2html" priority="-0.25" >
+    underline | sub | sup | l | lg | hi | argument | emph | add | orig | date | persName | surname | forename" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
   
@@ -591,12 +591,6 @@
     <p>
       <xsl:call-template name="css:content"/>
     </p>
-  </xsl:template>
-  
-  <xsl:template match="persName" mode="tei2html">
-    <span>
-      <xsl:call-template name="css:content"/>
-    </span>
   </xsl:template>
 
   <xsl:template match="persName | abstract | byline | label" mode="class-att">
@@ -855,7 +849,7 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates select="head" mode="#current"/>
-          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'part', 'index')]
+          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'part', 'index', 'listBibl')]
             | parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)] | parent::divGen[@type ='index']
             ]
             [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']])])]
@@ -933,7 +927,7 @@
                            [not(ancestor::*[self::figure or self::table or self::floatingText or self::lg])]" mode="tei2html" priority="2">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
-    <xsl:element name="{concat('h', $heading-level)}">
+  	<xsl:element name="{if ($heading-level) then concat('h', $heading-level) else 'p'}">
       <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:attribute name="class" select="if(parent::div[@type] or parent::divGen[@type]) then (parent::div, parent::divGen)[1]/@type else local-name()"/>
       <xsl:attribute name="title" select="tei2html:heading-title(.)"/>
@@ -1039,7 +1033,7 @@
   
   <xsl:template match="@rendition[.  = ('subscript', 'superscript')]" mode="tei2html"/>
   
-  <xsl:template match="hi | seg | add | emph | orig | date" mode="tei2html" priority="2">
+	<xsl:template match="hi | seg | add | emph | orig | date | persName | surname | forename" mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
     </span>
@@ -1677,7 +1671,8 @@
       <xsl:when test="$elt/ancestor::div1"/>
       <xsl:when test="$elt/ancestor::div2"/>
       <xsl:when test="$elt/parent::div/@type = ('part', 'appendix', 'imprint', 'acknowledgements', 'dedication', 'glossary', 'preface') or 
-                      $elt/parent::divGen/@type = ('index', 'toc')">
+      								$elt/parent::divGen/@type = ('index', 'toc') or 
+      								$elt/parent::listBibl">
         <xsl:sequence select="2"/>
       </xsl:when>
       <xsl:when test="$elt/parent::div/@type = ('chapter')">
