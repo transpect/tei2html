@@ -251,7 +251,7 @@
   </xsl:template>
   
   <xsl:template match="body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal', 'motto'))] | 
-  										 div1 | div2 | div3 | div4 | div5 | div6 | div7 | div8 | div9back | listBibl" mode="tei2html">
+  										 div1 | div2 | div3 | div4 | div5 | div6 | div7 | div8 | div9 | back | listBibl" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
