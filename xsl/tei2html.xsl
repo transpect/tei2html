@@ -358,7 +358,7 @@
     And don’t ever change the priority unless you’ve made sure that no other template
     relies on this value to be 0.25.
     -->
-  <xsl:template match="head | quote | seg | p | table | caption | note | italic | bold |
+  <xsl:template match="head | quote | seg | p | table | caption | note | italic | bold | unclear |
     underline | sub | sup | l | lg | hi | argument | emph | add | orig | date | persName | surname | forename" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
@@ -596,7 +596,7 @@
     </p>
   </xsl:template>
 
-  <xsl:template match="persName | abstract | byline | label" mode="class-att">
+  <xsl:template match="persName | abstract | byline | label | unclear" mode="class-att">
     <xsl:attribute name="class" select="local-name()"/>
   </xsl:template>
 
@@ -1042,7 +1042,7 @@
   
   <xsl:template match="@rendition[.  = ('subscript', 'superscript')]" mode="tei2html"/>
   
-	<xsl:template match="hi | seg | add | emph | orig | date | persName | surname | forename" mode="tei2html" priority="2">
+	<xsl:template match="hi | seg | add | emph | orig | date | persName | surname | forename | unclear" mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
     </span>
@@ -1179,7 +1179,7 @@
     <br/>
   </xsl:template>
 
-  <xsl:template match="bibl" mode="tei2html">
+  <xsl:template match="bibl | biblFull" mode="tei2html">
     <p>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </p>
