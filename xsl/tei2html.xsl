@@ -858,7 +858,7 @@
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates select="head" mode="#current"/>
-          <xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'appendix', 'chapter', 'dedication', 'part', 'index', 'listBibl')]
+        	<xsl:apply-templates select="//head[parent::div[@type = ('section', 'glossary', 'acknowledgements', 'bibliography', 'appendix', 'chapter', 'dedication', 'part', 'index', 'listBibl')]
             | parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)] | parent::divGen[@type ='index']
             ]
             [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']])])]
@@ -1691,6 +1691,9 @@
 	    	<xsl:when test="$elt/parent::div[@type = ('section')]">
 	        <xsl:sequence select="count($elt/ancestor::div[@type eq 'section']) +3"/>
 	      </xsl:when>
+	    	<xsl:when test="$elt/parent::div/@type = ('bibliography')">
+	    		<xsl:sequence select="if ($elt/ancestor::div/@type = 'chapter') then 3 else 3"/>
+	    	</xsl:when>
 	    	<xsl:when test="$elt/parent::*[matches(local-name(.), '^div\d')]">
 	    		<xsl:sequence select="count($elt/ancestor::*[matches(local-name(.), '^div')])"/>
 	    	</xsl:when>
