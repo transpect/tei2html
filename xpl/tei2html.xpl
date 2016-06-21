@@ -15,12 +15,14 @@
   <p:option name="debug" required="false" select="'no'"/>
   <p:option name="debug-dir-uri" required="false" select="'debug'"/>
   <p:option name="status-dir-uri" select="'status'"/>
-  
+	<p:option name="filename-driver" required="false" select="'tei2html/tei2html-driver'"/>
+	
   <p:input port="source" primary="true" />
   <p:input port="additional-inputs" sequence="true">
     <p:empty/>
   </p:input>
   <p:input port="paths" kind="parameter" primary="true"/>
+	
   <p:output port="result" primary="true" />
   <p:serialization port="result" 
     omit-xml-declaration="false"
@@ -44,9 +46,10 @@
     <p:with-option name="status-dir-uri" select="$status-dir-uri"/>
   </tr:simple-progress-msg>
   
-  <tr:dynamic-transformation-pipeline load="tei2html/tei2html-driver"
-    fallback-xsl="http://transpect.io/tei2html/xsl/tei2html.xsl"
-    fallback-xpl="http://transpect.io/tei2html/xpl/tei2html_default.xpl">
+	<tr:dynamic-transformation-pipeline
+				    fallback-xsl="http://transpect.io/tei2html/xsl/tei2html.xsl"
+				    fallback-xpl="http://transpect.io/tei2html/xpl/tei2html_default.xpl">
+		<p:with-option name="load" select="$filename-driver"/>
     <p:with-option name="debug" select="$debug"/>
     <p:with-option name="debug-dir-uri" select="$debug-dir-uri"/>
     <p:input port="additional-inputs">
