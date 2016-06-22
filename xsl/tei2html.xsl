@@ -596,7 +596,8 @@
     </p>
   </xsl:template>
 
-  <xsl:template match="persName | abstract | byline | label | unclear" mode="class-att">
+
+	<xsl:template match="persName | surname | forename | abstract | byline | label | unclear" mode="class-att">
     <xsl:attribute name="class" select="local-name()"/>
   </xsl:template>
 
@@ -1047,7 +1048,7 @@
       <xsl:next-match/>
     </span>
   </xsl:template>
-  
+	
   <xsl:template match="ref | ptr" mode="tei2html" priority="5">
     <a>
       <xsl:attribute name="class" select="name()"/>
