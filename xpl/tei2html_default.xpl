@@ -14,7 +14,7 @@
 			<dt>tei2html</dt>
 			<dd>The main mode for converting TEI to HTML. Has to be run. Calls the templates to handle the CSS properties.</dd>
 			<dt>joins-segs</dt>
-			<dd>Analoguous in evolve-hub hub:join-phrases: Joins hi- and seg-elements that have the same attributes. (Happens when attributes were discarded).</dd>
+			<dd>Analoguous in evolve-hub hub:join-phrases: Joins hi and seg elements that have the same attributes. (Happens when attributes were discarded).</dd>
 			<dt>clean-up</dt>
 			<dd>A clean up mode to postprocess the results. Should always run after mode <span class="dependency">tei2html</span> ran.</dd>
 		</dl>
