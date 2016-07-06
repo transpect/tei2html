@@ -12,6 +12,7 @@
   xmlns:l10n="http://transpect.io/l10n"
   xmlns:tr="http://transpect.io"
   xmlns:epub="http://www.idpf.org/2007/ops"
+  xmlns:htmltable="http://transpect.io/htmltable"
   xmlns="http://www.w3.org/1999/xhtml"
   xpath-default-namespace="http://www.tei-c.org/ns/1.0"
   exclude-result-prefixes="#all"
@@ -20,7 +21,8 @@
   <xsl:import href="http://transpect.io/hub2html/xsl/css-rules.xsl"/>
   <xsl:import href="http://transpect.io/xslt-util/lengths/xsl/lengths.xsl"/>
   <xsl:import href="http://transpect.io/hub2html/xsl/css-atts2wrap.xsl"/>
-  
+	<xsl:import href="http://this.transpect.io/htmltables/xsl/html-tables-normalize.xsl"/>
+	
   <xsl:param name="debug" select="'yes'"/>
   <xsl:param name="debug-dir-uri" select="'debug'"/>
   
@@ -83,12 +85,26 @@
   <xsl:key name="by-id" match="*[@id | @xml:id]" use="@id | @xml:id"/>
   <xsl:key name="link-by-anchor" match="ref" use="@target"/>
   
-  <xsl:template match="* | @*" mode="expand-css clean-up table-widths epub-alternatives join-segs" priority="-0.5">
+  <!-- identity template -->
+	<xsl:template match="* | @*" mode="expand-css clean-up table-widths epub-alternatives join-segs" priority="-0.5">
     <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@* | node()" mode="#current" />  
     </xsl:copy>
   </xsl:template>
   
+	<xsl:template match="*" mode="tei2html" priority="-1">
+		<xsl:message>tei2html: unhandled: <xsl:apply-templates select="." mode="css:unhandled"/>
+		</xsl:message>
+		<xsl:copy>
+			<xsl:apply-templates select="@* | node()" mode="#current" />  
+		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template match="@*" mode="tei2html" priority="-1.5">
+		<xsl:message>tei2html: unhandled attr: <xsl:apply-templates select="." mode="css:unhandled"/>
+		</xsl:message>
+	</xsl:template>
+	
   <!-- collateral. Otherwise the generated IDs might differ due to temporary trees / variables 
     when transforming the content -->  
   <xsl:template match="index | note[not(@xml:id)]" mode="epub-alternatives">
@@ -115,31 +131,64 @@
   
   <xsl:template match="*[preceding-sibling::p[descendant-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives"
     priority="2"/>
+	
+	<!-- if cells have a percentage width, then this mode can append classes like 'cellwidth-39' to a cell. Those generated classes are added as css:rules as well.-->
   
-  <xsl:template match="/html:html[some $t in .//@epub:type satisfies (starts-with($t, 'tr:'))]" mode="clean-up">
-    <xsl:copy>
-      <xsl:attribute name="epub:prefix" select="'tr: http://transpect.io'"/>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
-    </xsl:copy>
-  </xsl:template>
-  
-  <xsl:template match="html:span[not(@*)]" mode="clean-up">
-    <xsl:apply-templates mode="#current"/>
-  </xsl:template>
-  
-  
-  <xsl:template match="*" mode="tei2html" priority="-1">
-    <xsl:message>tei2html: unhandled: <xsl:apply-templates select="." mode="css:unhandled"/>
-    </xsl:message>
-    <xsl:copy>
-      <xsl:apply-templates select="@* | node()" mode="#current" />  
-    </xsl:copy>
-  </xsl:template>
-  
-  <xsl:template match="@*" mode="tei2html" priority="-1.5">
-    <xsl:message>tei2html: unhandled attr: <xsl:apply-templates select="." mode="css:unhandled"/>
-    </xsl:message>
-  </xsl:template>
+	<xsl:template match="/" mode="col-widths">
+		<xsl:apply-templates select="node()" mode="#current"/>
+	</xsl:template>
+	
+	<xsl:template match="*:TEI" mode="col-widths">
+		<xsl:variable name="text">
+			<xsl:apply-templates select="*:text" mode="#current"/>
+		</xsl:variable>
+		<xsl:copy>
+			<xsl:apply-templates select="@*, *:teiHeader" mode="#current">
+				<xsl:with-param name="table-classes" select="distinct-values(for $class in $text//@rend[matches(., 'cellwidth-')] return replace($class, '^.+(cellwidth-.+)$', '$1'))"
+					as="xs:string*" tunnel="yes"/>
+			</xsl:apply-templates>
+			<xsl:sequence select="$text"/>
+		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template match="css:rules" mode="col-widths">
+		<xsl:param name="table-classes" as="xs:string*" tunnel="yes"/>
+		<xsl:copy>
+			<xsl:apply-templates select="@*, node()" mode="#current"/>
+			<xsl:for-each select="$table-classes">
+				<xsl:element name="css:rule" xmlns="">
+					<xsl:attribute name="native-name" select="."/>
+					<xsl:attribute name="name" select="replace(., '\.', '_')"/>
+					<xsl:attribute name="layout-type" select="'cell'"/>
+					<xsl:attribute name="css:width" select="concat(replace(., '^cellwidth-', ''), '%')"/>
+				</xsl:element>
+			</xsl:for-each>
+		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template match="*[*:tr]" mode="col-widths">
+		<xsl:variable name="table">
+			<xsl:sequence select="htmltable:normalize(.)"/>
+		</xsl:variable>
+		<xsl:apply-templates select="$table" mode="create-table-width-classes"/>
+	</xsl:template>
+	
+	<xsl:template match="@* | node()" mode="col-widths create-table-width-classes">
+		<xsl:copy copy-namespaces="no">
+			<xsl:apply-templates select="@*, node()" mode="#current"/>
+		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template match="*:td[@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
+		mode="create-table-width-classes">
+		<!-- momentarily integer numbers are returned-->
+		<xsl:variable name="percent" 
+								select="concat('cellwidth-', xs:string(round-half-to-even((../@data-twips-width * 100) div ../../@data-twips-width)))"
+										as="xs:string?"/>
+		<xsl:attribute name="{name()}" select="string-join((., $percent), ' ')"/>
+	</xsl:template>
+	
+	<xsl:template match="@data-twips-width | @data-rownum | *:colgroup[*:col[@data-twips-width]]"	mode="create-table-width-classes"/>
   
   <xsl:template match="/*/@*[name() = ('source-dir-uri', 'xml:base')]" mode="tei2html">
     <xsl:copy/>
@@ -220,11 +269,7 @@
       <xsl:copy-of select="@*, node()"/>
     </xsl:copy>
   </xsl:template>
-  
-  <xsl:template match="css:rules" mode="clean-up">
-    <xsl:apply-templates select="." mode="hub2htm:css"/>
-  </xsl:template>
-  
+	
   <xsl:template match="css:rule[css:attic[@css:display = 'list-item']]" mode="epub-alternatives">
     <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@*" mode="#current"/>
@@ -370,12 +415,7 @@
         select="@*[not(css:map-att-to-elt(., ..))]"/>
     </xsl:call-template>
   </xsl:template>
-
-
-  <xsl:template match="html:span[(count(@*) eq 1) and (@srcpath)]" mode="clean-up">
-    <xsl:apply-templates select="node()" mode="#current"/>
-  </xsl:template>
-  
+	
   <xsl:template match="epigraph" mode="tei2html">
     <xsl:choose>
       <xsl:when test="parent::*[self::div[@type = 'motto']]">
@@ -1377,28 +1417,6 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template match="html:a[@class = $tei2html:indexterm-backlink-class][@href]" mode="clean-up">
-    <xsl:variable name="matching-entry" as="element(*)?" select="key('by-id', substring-after(@href, '#'))"/>
-    <xsl:if test="exists($matching-entry)">
-      <xsl:copy copy-namespaces="no">
-        <xsl:attribute name="title" select="$matching-entry/ancestor-or-self::html:p/html:span[@class='ie-term']"/>
-        <xsl:apply-templates select="@*" mode="#current"/>
-        <xsl:text>(</xsl:text>
-        <xsl:value-of select="key('by-id', substring-after(@href, '#'))"/>
-        <xsl:text>)</xsl:text>
-      </xsl:copy>  
-    </xsl:if>
-  </xsl:template>
-  
-  <!-- for sub and sup (but not limited to them) -->
-  <xsl:template match="html:*[html:span[@srcpath][count(@*) = 1]][count(node()) = 1]" mode="clean-up">
-    <xsl:copy copy-namespaces="no">
-      <xsl:apply-templates select="@*" mode="#current"/>
-      <xsl:attribute name="srcpath" select="string-join((@srcpath, html:span/@srcpath), ' ')"/>
-      <xsl:apply-templates mode="#current"/>
-    </xsl:copy>
-  </xsl:template>
-
   <xsl:template match="term" mode="tei2html">
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
@@ -1510,23 +1528,6 @@
       <xsl:apply-templates select="postscript" mode="#current"/>
     </div>
   </xsl:template>
-  
-  
-  <xsl:template match="html:p[html:div[matches(@class, 'table-wrapper')]]" mode="clean-up" priority="3">
-    <!-- tables are not allowed in paras in epub. but sometimes they appear inside (footnotes etc.). So they are dissolved.-->
-    <xsl:choose>
-      <xsl:when test="some $t in (text(), html:span/text()) satisfies matches($t, '\S')">
-        <xsl:apply-templates select="html:div[matches(@class, 'table-wrapper')]" mode="#current"/>
-        <xsl:copy copy-namespaces="no">
-          <xsl:apply-templates select="@*" mode="#current"/>
-          <xsl:apply-templates select="node() except html:div[matches(@class, 'table-wrapper')]" mode="#current"/>
-        </xsl:copy>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:apply-templates select="node()" mode="#current"/>
-      </xsl:otherwise>
-    </xsl:choose>
-  </xsl:template>  
   
   <xsl:template match="td/@css:width" mode="hub2htm:css-style-overrides" priority="3"/>
   
@@ -1759,26 +1760,6 @@
     <xsl:param name="item" as="xs:string+" />
     <xsl:sequence select="$item = tokenize($space-sep-list, '\s+', 's')" />
   </xsl:function>
-
-
-  <xsl:template match="*[local-name() = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6')][*:span[@class = 'label']]" mode="clean-up" exclude-result-prefixes="#all">
-    <xsl:variable name="label" select="*:span[@class = 'label']"/>
-    <xsl:copy copy-namespaces="no">
-      <xsl:apply-templates select="@*" mode="#current"/>
-      <xsl:for-each-group select="node()" group-ending-with="html:span[@class = 'label']">
-        <xsl:choose>
-          <xsl:when test="current-group()[. &gt;&gt; $label]">
-            <span class="justifier">
-              <xsl:apply-templates select="current-group()" mode="#current"/>
-            </span>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:apply-templates select="current-group()" mode="#current"/>
-          </xsl:otherwise>
-        </xsl:choose>
-      </xsl:for-each-group>
-    </xsl:copy>
-  </xsl:template>  
   
   <xsl:function name="tei2html:label-width" as="xs:string">
     <xsl:param name="string" as="xs:string*"/>
@@ -1798,10 +1779,6 @@
     </xsl:choose>
   </xsl:function> 
   
-  <xsl:template match="*:span[@class = 'label']/@class" mode="clean-up" priority="3">
-    <xsl:attribute name="{name()}" select="concat(., tei2html:label-width(..))"/>
-  </xsl:template> 
-
   <xsl:function name="tei2html:contains-token" as="xs:boolean">
     <xsl:param name="string" as="xs:string?"/>
     <xsl:param name="token" as="xs:string+"/>
@@ -1936,4 +1913,80 @@
     </xsl:copy>
   </xsl:template>
   
+	<xsl:template match="html:span[(count(@*) eq 1) and (@srcpath)] | html:span[not(@*)]" mode="clean-up">
+		<xsl:apply-templates select="node()" mode="#current"/>
+	</xsl:template>
+	
+	<xsl:template match="/html:html[some $t in .//@epub:type satisfies (starts-with($t, 'tr:'))]" mode="clean-up">
+		<xsl:copy>
+			<xsl:attribute name="epub:prefix" select="'tr: http://transpect.io'"/>
+			<xsl:apply-templates select="@*, node()" mode="#current"/>
+		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template match="css:rules" mode="clean-up">
+		<xsl:apply-templates select="." mode="hub2htm:css"/>
+	</xsl:template>
+	
+	<xsl:template match="html:a[@class = $tei2html:indexterm-backlink-class][@href]" mode="clean-up">
+		<xsl:variable name="matching-entry" as="element(*)?" select="key('by-id', substring-after(@href, '#'))"/>
+		<xsl:if test="exists($matching-entry)">
+			<xsl:copy copy-namespaces="no">
+				<xsl:attribute name="title" select="$matching-entry/ancestor-or-self::html:p/html:span[@class='ie-term']"/>
+				<xsl:apply-templates select="@*" mode="#current"/>
+				<xsl:text>(</xsl:text>
+				<xsl:value-of select="key('by-id', substring-after(@href, '#'))"/>
+				<xsl:text>)</xsl:text>
+			</xsl:copy>  
+		</xsl:if>
+	</xsl:template>
+	
+	<!-- for sub and sup (but not limited to them) -->
+	<xsl:template match="html:*[html:span[@srcpath][count(@*) = 1]][count(node()) = 1]" mode="clean-up">
+		<xsl:copy copy-namespaces="no">
+			<xsl:apply-templates select="@*" mode="#current"/>
+			<xsl:attribute name="srcpath" select="string-join((@srcpath, html:span/@srcpath), ' ')"/>
+			<xsl:apply-templates mode="#current"/>
+		</xsl:copy>
+	</xsl:template>
+	
+	<xsl:template match="html:p[html:div[matches(@class, 'table-wrapper')]]" mode="clean-up" priority="3">
+		<!-- tables are not allowed in paras in epub. but sometimes they appear inside (footnotes etc.). So they are dissolved.-->
+		<xsl:choose>
+			<xsl:when test="some $t in (text(), html:span/text()) satisfies matches($t, '\S')">
+				<xsl:apply-templates select="html:div[matches(@class, 'table-wrapper')]" mode="#current"/>
+				<xsl:copy copy-namespaces="no">
+					<xsl:apply-templates select="@*" mode="#current"/>
+					<xsl:apply-templates select="node() except html:div[matches(@class, 'table-wrapper')]" mode="#current"/>
+				</xsl:copy>
+			</xsl:when>
+			<xsl:otherwise>
+				<xsl:apply-templates select="node()" mode="#current"/>
+			</xsl:otherwise>
+		</xsl:choose>
+	</xsl:template>
+	
+	<xsl:template match="*[local-name() = ('h1', 'h2', 'h3', 'h4', 'h5', 'h6')][*:span[@class = 'label']]" mode="clean-up" exclude-result-prefixes="#all">
+		<xsl:variable name="label" select="*:span[@class = 'label']"/>
+		<xsl:copy copy-namespaces="no">
+			<xsl:apply-templates select="@*" mode="#current"/>
+			<xsl:for-each-group select="node()" group-ending-with="html:span[@class = 'label']">
+				<xsl:choose>
+					<xsl:when test="current-group()[. &gt;&gt; $label]">
+						<span class="justifier">
+							<xsl:apply-templates select="current-group()" mode="#current"/>
+						</span>
+					</xsl:when>
+					<xsl:otherwise>
+						<xsl:apply-templates select="current-group()" mode="#current"/>
+					</xsl:otherwise>
+				</xsl:choose>
+			</xsl:for-each-group>
+		</xsl:copy>
+	</xsl:template>  
+	
+	<xsl:template match="*:span[@class = 'label']/@class" mode="clean-up" priority="3">
+		<xsl:attribute name="{name()}" select="concat(., tei2html:label-width(..))"/>
+	</xsl:template> 
+	
 </xsl:stylesheet>
