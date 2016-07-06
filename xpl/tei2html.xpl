@@ -10,7 +10,7 @@
   name="tei2html"
   type="tei2html:tei2html"
   >
-
+	<p:documentation>This step converts TEI to HTML. You can define the uses modes by overriding the default fallback pipeline in your project's adaptations.</p:documentation>
   <p:option name="srcpaths" required="false" select="'no'"/>
   <p:option name="debug" required="false" select="'no'"/>
   <p:option name="debug-dir-uri" required="false" select="'debug'"/>
