@@ -905,7 +905,7 @@
             [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] or following-sibling::*[1][self::head[@type = 'main']])])]
             [not(ancestor::divGen[@type ='toc'])]
             [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]
-            | //*[self::*:seg or self::*:p][matches(@rend, '_-_TOC[1-6]')]" mode="toc"/>
+            | //*[self::*[local-name() = ('seg', 'p', 'head')]][matches(@rend, '_-_TOC[1-6]')]" mode="toc"/>
         </xsl:otherwise>
       </xsl:choose>
     </xsl:element>
