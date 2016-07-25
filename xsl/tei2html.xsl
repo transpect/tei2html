@@ -352,7 +352,7 @@
   </xsl:template>
   
 
-  <xsl:template match="div[@type]" mode="tei2html" priority="3">
+  <xsl:template match="div[@type][not($divify-sections = 'no')]" mode="tei2html" priority="3">
     <div>
       <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
@@ -1126,9 +1126,9 @@
        If @rend creates a class attribute und mode="tei2html", it may become next to impossible to
        suppress class attribute generation in certain contexts unless both the @rend based and the class-att
        templates return nothing. -->
-  <xsl:template match="@rend" mode="tei2html">
-    <xsl:apply-templates select=".." mode="class-att"/>
-  </xsl:template>
+  <xsl:template match="@rend" mode="tei2html"/>
+   <!-- <xsl:apply-templates select=".." mode="class-att"/>
+  </xsl:template>-->
   <xsl:template match="*[@rend][@rend != 'title-page']" mode="class-att">
     <xsl:attribute name="class" select="@rend"/>
   </xsl:template>
@@ -1460,7 +1460,7 @@
                     replace(@url, '^.*?/([^/]+)$', '$1')
                   )[normalize-space()][1]"/>
         <xsl:attribute name="src" select="resolve-uri(@url)"/>
-        <xsl:apply-templates select="@rend" mode="#current"/>
+        <xsl:apply-templates select="." mode="class-att"/>
       <!--  <xsl:copy-of select="@* except (@url, @rend)">-->
           <!-- css:content AND copy duplicates attributes, so i commented it out (mp)-->
         <!--</xsl:copy-of>-->
@@ -1469,7 +1469,8 @@
   </xsl:template>  
   
   <xsl:template match="graphic/@url | graphic/@rend" mode="tei2html"/>
-  
+	<xsl:template match="graphic" mode="class-att"/>
+	
 <!--  <xsl:template match="@url | @type [. = 'tab']" mode="tei2html" priority="-0.5"/>-->
   
   <xsl:template match="graphic/@xlink:href" mode="tei2html">
