@@ -352,7 +352,7 @@
   </xsl:template>
   
 
-  <xsl:template match="div[@type][not($divify-sections = 'no')]" mode="tei2html" priority="3">
+  <xsl:template match="div[@type]" mode="tei2html" priority="3">
     <div>
       <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
