@@ -131,7 +131,30 @@
   
   <xsl:template match="*[preceding-sibling::p[descendant-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives"
     priority="2"/>
-	
+  
+  <!-- block/inline element level language -->
+  
+  <xsl:template match="head | quote | seg | p | table | caption | note | italic | bold | unclear |
+    underline | sub | sup | l | lg | hi | argument | emph | add | orig | date | persName | surname | forename" mode="epub-alternatives">
+    <xsl:copy>
+      <xsl:variable name="lang" select="tr:lang(.)" as="xs:string?"/>
+      <xsl:if test="$lang">
+        <xsl:attribute name="xml:lang" select="$lang"/>
+        <xsl:attribute name="lang" select="$lang"/>
+      </xsl:if>
+      <xsl:apply-templates select="@* except @xml:lang, node()" mode="#current"/>
+    </xsl:copy>
+  </xsl:template>
+  
+  <xsl:function name="tr:lang" as="xs:string?">
+    <xsl:param name="element" as="element()"/>
+    <xsl:variable name="style-name" select="($element/@rend, $element/@role)[1]" as="attribute()?"/>
+    <xsl:variable name="style-lang" select="$element/ancestor::*//css:rules/css:rule[@name eq $style-name]/@xml:lang" as="attribute(xml:lang)?"/>
+    <xsl:variable name="ancestor-lang" select="$element/ancestor::*[@xml:lang][1]/@xml:lang" as="attribute(xml:lang)?"/>
+    <xsl:variable name="lang" select="($element/@xml:lang[. ne $ancestor-lang], $style-lang[. ne $ancestor-lang])[1]" as="attribute(xml:lang)?"/>
+    <xsl:value-of select="$lang"/>
+  </xsl:function>
+  
 	<!-- if cells have a percentage width, then this mode can append classes like 'cellwidth-39' to a cell. Those generated classes are added as css:rules as well.-->
   
 	<xsl:template match="/" mode="col-widths">
