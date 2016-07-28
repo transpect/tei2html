@@ -131,30 +131,7 @@
   
   <xsl:template match="*[preceding-sibling::p[descendant-or-self::*[@rendition eq 'EpubAlternative']]]" mode="epub-alternatives"
     priority="2"/>
-  
-  <!-- block/inline element level language -->
-  
-  <xsl:template match="head | quote | seg | p | table | caption | note | italic | bold | unclear |
-    underline | sub | sup | l | lg | hi | argument | emph | add | orig | date | persName | surname | forename" mode="epub-alternatives">
-    <xsl:copy>
-      <xsl:variable name="lang" select="tr:lang(.)" as="xs:string?"/>
-      <xsl:if test="$lang">
-        <xsl:attribute name="xml:lang" select="$lang"/>
-        <xsl:attribute name="lang" select="$lang"/>
-      </xsl:if>
-      <xsl:apply-templates select="@* except @xml:lang, node()" mode="#current"/>
-    </xsl:copy>
-  </xsl:template>
-  
-  <xsl:function name="tr:lang" as="xs:string?">
-    <xsl:param name="element" as="element()"/>
-    <xsl:variable name="style-name" select="($element/@rend, $element/@role)[1]" as="attribute()?"/>
-    <xsl:variable name="style-lang" select="$element/ancestor::*//css:rules/css:rule[@name eq $style-name]/@xml:lang" as="attribute(xml:lang)?"/>
-    <xsl:variable name="ancestor-lang" select="$element/ancestor::*[@xml:lang][1]/@xml:lang" as="attribute(xml:lang)?"/>
-    <xsl:variable name="lang" select="($element/@xml:lang[. ne $ancestor-lang], $style-lang[. ne $ancestor-lang])[1]" as="attribute(xml:lang)?"/>
-    <xsl:value-of select="$lang"/>
-  </xsl:function>
-  
+	
 	<!-- if cells have a percentage width, then this mode can append classes like 'cellwidth-39' to a cell. Those generated classes are added as css:rules as well.-->
   
 	<xsl:template match="/" mode="col-widths">
@@ -773,25 +750,15 @@
   <xsl:template match="label[tei2html:is-varlistentry(following-sibling::*[1][self::item])]" mode="tei2html" priority="1">
     <dt>
       <xsl:apply-templates select="@*" mode="#current"/>
-      <xsl:choose>
-      	<xsl:when test="$tei2html:copy-dt-class-from-dd">
-        	<xsl:apply-templates select="following-sibling::*[1][self::item]/gloss" mode="class-att"/>
-      	</xsl:when>
-      	<xsl:otherwise>
-      		<xsl:apply-templates select="." mode="class-att"/>
-      	</xsl:otherwise>
-      </xsl:choose>
+      <xsl:if test="$tei2html:copy-dt-class-from-dd">
+        <xsl:apply-templates select="following-sibling::*[1][self::item]/gloss/@rend" mode="#current"/>
+      </xsl:if>
       <xsl:apply-templates select="node()" mode="#current"/>
     </dt>
   </xsl:template>
   
-	<xsl:template match="gloss" mode="class-att">
-		<xsl:attribute name="class" select="@rend"/>
-	</xsl:template>
-	
   <xsl:template match="item[tei2html:is-varlistentry(.)]/gloss" mode="tei2html">
     <dd>
-      <xsl:apply-templates select="." mode="class-att"/>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </dd>
   </xsl:template>
@@ -830,7 +797,9 @@
                            [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]]" mode="tei2html" priority="3">
     <dt>
       <xsl:if test="$tei2html:copy-class-from-item-to-dt">
-          <xsl:apply-templates select="*[1]" mode="class-att"/>
+        <xsl:attribute name="class">
+          <xsl:apply-templates select="*[1]/@rend" mode="#current"/>
+        </xsl:attribute>
       </xsl:if>
       <xsl:value-of select="@n"/>
     </dt>
@@ -841,7 +810,6 @@
   
   <xsl:template match="item[not(parent::list[@type eq 'gloss'])][not(tei2html:is-varlistentry(.))]" mode="tei2html">
     <li>
-      <xsl:apply-templates select="." mode="class-att"/>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </li>
   </xsl:template>
@@ -1107,8 +1075,8 @@
     </p>
   </xsl:template>
   
-  <xsl:template match="hi[@rendition  = ('subscript', 'superscript')] | hi[key('rule-by-name', @rend)[@css:vertical-align = ('sub', 'super')]]" mode="tei2html" priority="2.5">
-    <xsl:element name="{if (@rendition = 'superscript' or key('rule-by-name', @rend)[@css:vertical-align = 'super']) then 'sup' else 'sub'}">
+  <xsl:template match="hi[@rendition  = ('subscript', 'superscript')] | hi[key('rule-by-name', @rend, $root)[@css:vertical-align = ('sub', 'super')]]" mode="tei2html" priority="2.5">
+    <xsl:element name="{if (@rendition = 'superscript' or key('rule-by-name', @rend, $root)[@css:vertical-align = 'super']) then 'sup' else 'sub'}">
       <xsl:next-match/>
     </xsl:element>
   </xsl:template>
@@ -1158,9 +1126,9 @@
        If @rend creates a class attribute und mode="tei2html", it may become next to impossible to
        suppress class attribute generation in certain contexts unless both the @rend based and the class-att
        templates return nothing. -->
-  <xsl:template match="@rend" mode="tei2html"/>
-   <!-- <xsl:apply-templates select=".." mode="class-att"/>
-  </xsl:template>-->
+  <xsl:template match="@rend" mode="tei2html">
+    <xsl:apply-templates select=".." mode="class-att"/>
+  </xsl:template>
   <xsl:template match="*[@rend][@rend != 'title-page']" mode="class-att">
     <xsl:attribute name="class" select="@rend"/>
   </xsl:template>
@@ -1468,22 +1436,23 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
-	<xsl:template match="p[floatingText | figure | table]" mode="tei2html" priority="1.2">
-		<xsl:for-each-group select="node()" group-adjacent="boolean(self::floatingText | self::figure | self::table)">
-			<xsl:choose>
-				<xsl:when test="current-grouping-key()">
-					<xsl:apply-templates select="current-group()" mode="#current"/>
-				</xsl:when>
-				<xsl:otherwise>
-					<xsl:element name="{name(..)}">
-						<xsl:apply-templates select="../@*" mode="#current"/>
-						<xsl:apply-templates select=".." mode="class-att"/>
-						<xsl:apply-templates select="current-group()" mode="#current"/>
-					</xsl:element>
-				</xsl:otherwise>
-			</xsl:choose>
-		</xsl:for-each-group>  
-	</xsl:template>
+  <xsl:template match="p[floatingText | figure | table]" mode="tei2html" priority="1.2">
+    <xsl:for-each-group select="node()" group-adjacent="boolean(self::floatingText | self::figure | self::table)">
+      <xsl:choose>
+        <xsl:when test="current-grouping-key()">
+          <xsl:apply-templates select="current-group()" mode="#current"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:element name="{name(..)}">
+            <xsl:apply-templates select="../@*" mode="#current"/>
+          	<xsl:apply-templates select=".." mode="class-att"/>
+          	<xsl:apply-templates select="current-group()" mode="#current"/>
+          </xsl:element>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:for-each-group>  
+  </xsl:template>
+  
     
   <xsl:template match="graphic" mode="tei2html">
       <img>
@@ -1493,7 +1462,7 @@
                     replace(@url, '^.*?/([^/]+)$', '$1')
                   )[normalize-space()][1]"/>
         <xsl:attribute name="src" select="resolve-uri(@url)"/>
-        <xsl:apply-templates select="." mode="class-att"/>
+        <xsl:apply-templates select="@rend" mode="#current"/>
       <!--  <xsl:copy-of select="@* except (@url, @rend)">-->
           <!-- css:content AND copy duplicates attributes, so i commented it out (mp)-->
         <!--</xsl:copy-of>-->
@@ -1502,8 +1471,7 @@
   </xsl:template>  
   
   <xsl:template match="graphic/@url | graphic/@rend" mode="tei2html"/>
-	<xsl:template match="graphic" mode="class-att"/>
-	
+  
 <!--  <xsl:template match="@url | @type [. = 'tab']" mode="tei2html" priority="-0.5"/>-->
   
   <xsl:template match="graphic/@xlink:href" mode="tei2html">
@@ -1570,7 +1538,7 @@
       <xsl:apply-templates select="." mode="table-widths"/>
     </xsl:variable>
     <xsl:apply-templates select="$conditional-percent-widths" mode="#current">
-      <xsl:with-param name="root" select="root(.)" tunnel="yes"/>
+      <xsl:with-param name="root" select="$root" tunnel="yes"/>
     </xsl:apply-templates>
   </xsl:template>
   
