@@ -774,7 +774,7 @@
     <dt>
       <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:if test="$tei2html:copy-dt-class-from-dd">
-        <xsl:apply-templates select="following-sibling::*[1][self::item]/gloss/@rend" mode="#current"/>
+        <xsl:apply-templates select="following-sibling::*[1][self::item]/gloss" mode="class-att"/>
       </xsl:if>
       <xsl:apply-templates select="node()" mode="#current"/>
     </dt>
@@ -782,6 +782,7 @@
   
   <xsl:template match="item[tei2html:is-varlistentry(.)]/gloss" mode="tei2html">
     <dd>
+      <xsl:apply-templates select="." mode="class-att"/>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </dd>
   </xsl:template>
@@ -833,6 +834,7 @@
   
   <xsl:template match="item[not(parent::list[@type eq 'gloss'])][not(tei2html:is-varlistentry(.))]" mode="tei2html">
     <li>
+      <xsl:apply-templates select="." mode="class-att"/>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </li>
   </xsl:template>
@@ -1459,21 +1461,22 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
-  <xsl:template match="p[floatingText | figure | table]" mode="tei2html" priority="1.2">
-    <xsl:for-each-group select="node()" group-adjacent="boolean(self::floatingText | self::figure | self::table)">
-      <xsl:choose>
-        <xsl:when test="current-grouping-key()">
-          <xsl:apply-templates select="current-group()" mode="#current"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:element name="{name(..)}">
-            <xsl:apply-templates select="../@*, current-group()" mode="#current"/>
-          </xsl:element>
-        </xsl:otherwise>
-      </xsl:choose>
-    </xsl:for-each-group>  
-  </xsl:template>
-  
+	<xsl:template match="p[floatingText | figure | table]" mode="tei2html" priority="1.2">
+		<xsl:for-each-group select="node()" group-adjacent="boolean(self::floatingText | self::figure | self::table)">
+			<xsl:choose>
+				<xsl:when test="current-grouping-key()">
+					<xsl:apply-templates select="current-group()" mode="#current"/>
+				</xsl:when>
+				<xsl:otherwise>
+					<xsl:element name="{name(..)}">
+						<xsl:apply-templates select="../@*" mode="#current"/>
+						<xsl:apply-templates select=".." mode="class-att"/>
+						<xsl:apply-templates select="current-group()" mode="#current"/>
+					</xsl:element>
+				</xsl:otherwise>
+			</xsl:choose>
+		</xsl:for-each-group>  
+	</xsl:template>
     
   <xsl:template match="graphic" mode="tei2html">
       <img>
