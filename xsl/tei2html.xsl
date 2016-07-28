@@ -773,13 +773,22 @@
   <xsl:template match="label[tei2html:is-varlistentry(following-sibling::*[1][self::item])]" mode="tei2html" priority="1">
     <dt>
       <xsl:apply-templates select="@*" mode="#current"/>
-      <xsl:if test="$tei2html:copy-dt-class-from-dd">
-        <xsl:apply-templates select="following-sibling::*[1][self::item]/gloss" mode="class-att"/>
-      </xsl:if>
+      <xsl:choose>
+      	<xsl:when test="$tei2html:copy-dt-class-from-dd">
+        	<xsl:apply-templates select="following-sibling::*[1][self::item]/gloss" mode="class-att"/>
+      	</xsl:when>
+      	<xsl:otherwise>
+      		<xsl:apply-templates select="." mode="class-att"/>
+      	</xsl:otherwise>
+      </xsl:choose>
       <xsl:apply-templates select="node()" mode="#current"/>
     </dt>
   </xsl:template>
   
+	<xsl:template match="gloss" mode="class-att">
+		<xsl:attribute name="class" select="@rend"/>
+	</xsl:template>
+	
   <xsl:template match="item[tei2html:is-varlistentry(.)]/gloss" mode="tei2html">
     <dd>
       <xsl:apply-templates select="." mode="class-att"/>
@@ -821,9 +830,7 @@
                            [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]]" mode="tei2html" priority="3">
     <dt>
       <xsl:if test="$tei2html:copy-class-from-item-to-dt">
-        <xsl:attribute name="class">
-          <xsl:apply-templates select="*[1]/@rend" mode="#current"/>
-        </xsl:attribute>
+          <xsl:apply-templates select="*[1]" mode="class-att"/>
       </xsl:if>
       <xsl:value-of select="@n"/>
     </dt>
