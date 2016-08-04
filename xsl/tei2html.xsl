@@ -179,7 +179,7 @@
 		</xsl:copy>
 	</xsl:template>
 	
-	<xsl:template match="*:td[@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
+	<xsl:template match="*[local-name() = ('td', 'th')][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
 		mode="create-table-width-classes">
 		<!-- momentarily integer numbers are returned-->
 		<xsl:variable name="percent" 
@@ -188,7 +188,9 @@
 		<xsl:attribute name="{name()}" select="string-join((., $percent), ' ')"/>
 	</xsl:template>
 	
-	<xsl:template match="@data-twips-width | @data-rownum | *:colgroup[*:col[@data-twips-width]]"	mode="create-table-width-classes"/>
+	<xsl:template match="@data-twips-width | @data-rownum | *:colgroup[*:col[not(@*) or @data-twips-width]]"	mode="create-table-width-classes"/>
+  <xsl:template match="*:td[@data-colspan-part &gt; 1] | *:th[@data-colspan-part &gt; 1]" mode="create-table-width-classes" />  
+  <xsl:template match="*:td[@data-rowspan-part &gt; 1] | *:th[@data-rowspan-part &gt; 1]" mode="create-table-width-classes" priority="2"/>
   
   <xsl:template match="/*/@*[name() = ('source-dir-uri', 'xml:base')]" mode="tei2html">
     <xsl:copy/>
