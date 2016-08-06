@@ -734,7 +734,7 @@
   
   <xsl:template match="list[@type eq 'gloss']" mode="tei2html">
     <dl>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:call-template name="css:content"/>
     </dl>
   </xsl:template>
   
@@ -1161,7 +1161,8 @@
           <xsl:attribute name="epub:type" select="'pagebreak'"/>
         </xsl:when>
         <xsl:when test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication', 'appendix', 'index')]]">
-          <xsl:attribute name="epub:type" select="$context/@type"/>
+          <!-- subtype may be glossary for a chapter or appendix that serves also as a glossary. This is a hub2tei convention introduced on 2016-08-06 -->
+          <xsl:attribute name="epub:type" select="string-join(($context/@type, $context/@subtype), ' ')"/>
         </xsl:when>
         <xsl:when test="$context/self::div[starts-with(@type, 'sect')][parent::div/@type = 'chapter']">
           <xsl:attribute name="epub:type" select="'subchapter'"/>
