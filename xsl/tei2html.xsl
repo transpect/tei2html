@@ -411,10 +411,13 @@
   </xsl:template>
   
   <xsl:template name="css:other-atts">
-    <xsl:apply-templates select="." mode="class-att"/>
+  	<xsl:variable name="class" as="attribute(class)?">
+  		<xsl:apply-templates select="." mode="class-att"/>
+  	</xsl:variable>
+  	<!-- avoid to return class attribute in css:other-atts twice -->
     <xsl:call-template name="css:remaining-atts">
       <xsl:with-param name="remaining-atts" 
-        select="@*[not(css:map-att-to-elt(., ..))]"/>
+        select="@*[not(css:map-att-to-elt(., ..))][not(. is $class)]"/>
     </xsl:call-template>
   </xsl:template>
 	
@@ -1132,9 +1135,11 @@
   <xsl:template match="@rend" mode="tei2html">
     <xsl:apply-templates select=".." mode="class-att"/>
   </xsl:template>
-  <xsl:template match="*[@rend][@rend != 'title-page']" mode="class-att">
+	
+  <xsl:template match="*[@rend][@rend != 'title-page']" mode="class-att" priority="0.75">
     <xsl:attribute name="class" select="@rend"/>
   </xsl:template>
+	
   <!-- Is this a suitable replacement for line 316? -->
   <xsl:template match="head[@type = 'main'][@rend]" mode="class-att" priority="0.5001">
     <!-- priority is slightly higher than the identical calculated values, 0.5, for *[@rend] and head[@rend] -->
@@ -1449,9 +1454,6 @@
         <xsl:otherwise>
           <xsl:element name="{name(..)}">
             <xsl:apply-templates select="../@*" mode="#current"/>
-          	<xsl:apply-templates select=".." mode="class-att"/>
-          	<xsl:apply-templates select="current-group()" mode="#current"/>
-          	<xsl:apply-templates select=".." mode="class-att"/>
           	<xsl:apply-templates select="current-group()" mode="#current"/>
           </xsl:element>
         </xsl:otherwise>
@@ -1642,8 +1644,9 @@
 
   <xsl:template match="table[exists(col | colgroup)]/*/row/*/@css:width" mode="table-widths"/>
   
-
-  <xsl:template match="@colspan | @rowspan" mode="tei2html">
+	<xsl:template match="@data-colnum | @data-colspan-part" mode="tei2html"/>
+		
+	<xsl:template match="@colspan | @rowspan" mode="tei2html">
     <xsl:copy/>
   </xsl:template>
   
