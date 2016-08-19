@@ -812,6 +812,7 @@
   
   <xsl:template match="item[not(parent::list[@type eq 'gloss'])][not(tei2html:is-varlistentry(.))]" mode="tei2html">
     <li>
+      <xsl:apply-templates select="." mode="class-att"/>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </li>
   </xsl:template>
@@ -1448,6 +1449,8 @@
         <xsl:otherwise>
           <xsl:element name="{name(..)}">
             <xsl:apply-templates select="../@*" mode="#current"/>
+          	<xsl:apply-templates select=".." mode="class-att"/>
+          	<xsl:apply-templates select="current-group()" mode="#current"/>
           	<xsl:apply-templates select=".." mode="class-att"/>
           	<xsl:apply-templates select="current-group()" mode="#current"/>
           </xsl:element>
