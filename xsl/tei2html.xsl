@@ -1166,7 +1166,10 @@
         <xsl:when test="$context[self::*:pb]">
           <xsl:attribute name="epub:type" select="'pagebreak'"/>
         </xsl:when>
-        <xsl:when test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication', 'appendix', 'index')]]">
+      	<xsl:when test="$context[self::*:div[@type = 'index']]">
+      		<xsl:attribute name="epub:type" select="$context/@type"/>
+      	</xsl:when>
+        <xsl:when test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication', 'appendix')]]">
           <!-- subtype may be glossary for a chapter or appendix that serves also as a glossary. This is a hub2tei convention introduced on 2016-08-06 -->
           <xsl:attribute name="epub:type" select="string-join(($context/@type, $context/@subtype), ' ')"/>
         </xsl:when>
