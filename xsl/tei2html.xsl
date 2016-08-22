@@ -171,6 +171,7 @@
 			<xsl:sequence select="htmltable:normalize(.)"/>
 		</xsl:variable>
 		<xsl:apply-templates select="$table" mode="create-table-width-classes"/>
+		<xsl:message select="'#####', $table"/>
 	</xsl:template>
 	
 	<xsl:template match="@* | node()" mode="col-widths create-table-width-classes">
@@ -190,7 +191,7 @@
 	
 	<xsl:template match="@data-twips-width | @data-rownum | *:colgroup[*:col[not(@*) or @data-twips-width]]"	mode="create-table-width-classes"/>
 
-  <xsl:template match="*:td[@data-rowspan-part &gt; 1] | *:th[@data-rowspan-part &gt; 1]" mode="create-table-width-classes" priority="2"/>
+	<xsl:template match="*:td[@data-rowspan-part &gt; 1] | *:td[@data-colspan-part &gt; 1] | *:th[@data-colspan-part &gt; 1] | *:th[@data-rowspan-part &gt; 1]" mode="create-table-width-classes" priority="3"/>
   
   <xsl:template match="/*/@*[name() = ('source-dir-uri', 'xml:base')]" mode="tei2html">
     <xsl:copy/>
