@@ -29,6 +29,9 @@
     method="xhtml"
     doctype-public="-//W3C//DTD XHTML 1.0//EN"
     doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd" />
+  <p:output port="report" sequence="true">
+    <p:pipe port="report" step="dtp"/>
+  </p:output>
   
   <p:import href="http://transpect.io/cascade/xpl/dynamic-transformation-pipeline.xpl"/>
   <p:import href="http://transpect.io/xproc-util/simple-progress-msg/xpl/simple-progress-msg.xpl"/>
@@ -47,7 +50,7 @@
     <p:with-option name="status-dir-uri" select="$status-dir-uri"/>
   </tr:simple-progress-msg>
   
-	<tr:dynamic-transformation-pipeline
+	<tr:dynamic-transformation-pipeline name="dtp"
 				    fallback-xsl="http://transpect.io/tei2html/xsl/tei2html.xsl"
 				    fallback-xpl="http://transpect.io/tei2html/xpl/tei2html_default.xpl">
 		<p:with-option name="load" select="$filename-driver"/>

@@ -31,6 +31,11 @@
 	<p:input port="parameters" kind="parameter" primary="true"/>
 	<p:input port="stylesheet"/>
 	<p:output port="result" primary="true"/>
+  <p:output port="report" sequence="true">
+    <p:pipe port="report" step="epub-alternatives"/>
+    <p:pipe port="report" step="tei2html"/>
+    <p:pipe port="report" step="clean-up"/>
+  </p:output>
 
 	<p:import href="http://xmlcalabash.com/extension/steps/library-1.0.xpl"/>
 	<p:import href="http://transpect.io/xproc-util/xslt-mode/xpl/xslt-mode.xpl"/>
