@@ -82,7 +82,7 @@
 		</p:with-option>
 	</tr:xslt-mode>
 
-	<tr:xslt-mode prefix="tei2html/20" mode="clean-up">
+	<tr:xslt-mode prefix="tei2html/20" mode="clean-up" name="clean-up">
 		<p:input port="source">
 			<p:pipe step="tei2html" port="result"/>
 			<p:pipe step="tei2html-driver" port="meta"/>
