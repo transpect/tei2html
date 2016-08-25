@@ -171,7 +171,7 @@
 			<xsl:sequence select="htmltable:normalize(.)"/>
 		</xsl:variable>
 		<xsl:apply-templates select="$table" mode="create-table-width-classes"/>
-		<xsl:message select="'#####', $table"/>
+<!--		<xsl:message select="'#####', $table"/>-->
 	</xsl:template>
 	
 	<xsl:template match="@* | node()" mode="col-widths create-table-width-classes">
@@ -180,11 +180,21 @@
 		</xsl:copy>
 	</xsl:template>
 	
-	<xsl:template match="*[local-name() = ('td', 'th')][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
-		mode="create-table-width-classes">
-		<!-- momentarily integer numbers are returned-->
+	<xsl:template match="*[local-name() = ('td', 'th')][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]" mode="create-table-width-classes">
 		<xsl:variable name="percent" 
-								select="concat('cellwidth-', xs:string(round((../@data-twips-width * 100) div ../../@data-twips-width)))"
+			select="concat('cellwidth-', xs:string(floor((../@data-twips-width) * 100 div ../../@data-twips-width)))"
+			as="xs:string?"/>
+		<xsl:attribute name="{name()}" select="string-join((., $percent), ' ')"/>
+	</xsl:template>
+	
+	<xsl:template match="*[local-name() = ('td', 'th')][../..[*:colgroup]][parent::*:tr[*[xs:integer(@colspan) gt 1]]][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
+		mode="create-table-width-classes" priority="2">
+		<xsl:variable name="elt" select=".." as="element(*)"/>
+		<xsl:variable name="pos" select="xs:integer(replace($elt/@data-colnum, '^.+?-(\d)+', '$1'))"/>
+		<xsl:variable name="cell-with-correct-width" as="element(*)+" select="if ($elt[xs:integer(@colspan) gt 1]) then ../../../*:colgroup/*:col[(position() ge $pos) and (position() le ($pos + xs:integer($elt/@colspan -1)))] else .."/>
+		<xsl:variable name="row-with-correct-width" as="element(*)*" select="../../../*:colgroup/*:col"/>
+		<xsl:variable name="percent" 
+			select="concat('cellwidth-', xs:string(floor((sum($cell-with-correct-width/@data-twips-width) * 100) div sum($row-with-correct-width/@data-twips-width))))"
 										as="xs:string?"/>
 		<xsl:attribute name="{name()}" select="string-join((., $percent), ' ')"/>
 	</xsl:template>
@@ -202,7 +212,7 @@
     <xsl:copy/>
   </xsl:template>
   
-  <xsl:template match="@xml:lang | @lang" mode="tei2html">
+	<xsl:template match="@xml:lang | @lang" mode="tei2html">
     <xsl:copy/>
   </xsl:template>
     
@@ -1596,6 +1606,9 @@
 
   <!-- There should always be @css:width. @width is only decorational (will be valuable just in case 
     all @css:* will be stripped -->
+	<xsl:variable name="tei2html:max-table-width" select="100" as="xs:integer">
+		<!-- you can define smaller values to avoid bugs concerning percentual body margins-->
+	</xsl:variable>
 
   <xsl:template match="table[@css:width]" mode="table-widths">
     <xsl:variable name="twips" select="tr:length-to-unitless-twip(@css:width)" as="xs:double?"/>
@@ -1605,7 +1618,7 @@
         <xsl:copy copy-namespaces="no">
           <xsl:apply-templates select="@*, node()" mode="#current">
             <xsl:with-param name="table-twips" select="$twips" tunnel="yes"/>
-            <xsl:with-param name="table-percentage" select="if (tei2html:display-table-in-whole-width(.)) then 100 else tei2html:table-width-grid($twips, $page-width)" tunnel="yes"/>
+          	<xsl:with-param name="table-percentage" select="if (tei2html:display-table-in-whole-width(.)) then $tei2html:max-table-width else tei2html:table-width-grid($twips, $page-width)" tunnel="yes"/>
           </xsl:apply-templates>
         </xsl:copy>    
       </xsl:when>
