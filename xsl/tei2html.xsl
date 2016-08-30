@@ -187,15 +187,17 @@
 		<xsl:attribute name="{name()}" select="string-join((., $percent), ' ')"/>
 	</xsl:template>
 	
-	<xsl:template match="*[local-name() = ('td', 'th')][../..[*:colgroup]][parent::*:tr[*[xs:integer(@colspan) gt 1]]][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
+	<xsl:template match="*[local-name() = ('td')][../..[*:colgroup]][parent::*:tr[*[xs:integer(@colspan) gt 1]]][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]] | 
+		*[local-name() = ('th')][../..[*:colgroup] or ../../..[*:colgroup]][parent::*:tr[*[xs:integer(@colspan) gt 1]]][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
 		mode="create-table-width-classes" priority="2">
 		<xsl:variable name="elt" select=".." as="element(*)"/>
 		<xsl:variable name="pos" select="xs:integer(replace($elt/@data-colnum, '^.+?-(\d)+', '$1'))"/>
-		<xsl:variable name="cell-with-correct-width" as="element(*)+" select="if ($elt[xs:integer(@colspan) gt 1]) then ../../../*:colgroup/*:col[(position() ge $pos) and (position() le ($pos + xs:integer($elt/@colspan -1)))] else .."/>
-		<xsl:variable name="row-with-correct-width" as="element(*)*" select="../../../*:colgroup/*:col"/>
-		<xsl:variable name="percent" 
-			select="concat('cellwidth-', xs:string(floor((sum($cell-with-correct-width/@data-twips-width) * 100) div sum($row-with-correct-width/@data-twips-width))))"
-										as="xs:string?"/>
+		<xsl:variable name="cell-with-correct-width" as="element(*)+" select="if ($elt[xs:integer(@colspan) gt 1]) then ancestor::*[*:colgroup][1]/*:colgroup/*:col[(position() ge $pos) and (position() le ($pos + xs:integer($elt/@colspan -1)))] else .."/>
+		<xsl:variable name="row-with-correct-width" as="element(*)*" select="ancestor::*[*:colgroup][1]/*:colgroup/*:col"/>
+		<xsl:message select="'row: ', $row-with-correct-width, ' cell: ', $cell-with-correct-width"></xsl:message>
+		<xsl:variable name="percent" as="xs:string?" 
+								select="concat('cellwidth-', xs:string(floor((sum($cell-with-correct-width/@data-twips-width) * 100) div sum($row-with-correct-width/@data-twips-width))))"
+										/>
 		<xsl:attribute name="{name()}" select="string-join((., $percent), ' ')"/>
 	</xsl:template>
 	
