@@ -13,7 +13,7 @@
   xmlns:tr="http://transpect.io"
   xmlns:epub="http://www.idpf.org/2007/ops"
   xmlns:htmltable="http://transpect.io/htmltable"
-  xmlns="http://www.w3.org/1999/xhtml"
+  xmlns="http://www.w3.org/1999/xhtml"  
   xpath-default-namespace="http://www.tei-c.org/ns/1.0"
   exclude-result-prefixes="#all"
   version="2.0">
@@ -419,7 +419,7 @@
     relies on this value to be 0.25.
     -->
   <xsl:template match="head | quote | seg | p | table | caption | note | italic | bold | unclear |
-    underline | sub | sup | l | lg | hi | argument | emph | add | orig | date | persName | surname | forename" mode="tei2html" priority="-0.25" >
+    underline | sub | sup | l | lg | hi | argument | emph | add | orig | date | name | persName | surname | forename" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
   
@@ -655,7 +655,7 @@
   </xsl:template>
 
 
-	<xsl:template match="persName | surname | forename | abstract | byline | label | unclear" mode="class-att">
+	<xsl:template match="persName | surname | forename | name | abstract | byline | label | unclear" mode="class-att">
     <xsl:attribute name="class" select="local-name()"/>
   </xsl:template>
 
@@ -782,17 +782,25 @@
   </xsl:template>
 
   <xsl:template match="list[@type = ('bulleted', 'simple')]" mode="tei2html">
-    <ul class="{(descendant::p[1]/@rend, @type)[1]}">
-      <xsl:apply-templates mode="#current"/>
+    <ul>
+    	<xsl:call-template name="css:content"/>
     </ul>
   </xsl:template>
   
+	<xsl:template match="list[@type  = ('bulleted', 'simple')]" mode="class-att">
+		<xsl:attribute name="class" select="(descendant::p[1]/@rend, @type)[1]"/>
+	</xsl:template>
+	
   <xsl:template match="list[@type eq 'ordered']" mode="tei2html">
-    <ol class="{@style}">
-      <xsl:apply-templates mode="#current"/>
+    <ol>
+    	<xsl:call-template name="css:content"/>
     </ol>
   </xsl:template>
   
+	<xsl:template match="list[@type eq 'ordered']" mode="class-att">
+		<xsl:attribute name="class" select="@style"/>
+	</xsl:template>
+	
   <xsl:param name="tei2html:change-orderer-to-deflist" as="xs:boolean" select="true()"/>  
   <xsl:variable name="tei2html:ordered-to-def-list-regex" select="'^[1a][\.\)]?$'" as="xs:string"/>
   
@@ -974,6 +982,9 @@
   </xsl:template>
   
   
+	<xsl:template match="p[figure]" mode="tei2html" priority="2">
+			<xsl:call-template name="css:content"/>
+	</xsl:template>
   
   <xsl:template match="head[@type = 'sub'] | head[ancestor::*[self::floatingText]]" mode="tei2html" priority="2">
     <p>
@@ -1102,7 +1113,7 @@
   
   <xsl:template match="@rendition[.  = ('subscript', 'superscript')]" mode="tei2html"/>
   
-	<xsl:template match="hi | seg | add | emph | orig | date | persName | surname | forename | unclear" mode="tei2html" priority="2">
+	<xsl:template match="hi | seg | add | emph | orig | date | name | persName | surname | forename | unclear" mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
     </span>
