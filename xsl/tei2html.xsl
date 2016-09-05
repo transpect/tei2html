@@ -366,14 +366,12 @@
     </p>
   </xsl:template>
   
-
   <xsl:template match="div[@type]" mode="tei2html" priority="3">
     <div>
       <xsl:apply-templates select="@* except @rend" mode="#current"/>
       <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:attribute name="class" select="if (@rend) then concat(@rend, ' ', @type) else @type"/>
-      <xsl:comment>schnurz</xsl:comment>
-      <xsl:apply-templates select="node()" mode="#current"/>
+      <xsl:apply-templates mode="#current"/>
     </div>
   </xsl:template>
   
@@ -858,7 +856,7 @@
 
   <xsl:template match="argument" mode="tei2html">
     <div class="introduction">
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:call-template name="css:content"/>
     </div>
   </xsl:template>
   
@@ -981,9 +979,8 @@
     </xsl:if>
   </xsl:template>
   
-  
-	<xsl:template match="p[figure]" mode="tei2html" priority="2">
-			<xsl:call-template name="css:content"/>
+	<xsl:template match="p[figure][count(text() | *) = 1]" mode="tei2html" priority="2">
+		<xsl:apply-templates mode="#current"/>
 	</xsl:template>
   
   <xsl:template match="head[@type = 'sub'] | head[ancestor::*[self::floatingText]]" mode="tei2html" priority="2">
