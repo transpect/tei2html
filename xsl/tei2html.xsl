@@ -1194,6 +1194,9 @@
           <!-- subtype may be glossary for a chapter or appendix that serves also as a glossary. This is a hub2tei convention introduced on 2016-08-06 -->
           <xsl:attribute name="epub:type" select="string-join(($context/@type, $context/@subtype), ' ')"/>
         </xsl:when>
+      	<xsl:when test="$context/self::div[@type = ('virtual-part', 'virtual-chapter')]">
+      		<xsl:attribute name="epub:type" select="replace($context/@type, '^virtual-', '')"/>
+      	</xsl:when>
         <xsl:when test="$context/self::div[starts-with(@type, 'sect')][parent::div/@type = 'chapter']">
           <xsl:attribute name="epub:type" select="'subchapter'"/>
         </xsl:when>
