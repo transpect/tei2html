@@ -1605,7 +1605,7 @@
   </xsl:template>  
   
   <xsl:template match="cell" mode="tei2html">
-    <xsl:element name="td" exclude-result-prefixes="#all">
+    <xsl:element name="{if (..[@role = 'label']) then 'th' else 'td'}" exclude-result-prefixes="#all">
       <xsl:call-template name="css:content"/>
     </xsl:element>
   </xsl:template>  
