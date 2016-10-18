@@ -368,13 +368,17 @@
   
   <xsl:template match="div[@type]" mode="tei2html" priority="3">
     <div>
-      <xsl:apply-templates select="@* except @rend" mode="#current"/>
+      <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
-      <xsl:attribute name="class" select="if (@rend) then concat(@rend, ' ', @type) else @type"/>
+    	<xsl:apply-templates select="." mode="class-att"/>
       <xsl:apply-templates mode="#current"/>
     </div>
   </xsl:template>
   
+	<xsl:template match="div[@type]" mode="class-att" priority="3">
+   <xsl:attribute name="class" select="if (@rend) then concat(@rend, ' ', @type) else @type"/>
+  </xsl:template>
+	
 <!--  <xsl:template match="div[@type = ('imprint', 'dedication', 'preface', 'marginal')]" mode="tei2html" priority="2">
     <div>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
