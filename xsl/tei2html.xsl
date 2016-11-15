@@ -166,6 +166,14 @@
 		</xsl:copy>
 	</xsl:template>
 	
+<!--	<xsl:template match="*:table[exists(descendant::*:tr[count(*) ge 5])]" mode="col-widths">
+		<!-\- adding the cellwidth classes on cells of tables with more than 4 cells causes ADE in most cases to render the table much too wide -\->
+			<xsl:copy>
+				<xsl:copy-of select="@*"/>
+				<xsl:copy-of select="node()"/>
+			</xsl:copy>
+	</xsl:template>-->
+	
 	<xsl:template match="*[*:tr]" mode="col-widths">
 		<xsl:variable name="table">
 			<xsl:sequence select="htmltable:normalize(.)"/>
@@ -188,13 +196,16 @@
 	</xsl:template>
 	
 	<xsl:template match="*[local-name() = ('td')][../..[*:colgroup]][parent::*:tr[*[xs:integer(@colspan) gt 1]]][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]] | 
-		*[local-name() = ('th')][../..[*:colgroup] or ../../..[*:colgroup]][parent::*:tr[*[xs:integer(@colspan) gt 1]]][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
+		*[local-name() = ('th')][../../..[*:colgroup] or ../../../..[*:colgroup]][parent::*:tr[*[xs:integer(@colspan) gt 1]]][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
 		mode="create-table-width-classes" priority="2">
 		<xsl:variable name="elt" select=".." as="element(*)"/>
 		<xsl:variable name="pos" select="xs:integer(replace($elt/@data-colnum, '^.+?-(\d)+', '$1'))"/>
 		<xsl:variable name="cell-with-correct-width" as="element(*)+" select="if ($elt[xs:integer(@colspan) gt 1]) then ancestor::*[*:colgroup][1]/*:colgroup/*:col[(position() ge $pos) and (position() le ($pos + xs:integer($elt/@colspan -1)))] else .."/>
 		<xsl:variable name="row-with-correct-width" as="element(*)*" select="ancestor::*[*:colgroup][1]/*:colgroup/*:col"/>
-		<xsl:message select="'row: ', $row-with-correct-width, ' cell: ', $cell-with-correct-width"></xsl:message>
+	<!--	<xsl:if test="ancestor::*[self::*:table][1][@xml:id = 'Tab33']">
+			<xsl:message select="'###### row: ', $row-with-correct-width, '##### cell: ', $cell-with-correct-width"/>
+			<xsl:message select="'###### ', ../../../*:colgroup"/>
+		</xsl:if>-->
 		<xsl:variable name="percent" as="xs:string?" 
 								select="concat('cellwidth-', xs:string(floor((sum($cell-with-correct-width/@data-twips-width) * 100) div sum($row-with-correct-width/@data-twips-width))))"
 										/>
@@ -803,14 +814,14 @@
 		<xsl:attribute name="class" select="@style"/>
 	</xsl:template>
 	
-  <xsl:param name="tei2html:change-orderer-to-deflist" as="xs:boolean" select="true()"/>  
+  <xsl:param name="tei2html:change-ordered-to-deflist" as="xs:boolean" select="true()"/>  
   <xsl:variable name="tei2html:ordered-to-def-list-regex" select="'^[1a][\.\)]?$'" as="xs:string"/>
   
   <!-- ordered list whose first list item doesn't start with "1.", "1)", "a." or "a)" will be displayed as definition list then. 
        Only if the parameter change-orderer-to-deflist is set true.
         The regex to determine which ordered list items are changed is $ordered-to-def-list-regex. 
         For example if it is important that 1) is displayed as "1)" and not "1." in HTML you have to create a definition list.-->  
-  <xsl:template match="list[$tei2html:change-orderer-to-deflist]
+  <xsl:template match="list[$tei2html:change-ordered-to-deflist]
                            [@type eq 'ordered']
                            [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]" mode="tei2html" priority="3">
     <dl class="{@style}">
@@ -820,7 +831,7 @@
   
   <xsl:param name="tei2html:copy-class-from-item-to-dt" as="xs:boolean" select="false()"/>
   
-  <xsl:template match="item[$tei2html:change-orderer-to-deflist]
+  <xsl:template match="item[$tei2html:change-ordered-to-deflist]
                            [parent::list[@type eq 'ordered']
                            [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]]" mode="tei2html" priority="3">
     <dt>
@@ -975,6 +986,7 @@
     </p>
   </xsl:template>
   
+	
   <!-- @id or @xml:id? In mode tei2html it should be @xml:id since this mode processes TEI -->
   <xsl:template match="target[@xml:id]" mode="tei2html" priority="2">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
@@ -1577,7 +1589,7 @@
       <xsl:apply-templates select="." mode="table-widths"/>
     </xsl:variable>
     <xsl:apply-templates select="$conditional-percent-widths" mode="#current">
-      <xsl:with-param name="root" select="$root" tunnel="yes"/>
+      <xsl:with-param name="root" select="$root" tunnel="yes" as="document-node()"/>
     </xsl:apply-templates>
   </xsl:template>
   
