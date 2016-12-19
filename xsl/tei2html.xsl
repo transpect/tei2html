@@ -842,7 +842,7 @@
 						<xsl:apply-templates select="*[1]/@rend" mode="#current"/>
 					</xsl:attribute>
 				</xsl:variable>
-				<xsl:attribute name="class" select="string-join(($class, $wide-label), ' ')"></xsl:attribute>
+				<xsl:attribute name="class" select="if ($tei2html:copy-class-from-item-to-dt) then string-join(($class, $wide-label), ' ') else $wide-label"/>
       </xsl:if>
       <xsl:value-of select="@n"/>
     </dt>
