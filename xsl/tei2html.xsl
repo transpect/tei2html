@@ -1141,7 +1141,7 @@
 	
   <xsl:template match="ref | ptr" mode="tei2html" priority="5">
     <a>
-      <xsl:attribute name="class" select="name()"/>
+      <xsl:attribute name="class" select="local-name()"/>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
       <xsl:if test="not(node())">
         <xsl:value-of select="(@xlink:href|@target)[1]"/>
