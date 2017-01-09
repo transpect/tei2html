@@ -432,7 +432,7 @@
     relies on this value to be 0.25.
     -->
   <xsl:template match="head | quote | seg | p | table | caption | note | italic | bold | unclear |
-    underline | sub | sup | l | lg | hi | argument | emph | add | orig | date | name | persName | surname | forename" mode="tei2html" priority="-0.25" >
+    underline | sub | sup | l | lg | hi | argument | emph | add | orig | date | name | persName | surname | forename | spGrp | sp | speaker | stage" mode="tei2html" priority="-0.25" >
     <xsl:call-template name="css:content"/>
   </xsl:template>
   
@@ -610,7 +610,7 @@
 
   <!-- everything that goes into a div (except footnote-like content): -->
   <xsl:template match="  *[name() = $default-structural-containers][$divify-sections = 'yes']
-                       | figure | caption | abstract | lg" 
+                       | figure | caption | abstract | lg | spGrp" 
     mode="tei2html" priority="2">
     <div>
       <xsl:call-template name="css:content"/>
@@ -898,7 +898,7 @@
       <xsl:apply-templates select="node()" mode="#current"/>
   </xsl:template>
   
-  <xsl:template match="figure/head | lg/head" mode="tei2html">
+  <xsl:template match="figure/head | lg/head | spGrp/head" mode="tei2html">
     <p>
       <xsl:call-template name="css:content"/>
     </p>
@@ -1024,7 +1024,7 @@
   </xsl:template>
 
   <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))]
-                           [not(ancestor::*[self::figure or self::table or self::floatingText or self::lg])]" mode="tei2html" priority="2">
+                           [not(ancestor::*[self::figure or self::table or self::floatingText or self::lg or self::spGrp])]" mode="tei2html" priority="2">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:variable name="heading-level" select="tei2html:heading-level(.)"/>
   	<xsl:element name="{if ($heading-level) then concat('h', $heading-level) else 'p'}">
@@ -1724,6 +1724,12 @@
     </div>
   </xsl:template> 
   
+  <xsl:template match="speaker | stage" mode="tei2html">
+      <p>
+        <xsl:call-template name="css:content"/>
+      </p>
+  </xsl:template>
+	
   <xsl:template match="lg" mode="class-att">
     <xsl:attribute name="class" select="(@type, local-name())[1]"/>
   </xsl:template> 
@@ -1742,6 +1748,7 @@
 	    <xsl:choose>
 	      <xsl:when test="$elt/ancestor::table"/>
 	      <xsl:when test="$elt/ancestor::lg"/>
+	    	<xsl:when test="$elt/ancestor::spGrp"/>
 	      <xsl:when test="$elt/ancestor::figure"/>
 	      <xsl:when test="$elt/ancestor::floatingText"/>
 	      <!--<xsl:when test="$elt/ancestor::div1"/>
