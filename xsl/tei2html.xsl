@@ -1912,6 +1912,9 @@
 			<span>
 				<xsl:call-template name="css:content"/>
 			</span>
+			<xsl:if test="following-sibling::*[1][not(matches(., '^[:\p{Zs}]'))]">
+				<xsl:text> </xsl:text>
+			</xsl:if>
 		</xsl:if>
 	</xsl:template>
 	
