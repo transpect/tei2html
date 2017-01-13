@@ -1374,7 +1374,7 @@
 						<xsl:attribute name="epub:type" select="'dedication'"/>
 					</xsl:when>
 					<xsl:when test="matches($context/@rend, 'motto')">
-						<xsl:attribute name="epub:type" select="'tr:motto'"/>
+						<xsl:attribute name="epub:type" select="'epigraph'"/>
 					</xsl:when>
 				</xsl:choose>
 			</xsl:when>
@@ -1382,7 +1382,7 @@
 				<xsl:attribute name="epub:type" select="'sidebar'"/>
 			</xsl:when>
 			<xsl:when test="$context[self::*:div[@type = 'motto']]">
-				<xsl:attribute name="epub:type" select="'tr:motto'"/>
+				<xsl:attribute name="epub:type" select="'epigraph'"/>
 			</xsl:when>
 			<xsl:when test="$context[self::*:divGen[@type = ('index', 'toc')]]">
 				<xsl:attribute name="epub:type" select="$context/@type"/>
