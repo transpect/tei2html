@@ -1429,7 +1429,7 @@
 					else
 						not(@indexName)
 					][not(parent::index)]"
-				group-by="tei2html:index-grouping-key(term)"
+				group-by="tei2html:index-grouping-key((term/@sortKey, term)[1])"
 				collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary">
 				<xsl:sort select="current-grouping-key()"
 					collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
@@ -1477,12 +1477,12 @@
 		<xsl:param name="level" as="xs:integer"/>
 		<xsl:param name="index-terms" as="element(index)*"/>
 		<!-- §§§ We need to know a book’s main language! -->
-		<xsl:for-each-group select="$index-terms" group-by="tei2html:normalize-for-index(term)"
+		<xsl:for-each-group select="$index-terms" group-by="tei2html:normalize-for-index((term/@sortKey, term)[1])"
 			collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=identical">
 			<xsl:sort
-				collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
+				collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary" select="(current-grouping-key(), current())[1]"/>
 			<xsl:sort
-				collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=identical"/>
+				collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=identical" select="(current-grouping-key(), current())[1]"/>
 			<xsl:call-template name="index-entry">
 				<xsl:with-param name="level" select="$level"/>
 			</xsl:call-template>
