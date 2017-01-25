@@ -256,7 +256,7 @@
 				<xsl:call-template name="stylesheet-links"/>
 				<title>
 					<xsl:apply-templates
-						select="(//titlePart[@type = 'main'], teiHeader/fileDesc/titleStmt/title)[1]/text()"
+						select="(//titlePart[@type = 'main'], teiHeader/fileDesc/titleStmt/title)[1]//text()[not(ancestor::*[self::note]) and not(ancestor::*[self::index])]"
 						mode="#current">
 						<!-- suppress replicated target with id: -->
 						<xsl:with-param name="in-toc" select="true()" tunnel="yes"/>
