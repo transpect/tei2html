@@ -1351,6 +1351,9 @@
 					<xsl:when test="matches($context/@rend, 'title-page')">
 						<xsl:attribute name="epub:type" select="'fulltitle'"/>
 					</xsl:when>
+					<xsl:when test="matches($context/@rend, 'halftitle')">
+						<xsl:attribute name="epub:type" select="'halftitle'"/>
+					</xsl:when>
 					<xsl:when test="matches($context/@rend, 'copyright-page')">
 						<xsl:attribute name="epub:type" select="'copyright-page'"/>
 					</xsl:when>
