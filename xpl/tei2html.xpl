@@ -10,7 +10,7 @@
   name="tei2html"
   type="tei2html:tei2html"
   >
-	<p:documentation>This step converts TEI to HTML. You can define the uses modes by overriding the default fallback pipeline in your project's adaptations.</p:documentation>
+	<p:documentation>This step converts TEI to HTML. You can define the used modes by overriding the default fallback pipeline in your project's adaptations.</p:documentation>
   <p:option name="srcpaths" required="false" select="'no'"/>
   <p:option name="debug" required="false" select="'no'"/>
   <p:option name="debug-dir-uri" required="false" select="'debug'"/>
@@ -33,7 +33,7 @@
     <p:pipe port="report" step="dtp"/>
   </p:output>
   
-  <p:import href="http://transpect.io/cascade/xpl/dynamic-transformation-pipeline.xpl"/>
+	<p:import href="http://transpect.io/cascade/xpl/dynamic-transformation-pipeline.xpl"/>
   <p:import href="http://transpect.io/xproc-util/simple-progress-msg/xpl/simple-progress-msg.xpl"/>
   
 <!--  <p:variable name="status-dir-uri" select="concat($debug-dir-uri, '/status')"/>-->
