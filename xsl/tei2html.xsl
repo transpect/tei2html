@@ -689,7 +689,7 @@
 		</span>
 	</xsl:template>
 
-	<xsl:template match="label[not(parent::item)]" mode="class-att" priority="2">
+	<xsl:template match="label[not(parent::item | parent::list)]" mode="class-att" priority="2">
 		<xsl:attribute name="class"
 			select="
 				if (@rend) then
@@ -698,7 +698,7 @@
 					'label'"/>
 	</xsl:template>
 
-	<xsl:template match="*:label[ancestor::*:note]" mode="tei2html" priority="1.5"/>
+	<xsl:template match="*:label[ancestor::*:note]" mode="tei2html" priority="3"/>
 
 	<xsl:template match="*[note[@type = 'footnote']]" mode="tei2html">
 		<xsl:next-match/>
