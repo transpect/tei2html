@@ -611,16 +611,6 @@
 		<xsl:sequence select="replace(normalize-unicode($input, 'NFKD'), '\p{Mn}', '')"/>
 	</xsl:function>
 
-	<xsl:template match="*" mode="class-att"/>
-
-	<!-- Is this template needed? Report the occurrence of foobar="hurz" to Gerrit -->
-	<xsl:template match="*[@rend][not(local-name() = 'head')]" mode="class-att" priority="0.2"
-		xmlns:tei2html-uv-rend-not-head="tei2html-uv-rend-not-head">
-		<!-- matching an attribute is non-standard for class-att. It is meant as a means
-      to transform it to an eponymous class attribute -->
-		<xsl:apply-templates select="@rend" mode="#current"/>
-	</xsl:template>
-
 	<!--  <xsl:template match="verse-line[@content-type | @style-type]" mode="class-att" priority="2">
     <xsl:variable name="att" as="attribute(class)?">
       <xsl:next-match/>
@@ -640,7 +630,7 @@
     </xsl:if>
   </xsl:template>-->
 
-	<xsl:template match="table[@class = 'hub:right-tab']" mode="class-att">
+	<xsl:template match="table[@class = 'hub:right-tab']" mode="class-att" priority="2">
 		<xsl:attribute name="class" select="'right-tab'"/>
 	</xsl:template>
 
@@ -699,7 +689,7 @@
 		</span>
 	</xsl:template>
 
-	<xsl:template match="label[not(parent::item)]" mode="class-att">
+	<xsl:template match="label[not(parent::item)]" mode="class-att" priority="2">
 		<xsl:attribute name="class"
 			select="
 				if (@rend) then
@@ -872,7 +862,7 @@
 		</ul>
 	</xsl:template>
 
-	<xsl:template match="list[@type = ('bulleted', 'simple')]" mode="class-att">
+	<xsl:template match="list[@type = ('bulleted', 'simple')]" mode="class-att" priority="2">
 		<xsl:attribute name="class" select="(descendant::p[1]/@rend, @type)[1]"/>
 	</xsl:template>
 
@@ -882,7 +872,7 @@
 		</ol>
 	</xsl:template>
 
-	<xsl:template match="list[@type eq 'ordered']" mode="class-att">
+	<xsl:template match="list[@type eq 'ordered']" mode="class-att" priority="2">
 		<xsl:attribute name="class" select="@style"/>
 	</xsl:template>
 
@@ -1295,6 +1285,16 @@
 
 	<xsl:template match="*[@rend][@rend != 'title-page']" mode="class-att" priority="0.75">
 		<xsl:attribute name="class" select="@rend"/>
+	</xsl:template>
+
+	<xsl:template match="*" mode="class-att"/>
+
+	<!-- Is this template needed? Report the occurrence of foobar="hurz" to Gerrit -->
+	<xsl:template match="*[@rend][not(local-name() = 'head')]" mode="class-att" priority="0.2"
+		xmlns:tei2html-uv-rend-not-head="tei2html-uv-rend-not-head">
+		<!-- matching an attribute is non-standard for class-att. It is meant as a means
+      to transform it to an eponymous class attribute -->
+		<xsl:apply-templates select="@rend" mode="#current"/>
 	</xsl:template>
 
 	<!-- Is this a suitable replacement for line 316? -->
@@ -1921,8 +1921,8 @@
 		</xsl:if>
 	</xsl:template>
 	
-	<xsl:template match="lg" mode="class-att">
-		<xsl:attribute name="class" select="(@type, local-name())[1]"/>
+	<xsl:template match="lg" mode="class-att" priority="2">
+		<xsl:attribute name="class" select="(string-join((@type, @rend), ' '), local-name())[1]"/>
 	</xsl:template>
 
 	<xsl:template match="l" mode="tei2html">
