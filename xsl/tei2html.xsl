@@ -344,6 +344,8 @@
 		<xsl:apply-templates mode="#current"/>
 	</xsl:template>
 
+	<xsl:template match="/TEI/text/body[count(*) eq 1][p]/p[not(node()) and (every $att in @* satisfies ($att/name() = 'srcpath'))]" mode="tei2html"/>
+	  
 	<xsl:variable name="tei2html:create-lox" as="xs:boolean" select="true()"/>
 
 	<xsl:template match="/TEI/text/body" mode="tei2html">
