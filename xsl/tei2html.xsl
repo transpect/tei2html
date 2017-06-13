@@ -1033,7 +1033,7 @@
 				  <!-- toc body -->
 				  <xsl:choose>
 				    <xsl:when test="matches($tei2html:epub-type, '3')">
-				      <ol>
+				      <ol class="toc">
 				        <xsl:call-template name="generate-toc-body">
 				          <xsl:with-param name="toc_level" select="$toc_level"/>
 				        </xsl:call-template>
