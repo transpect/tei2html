@@ -1014,8 +1014,11 @@
 	<xsl:template match="divGen[@type = 'toc']" mode="tei2html">
 		<xsl:variable name="toc_level" as="xs:integer?" select="@rendition"/>
 		<xsl:element name="{if ($tei2html:epub-type = '2') then 'div' else 'nav'}">
-			<xsl:attribute name="class" select="'toc'"/>
-			<xsl:attribute name="id" select="'tei2html_rendered_toc'"/>
+		  <xsl:attribute name="class" select="'toc'"/>
+		  <xsl:attribute name="id" select="'tei2html_rendered_toc'"/>
+		  <xsl:if test="$tei2html:epub-type eq '3'">
+		    <xsl:attribute name="epub:type" select="'toc'"/>
+		  </xsl:if>
 			<!-- don’t create an epub:type attribute even for EPUB3 because the content of 
         the nav would have to be an ordered list (ol). Currently it’s only p elements
         with class attributes according to the to heading level, which is not permitted 
