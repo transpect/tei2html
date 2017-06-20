@@ -1691,7 +1691,7 @@
 					normalize-space(../figDesc),
 					replace(@url, '^.*?/([^/]+)$', '$1')
 					)[normalize-space()][1]"/>
-			<xsl:attribute name="src" select="resolve-uri(@url)"/>
+		  <xsl:attribute name="src" select="resolve-uri(translate(@url, '[]', '__'))"/>
 			<xsl:apply-templates select="@rend" mode="#current"/>
 			<!--  <xsl:copy-of select="@* except (@url, @rend)">-->
 			<!-- css:content AND copy duplicates attributes, so i commented it out (mp)-->
