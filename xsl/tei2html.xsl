@@ -460,7 +460,7 @@
     -->
 	<xsl:template
 		match="
-			head | quote | seg | p | table | caption | note | italic | bold | unclear |
+			head | quote | seg | p | table | caption | note | italic | bold | unclear | idno |
 			underline | sub | sup | l | lg | hi | argument | emph | add | orig | date | name | persName | surname | forename | spGrp | sp | speaker | stage"
 		mode="tei2html" priority="-0.25">
 		<xsl:call-template name="css:content"/>
@@ -1116,7 +1116,7 @@
 
 
 	<!-- @id or @xml:id? In mode tei2html it should be @xml:id since this mode processes TEI -->
-	<xsl:template match="target[@xml:id]" mode="tei2html" priority="2">
+	<xsl:template match="anchor[@xml:id]" mode="tei2html" priority="2">
 		<xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
 		<xsl:if test="not($in-toc)">
 			<xsl:next-match/>
@@ -1270,13 +1270,23 @@
 
 	<xsl:template match="@rendition[. = ('subscript', 'superscript')]" mode="tei2html"/>
 
-	<xsl:template
-		match="hi | seg | add | emph | orig | date | name | persName | surname | forename | unclear"
-		mode="tei2html" priority="2">
-		<span>
-			<xsl:next-match/>
-		</span>
-	</xsl:template>
+  <xsl:template
+    match="hi | seg | add | emph | orig | date | name | persName | surname | forename | unclear | idno"
+    mode="tei2html" priority="2">
+    <span>
+      <xsl:next-match/>
+    </span>
+  </xsl:template>
+
+  <xsl:template match="*:surname" mode="epub-alternatives" priority="2">
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:if test="preceding-sibling::*[1][self::*:forename]">
+        <xsl:text> </xsl:text>
+      </xsl:if>
+      <xsl:apply-templates select="node()" mode="#current"/>
+    </xsl:copy>
+  </xsl:template>
 
 	<xsl:template match="ref | ptr" mode="tei2html" priority="5">
 		<a>
@@ -1929,7 +1939,7 @@
 		</div>
 	</xsl:template>
 
-	<xsl:template match="speaker | stage" mode="tei2html">
+	<xsl:template match="speaker | stage | opener[not(p)]" mode="tei2html">
 		<p>
 			<xsl:call-template name="css:content"/>
 		</p>
