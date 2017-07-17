@@ -2273,7 +2273,8 @@
 	<xsl:template
 		match="
 			/html:html[some $t in .//@epub:type
-				satisfies (starts-with($t, 'tr:'))]"
+				satisfies (starts-with($t, 'tr:'))]
+				[matches($tei2html:epub-type, '3')]"
 		mode="clean-up">
 		<xsl:copy>
 			<xsl:attribute name="epub:prefix" select="'tr: http://transpect.io'"/>
