@@ -461,7 +461,7 @@
 	<xsl:template
 		match="
 			head | quote | seg | p | table | caption | note | italic | bold | unclear | idno |
-			underline | sub | sup | l | lg | hi | argument | emph | add | orig | date | name | persName | surname | forename | spGrp | sp | speaker | stage"
+			underline | sub | sup | l | lg | hi | argument | emph | add | settlement | orig | date | name | persName | surname | forename | spGrp | sp | speaker | stage"
 		mode="tei2html" priority="-0.25">
 		<xsl:call-template name="css:content"/>
 	</xsl:template>
@@ -719,7 +719,7 @@
 	</xsl:template>
 
 
-	<xsl:template match="persName | surname | forename | name | abstract | byline | label | unclear"
+	<xsl:template match="persName | surname | forename | name | abstract | byline | label | unclear | settlement"
 		mode="class-att">
 		<xsl:attribute name="class" select="local-name()"/>
 	</xsl:template>
@@ -976,7 +976,7 @@
 		</cite>
 	</xsl:template>
 
-	<xsl:template match="figure | dateline" mode="tei2html">
+	<xsl:template match="figure | dateline | address | location" mode="tei2html">
 		<xsl:apply-templates select="node()" mode="#current"/>
 	</xsl:template>
 
@@ -1271,7 +1271,7 @@
 	<xsl:template match="@rendition[. = ('subscript', 'superscript')]" mode="tei2html"/>
 
   <xsl:template
-    match="hi | seg | add | emph | orig | date | name | persName | surname | forename | unclear | idno"
+    match="hi | seg | add | emph | orig | date | name | persName | surname | forename | unclear | idno | settlement"
     mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
