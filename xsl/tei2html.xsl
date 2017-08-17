@@ -1281,7 +1281,7 @@
   <xsl:template match="*:surname" mode="epub-alternatives" priority="2">
     <xsl:copy>
       <xsl:apply-templates select="@*" mode="#current"/>
-      <xsl:if test="preceding-sibling::*[1][self::*:forename]">
+      <xsl:if test="preceding-sibling::node()[1][self::*:forename]">
         <xsl:text> </xsl:text>
       </xsl:if>
       <xsl:apply-templates select="node()" mode="#current"/>
