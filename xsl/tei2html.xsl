@@ -35,8 +35,13 @@
 	<xsl:param name="s9y7-role" as="xs:string?"/>
 	<xsl:param name="s9y8-role" as="xs:string?"/>
 	<xsl:param name="s9y9-role" as="xs:string?"/>
+  
+  <xsl:param name="epub-version" select="'EPUB2'" as="xs:string"/>
 
 	<xsl:param name="tei2html:copy-dt-class-from-dd" select="false()" as="xs:boolean"/>
+
+	<!-- override this in your adaptions with 3, then epub-types are created -->
+	<xsl:variable name="tei2html:epub-type" as="xs:string" select="replace($epub-version, '^EPUB', '')"/>
 
 	<xsl:variable name="paths" as="xs:string*"
 		select="($s9y1-path, $s9y2-path, $s9y3-path, $s9y4-path, $s9y5-path, $s9y6-path, $s9y7-path, $s9y8-path, $s9y9-path)"/>
@@ -252,6 +257,12 @@
 	<xsl:template match="/TEI" mode="tei2html">
 		<html>
 			<xsl:apply-templates select="@*" mode="#current"/>
+		  <xsl:if test="$epub-version eq 'EPUB3'">
+		    <!-- Extended semantics for EPUB Structural Semantics Vocabulary 
+		         https://idpf.github.io/a11y-guidelines/content/semantics/epub-type.html#sem005-desc-custom
+		    -->
+		    <xsl:attribute name="epub:prefix" select="'tr: http://transpect.io'"/>
+		  </xsl:if>
 			<head>
 				<xsl:call-template name="stylesheet-links"/>
 				<title>
@@ -1056,26 +1067,25 @@
   
   <xsl:template name="generate-toc-body">
     <xsl:param name="toc_level"/>
-    <xsl:apply-templates select="//head[parent::div[@type = ('section', 
-                                                             'glossary', 
-                                                             'acknowledgements', 
-                                                             'bibliography', 
-                                                             'appendix', 
-                                                             'chapter', 
-                                                             'dedication', 
-                                                             'part', 
-                                                             'index', 
-                                                             'listBibl')]
-                                        |parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)]|parent::divGen[@type = 'index']
-                                        ]
-                                        [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] 
-                                                          or following-sibling::*[1][self::head[@type = 'main']])])
-                                        ]
-                                        [not(ancestor::divGen[@type = 'toc'])]
-                                        [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]
-                                        |//*[self::*[local-name() = ('seg', 'p', 'head')]][matches(@rend, '_-_TOC[1-6]')]" 
-                         mode="toc">
-    </xsl:apply-templates>    
+    <xsl:apply-templates
+                  select="//head[parent::div[@type = ('section', 
+                                                      'glossary', 
+                                                      'acknowledgements', 
+                                                      'bibliography', 
+                                                      'appendix', 
+                                                      'chapter', 
+                                                      'dedication', 
+                                                      'part', 
+                                                      'index', 
+                                                      'listBibl')]
+                                |parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)]|parent::divGen[@type = 'index']
+                                ]
+                                [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] 
+                                                  or following-sibling::*[1][self::head[@type = 'main']])])
+                                ]
+                                [not(ancestor::divGen[@type = 'toc'])]
+                                [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]
+                                |//*[self::*[local-name() = ('seg', 'p', 'head')]][matches(@rend, '_-_TOC[1-6]')]" mode="toc"/>
   </xsl:template>
 
 	<xsl:template match="div[@type = 'imprint']" mode="tei2html">
@@ -1099,19 +1109,19 @@
 	<xsl:template match="head[matches(@rend, $tei2html:no-toc-style-regex)]" mode="toc" priority="4"/>
 
 	<xsl:template match="head[not(@type = ('sub', 'titleabbrev'))]" mode="toc" priority="3">
-		<xsl:element name="{if(matches($tei2html:epub-type, '3')) then 'li' else 'p'}">
-		  <xsl:attribute name="class" select="concat('toc', tei2html:heading-level(.))"/>
-		  <a href="#{(@xml:id, generate-id())[1]}">
-		    <!--        <xsl:call-template name="heading-content"/>-->
-		    <xsl:if test="label">
-		      <xsl:apply-templates select="label/node()" mode="strip-indexterms-etc"/>
-		      <xsl:apply-templates select="label" mode="label-sep"/>
-		    </xsl:if>
-		    <xsl:apply-templates select="node() except label" mode="strip-indexterms-etc">
-		      <xsl:with-param name="in-toc" select="true()" as="xs:boolean" tunnel="yes"/>
-		    </xsl:apply-templates>
-		  </a>
-		</xsl:element>
+    <xsl:element name="{if(matches($tei2html:epub-type, '3')) then 'li' else 'p'}">
+      <xsl:attribute name="class" select="concat('toc', tei2html:heading-level(.))"/>
+      <a href="#{(@xml:id, generate-id())[1]}">
+        <!--        <xsl:call-template name="heading-content"/>-->
+        <xsl:if test="label">
+          <xsl:apply-templates select="label/node()" mode="strip-indexterms-etc"/>
+          <xsl:apply-templates select="label" mode="label-sep"/>
+        </xsl:if>
+        <xsl:apply-templates select="node() except label" mode="strip-indexterms-etc">
+          <xsl:with-param name="in-toc" select="true()" as="xs:boolean" tunnel="yes"/>
+        </xsl:apply-templates>
+      </a>
+    </xsl:element>
 	</xsl:template>
 
 
@@ -1355,9 +1365,6 @@
 			</div>
 		</xsl:if>
 	</xsl:template>
-
-	<!-- override this in your adaptions with 3, then epub-types are created -->
-	<xsl:variable name="tei2html:epub-type" as="xs:string" select="'2'"/>
 
 	<xsl:function name="tr:create-epub-type-attribute" as="attribute()?">
 		<xsl:param name="tei2html:epub-type" as="xs:string"/>
@@ -1695,12 +1702,7 @@
 
 	<xsl:template match="graphic" mode="tei2html">
 		<img>
-			<xsl:attribute name="alt"
-				select="
-					(
-					normalize-space(../figDesc),
-					replace(@url, '^.*?/([^/]+)$', '$1')
-					)[normalize-space()][1]"/>
+		  <xsl:attribute name="alt" select="normalize-space(../figDesc)"/>
 		  <xsl:attribute name="src" select="resolve-uri(translate(@url, '[]', '__'))"/>
 			<xsl:apply-templates select="@rend" mode="#current"/>
 			<!--  <xsl:copy-of select="@* except (@url, @rend)">-->
@@ -2270,12 +2272,10 @@
 		<xsl:apply-templates select="node()" mode="#current"/>
 	</xsl:template>
 
-	<xsl:template
-		match="
-			/html:html[some $t in .//@epub:type
-				satisfies (starts-with($t, 'tr:'))]
-				[matches($tei2html:epub-type, '3')]"
-		mode="clean-up">
+	<xsl:template match="/html:html[some $t in .//@epub:type
+                          				satisfies (starts-with($t, 'tr:'))]
+                          				[matches($tei2html:epub-type, '3')]"
+		            mode="clean-up">
 		<xsl:copy>
 			<xsl:attribute name="epub:prefix" select="'tr: http://transpect.io'"/>
 			<xsl:apply-templates select="@*, node()" mode="#current"/>
