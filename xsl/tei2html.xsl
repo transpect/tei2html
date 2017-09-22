@@ -1018,8 +1018,8 @@
 		<xsl:variable name="footnotes" select=".//note[@type = 'footnote']" as="element(note)*"/>
 	  <xsl:if test="$footnotes">
 	    <div class="notes">
-	      <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, $footnotes[1]),
-	                            tei2html:create-endnotes(if($divs-with-footnotes) then $divs-with-footnotes else $footnotes, 
+	      <xsl:attribute name="epub:type" select="'endnotes'"/>
+	      <xsl:sequence select="tei2html:create-endnotes(if($divs-with-footnotes) then $divs-with-footnotes else $footnotes, 
                                                      	 0,
                                                      	 $tei2html:endnote-heading-level)"/>
 	    </div>
