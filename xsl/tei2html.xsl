@@ -752,7 +752,7 @@
 	<xsl:template match="note" mode="notes">
 		<xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
 
-		<div class="{name()}" id="fn_{@xml:id}" epub:type="endnote">
+		<div class="{name()}" id="fn_{@xml:id}" epub:type="rearnote">
 			<xsl:variable name="note-marker-width"
 				select="
 					if (string-length(xs:string(index-of($footnote-ids, @xml:id))) gt 2) then
@@ -1018,7 +1018,7 @@
 		<xsl:variable name="footnotes" select=".//note[@type = 'footnote']" as="element(note)*"/>
 	  <xsl:if test="$footnotes">
 	    <div class="notes">
-	      <xsl:attribute name="epub:type" select="'endnotes'"/>
+	      <xsl:attribute name="epub:type" select="'rearnotes'"/>
 	      <xsl:sequence select="tei2html:create-endnotes(if($divs-with-footnotes) then $divs-with-footnotes else $footnotes, 
                                                      	 0,
                                                      	 $tei2html:endnote-heading-level)"/>
