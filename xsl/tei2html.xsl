@@ -69,13 +69,18 @@
 
 	<xsl:param name="apply-cstyles-in-indexterms" select="false()" as="xs:boolean"/>
 
-	<xsl:variable name="l10n" select="document(concat('l10n.', ($lang, 'en')[1], '.xml'))"
-		as="document-node(element(l10n:l10n))"/>
-
-	<xsl:variable name="tei2html:auxiliary-table-style-regex" as="xs:string"
-		select="'letex_aux-table'">
-		<!-- table style name for  auxiliary tables (without borders) --> </xsl:variable>
-
+	<xsl:variable name="l10n" select="document(concat('l10n.', ($lang, 'en')[1], '.xml'))" as="document-node(element(l10n:l10n))"/>
+  
+  <!-- table style name for  auxiliary tables (without borders) -->
+  <xsl:variable name="tei2html:auxiliary-table-style-regex" select="'letex_aux-table'" as="xs:string"/>
+  
+  <!-- defines to which section level, the footnotes should be grouped according to their original sections 
+       e.g. '0' ... no section headlines
+            '1' ... sections from the 1st level are included
+            '2' ... sections from 1st and 2nd level are included
+  -->
+  <xsl:variable name="tei2html:endnote-heading-level" select="0" as="xs:integer"/>
+  
 	<xsl:key name="l10n-string" match="l10n:string" use="@id"/>
 	<xsl:key name="rule-by-name" match="css:rule" use="@name"/>
 	<xsl:key name="by-id" match="*[@id | @xml:id]" use="@id | @xml:id"/>
@@ -306,7 +311,6 @@
 	</xsl:template>
 
 	<xsl:template match="titlePage" mode="tei2html"/>
-
 
 	<xsl:template match="css:rule" mode="tei2html">
 		<xsl:call-template name="css:move-to-attic">
@@ -1010,14 +1014,58 @@
 	</xsl:template>
 
 	<xsl:template name="tei2html:footnotes">
+	  <xsl:variable name="divs-with-footnotes" select="*[local-name() = ('front', 'body', 'back')]/div[.//note[@type = 'footnote']]" as="element(div)*"/>
 		<xsl:variable name="footnotes" select=".//note[@type = 'footnote']" as="element(note)*"/>
-		<xsl:if test="$footnotes">
-			<div class="notes">
-				<xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, $footnotes[1])"/>
-				<xsl:apply-templates select="$footnotes" mode="notes"/>
-			</div>
-		</xsl:if>
+	  <xsl:if test="$footnotes">
+	    <div class="notes">
+	      <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, $footnotes[1]),
+	                            tei2html:create-endnotes(if($divs-with-footnotes) then $divs-with-footnotes else $footnotes, 
+                                                     	 0,
+                                                     	 $tei2html:endnote-heading-level)"/>
+	    </div>
+	  </xsl:if>
 	</xsl:template>
+  
+  <!-- The function below creates an endnote section from regular footnotes. 
+       You can include chapter-wise section headlines for any given headline 
+       level. Therefore, you have to change the -->
+  
+  <xsl:function name="tei2html:create-endnotes" as="element()*">
+    <xsl:param name="seq" as="element()*"/>
+    <xsl:param name="index" as="xs:integer"/>
+    <xsl:param name="max" as="xs:integer"/>
+      <xsl:choose>
+        <xsl:when test="$index eq $max">
+          <xsl:apply-templates select="$seq//note[@type = 'footnote']" mode="notes"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:for-each select="$seq">
+            <div class="notes-section level-{$index + 1}">
+              <xsl:apply-templates select="head" mode="notes">
+                <xsl:with-param name="index" select="$index + 1"/>
+              </xsl:apply-templates>
+              <xsl:apply-templates select=".//note[@type = 'footnote'][count(ancestor::div) eq ($index + 1)]" mode="notes"/>
+              <xsl:sequence select="tei2html:create-endnotes(div[.//note[@type = 'footnote']], $index + 1, $max)"/>
+            </div>
+          </xsl:for-each>
+        </xsl:otherwise>
+      </xsl:choose>
+  </xsl:function>
+  
+  <xsl:template match="div/head" mode="notes">
+    <xsl:param name="index"/>
+    <xsl:element name="{concat('h', $index)}">
+      <xsl:attribute name="class" select="'notes-headline'"/>
+      <xsl:apply-templates mode="notes-head"/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="div/head/lb" mode="notes-head">
+    <span class="{local-name()}">&#x20;</span>
+  </xsl:template>
+
+  <!-- avoid footnote references or duplicate anchors in endnotes -->
+  <xsl:template match="head//note|head//anchor" mode="notes-head"/>
 
 	<xsl:variable name="frontmatter-parts" as="xs:string+"
 		select="('title-page', 'copyright-page', 'about-contrib', 'about-book', 'series', 'additional-info', 'dedication', 'motto')"/>
