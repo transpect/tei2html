@@ -74,7 +74,7 @@
   <!-- table style name for  auxiliary tables (without borders) -->
   <xsl:variable name="tei2html:auxiliary-table-style-regex" select="'letex_aux-table'" as="xs:string"/>
   
-  <!-- defines to which section level, the footnotes should be grouped according to their original sections 
+  <!-- separate the endnotes list by section headlines
        e.g. '0' ... no section headlines
             '1' ... sections from the 1st level are included
             '2' ... sections from 1st and 2nd level are included
