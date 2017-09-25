@@ -333,10 +333,7 @@
 	</xsl:template>
 
 	<xsl:template name="html-body">
-		<xsl:apply-templates select="text" mode="#current">
-			<xsl:with-param name="footnote-ids" select="//note[@type = 'footnote']/@xml:id"
-				as="xs:string*" tunnel="yes"/>
-		</xsl:apply-templates>
+		<xsl:apply-templates select="text" mode="#current"/>
 	</xsl:template>
 
 	<xsl:variable name="tei2html:abstract-and-keyword-rendering" as="xs:boolean" select="false()"/>
@@ -749,9 +746,9 @@
 
 	<xsl:variable name="tei2html:after-footnote-marker-space" select="'&#xa0;'" as="xs:string"/>
 
-	<xsl:template match="note" mode="notes">
-		<xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
+  <xsl:variable name="footnote-ids" select="/TEI/text//note[@type = 'footnote']/@xml:id" as="xs:string*"/>
 
+	<xsl:template match="note" mode="notes">
 		<div class="{name()}" id="fn_{@xml:id}" epub:type="rearnote">
 			<xsl:variable name="note-marker-width"
 				select="
@@ -803,7 +800,6 @@
 		mode="tei2html"/>
 
 	<xsl:template match="note[@type = 'footnote']" mode="tei2html">
-		<xsl:param name="footnote-ids" tunnel="yes" as="xs:string*"/>
 		<xsl:param name="in-toc" tunnel="yes" as="xs:boolean?"/>
 		<xsl:if test="not($in-toc)">
 			<span class="note-anchor" id="fna_{@xml:id}">
