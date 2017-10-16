@@ -1332,8 +1332,8 @@
     </span>
   </xsl:template>
 
-  <xsl:template match="*:surname" mode="epub-alternatives" priority="2">
-    <xsl:copy>
+  <xsl:template match="*:surname[not(../../../..[self::*:fileDesc])]" mode="epub-alternatives" priority="2">
+    <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:if test="preceding-sibling::node()[1][self::*:forename]">
         <xsl:text> </xsl:text>
