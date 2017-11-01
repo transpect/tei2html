@@ -665,15 +665,15 @@
 		select="('part', 'front-matter-part', 'section', 'appendix', 'acknowledgements', 'dedication', 'preface')"/>
 
 	<!-- everything that goes into a div (except footnote-like content): -->
-	<xsl:template
-		match="
-			*[name() = $default-structural-containers][$divify-sections = 'yes']
-			| figure | caption | abstract | lg | spGrp"
-		mode="tei2html" priority="2">
-		<div>
-			<xsl:call-template name="css:content"/>
-		</div>
-	</xsl:template>
+  <xsl:template
+    match="
+            *[name() = $default-structural-containers][$divify-sections = 'yes']
+            | figure | caption | abstract | lg | spGrp"
+    mode="tei2html" priority="2">
+    <div>
+      <xsl:call-template name="css:content"/>
+    </div>
+  </xsl:template>
 
 	<xsl:template match="*[name() = $default-structural-containers][not($divify-sections = 'yes')]"
 		mode="tei2html" priority="2">
@@ -724,23 +724,26 @@
 		</p>
 	</xsl:template>
 
-	<xsl:template match="docAuthor" mode="tei2html">
-		<p>
-			<xsl:call-template name="css:content"/>
-		</p>
-	</xsl:template>
+  <xsl:template match="docAuthor" mode="tei2html">
+    <p>
+      <xsl:call-template name="css:content"/>
+    </p>
+  </xsl:template>
 
+  <xsl:template match="spGrp" mode="class-att">
+    <xsl:attribute name="class" select="'speech-group'"/>
+  </xsl:template>
 
-	<xsl:template match="persName | surname | forename | name | abstract | byline | label | unclear | settlement"
-		mode="class-att">
-		<xsl:attribute name="class" select="local-name()"/>
-	</xsl:template>
+  <xsl:template match="persName | surname | forename | name | abstract | byline | label | unclear | settlement"
+    mode="class-att">
+    <xsl:attribute name="class" select="local-name()"/>
+  </xsl:template>
 
-	<xsl:template match="byline" mode="tei2html">
-		<p>
-			<xsl:call-template name="css:content"/>
-		</p>
-	</xsl:template>
+  <xsl:template match="byline" mode="tei2html">
+    <p>
+      <xsl:call-template name="css:content"/>
+    </p>
+  </xsl:template>
 
 	<!-- Footnotes -->
 
