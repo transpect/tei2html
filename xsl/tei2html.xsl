@@ -344,7 +344,7 @@
 			<xsl:apply-templates select="/*/teiHeader/profileDesc/textClass/keywords[@rendition]"
 				mode="#current"/>
 		</xsl:if>
-		<xsl:apply-templates mode="#current"/>
+		<xsl:apply-templates select="node()" mode="#current"/>
 		<xsl:call-template name="tei2html:footnotes"/>
 	</xsl:template>
 
@@ -353,7 +353,7 @@
 			body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal', 'motto'))] |
 			div1 | div2 | div3 | div4 | div5 | div6 | div7 | div8 | div9 | back | listBibl"
 		mode="tei2html">
-		<xsl:apply-templates mode="#current"/>
+		<xsl:apply-templates select="node()" mode="#current"/>
 	</xsl:template>
 
 	<xsl:template match="/TEI/text/body[count(*) eq 1][p]/p[not(node()) and (every $att in @* satisfies ($att/name() = 'srcpath'))]" mode="tei2html"/>
@@ -414,7 +414,7 @@
 			<xsl:apply-templates select="@*" mode="#current"/>
 			<xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
 			<xsl:apply-templates select="." mode="class-att"/>
-			<xsl:apply-templates mode="#current"/>
+			<xsl:apply-templates select="node()" mode="#current"/>
 		</div>
 	</xsl:template>
 
