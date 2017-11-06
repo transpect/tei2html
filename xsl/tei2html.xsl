@@ -854,17 +854,22 @@
 		<xsl:sequence select="$item/parent::list[@type eq 'gloss'] or $item/@rend = 'varlistentry'"/>
 	</xsl:function>
 
-	<xsl:template match="label[tei2html:is-varlistentry(following-sibling::*[1][self::item])]"
-		mode="tei2html" priority="1">
-		<dt>
-			<xsl:apply-templates select="@*" mode="#current"/>
-			<xsl:if test="$tei2html:copy-dt-class-from-dd">
-				<xsl:apply-templates select="following-sibling::*[1][self::item]/gloss/@rend"
-					mode="#current"/>
-			</xsl:if>
-			<xsl:apply-templates select="node()" mode="#current"/>
-		</dt>
-	</xsl:template>
+  <xsl:template match="label[tei2html:is-varlistentry(following-sibling::*[1][self::item])]"
+    mode="tei2html" priority="1">
+    <xsl:variable name="wide-label" as="xs:string?" select="if (string-length(@n) ge 3) then 'wide' else ()"/>
+    <xsl:variable as="xs:string?" name="class">
+      <xsl:if test="$tei2html:copy-class-from-item-to-dt">
+        <xsl:apply-templates select="following-sibling::*[1][self::item]/gloss/@rend" mode="#current"/>
+      </xsl:if>
+    </xsl:variable>
+      <dt>
+        <xsl:apply-templates select="@*" mode="#current"/>
+        <xsl:if test="$tei2html:copy-dt-class-from-dd or $wide-label = 'wide' or @rend">
+          <xsl:attribute name="class" select="string-join((@rend, $class, $wide-label), ' ')"/>
+        </xsl:if>
+        <xsl:apply-templates select="node()" mode="#current"/>
+      </dt>
+  </xsl:template>
 
 	<xsl:template match="item[tei2html:is-varlistentry(.)]/gloss" mode="tei2html">
 		<dd>
@@ -912,42 +917,36 @@
 
 	<xsl:param name="tei2html:copy-class-from-item-to-dt" as="xs:boolean" select="false()"/>
 
-	<xsl:template
-		match="
-			item[$tei2html:change-ordered-to-deflist]
-			[parent::list[@type eq 'ordered']
-			[item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]]"
-		mode="tei2html" priority="3">
-		<xsl:variable name="wide-label" as="xs:string?"
-			select="
-				if (string-length(@n) ge 3) then
-					'wide'
-				else
-					()"/>
-		<dt>
-			<xsl:if test="$tei2html:copy-class-from-item-to-dt or $wide-label = 'wide'">
-				<xsl:variable name="class" as="attribute(class)?">
-					<xsl:attribute name="class">
-						<xsl:apply-templates select="*[1]/@rend" mode="#current"/>
-					</xsl:attribute>
-				</xsl:variable>
-				<xsl:attribute name="class"
-					select="
-						if ($tei2html:copy-class-from-item-to-dt) then
-							string-join(($class, $wide-label), ' ')
-						else
-							$wide-label"
-				/>
-			</xsl:if>
-			<xsl:value-of select="@n"/>
-		</dt>
-		<dd>
-			<xsl:if test="$wide-label = 'wide'">
-				<xsl:attribute name="class" select="$wide-label"/>
-			</xsl:if>
-			<xsl:apply-templates mode="#current"/>
-		</dd>
-	</xsl:template>
+  <xsl:template  match="
+                          item[$tei2html:change-ordered-to-deflist]
+                              [parent::list[@type eq 'ordered']
+                              [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]]"
+                   mode="tei2html" priority="3">
+    <xsl:variable name="wide-label" as="xs:string?"
+                select="if (string-length(@n) ge 3) 
+                        then 'wide'
+                        else ()"/>
+    <dt>
+      <xsl:if test="$tei2html:copy-class-from-item-to-dt or $wide-label = 'wide'">
+        <xsl:variable name="class" as="attribute(class)?">
+          <xsl:attribute name="class">
+            <xsl:apply-templates select="*[1]/@rend" mode="#current"/>
+          </xsl:attribute>
+        </xsl:variable>
+        <xsl:attribute name="class"
+          select="if ($tei2html:copy-class-from-item-to-dt) 
+                  then string-join(($class, $wide-label), ' ')
+                  else $wide-label" />
+      </xsl:if>
+      <xsl:value-of select="@n"/>
+    </dt>
+    <dd>
+      <xsl:if test="$wide-label = 'wide'">
+        <xsl:attribute name="class" select="$wide-label"/>
+      </xsl:if>
+      <xsl:apply-templates mode="#current"/>
+    </dd>
+  </xsl:template>
 
 	<xsl:template match="item[not(parent::list[@type eq 'gloss'])][not(tei2html:is-varlistentry(.))]"
 		mode="tei2html">
