@@ -856,7 +856,7 @@
 
   <xsl:template match="label[tei2html:is-varlistentry(following-sibling::*[1][self::item])]"
     mode="tei2html" priority="1">
-    <xsl:variable name="wide-label" as="xs:string?" select="if (string-length(string-join(descendant::text(), '') ge 3) then 'wide' else ()"/>
+    <xsl:variable name="wide-label" as="xs:string?" select="if (string-length(string-join(descendant::text(), '')) ge 3) then 'wide' else ()"/>
     <xsl:variable as="xs:string?" name="class">
       <xsl:if test="$tei2html:copy-class-from-item-to-dt">
         <xsl:apply-templates select="following-sibling::*[1][self::item]/gloss/@rend" mode="#current"/>
