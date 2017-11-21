@@ -859,7 +859,7 @@
     <xsl:variable name="wide-label" as="xs:string?" select="if (string-length(string-join(descendant::text(), '')) ge 3) then 'wide' else ()"/>
     <xsl:variable as="xs:string?" name="class">
       <xsl:if test="$tei2html:copy-class-from-item-to-dt">
-        <xsl:apply-templates select="following-sibling::*[1][self::item]/gloss/@rend" mode="#current"/>
+        <xsl:apply-templates select="following-sibling::*[1][self::item]/gloss[1]/@rend" mode="#current"/>
       </xsl:if>
     </xsl:variable>
       <dt>
