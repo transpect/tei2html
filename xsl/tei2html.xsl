@@ -1752,7 +1752,7 @@
 		  <xsl:attribute name="src" select="resolve-uri(translate(@url, '[]', '__'))"/>
 			<xsl:apply-templates select="@rend" mode="#current"/>
 			<!--  <xsl:copy-of select="@* except (@url, @rend)">-->
-			<!-- css:content AND copy duplicates attributes, so i commented it out (mp)-->
+			<!-- css:content AND copy duplicates attributes, so I commented it out (mp)-->
 			<!--</xsl:copy-of>-->
 			<xsl:call-template name="css:content"/>
 		</img>
