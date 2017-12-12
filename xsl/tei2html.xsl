@@ -348,7 +348,9 @@
 		<xsl:call-template name="tei2html:footnotes"/>
 	</xsl:template>
 
-	<xsl:template
+  <xsl:variable name="footnote-ids" as="xs:string*" select="/TEI/text//note[@type = 'footnote']/@xml:id"/>
+	
+<xsl:template
 		match="
 			body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal', 'motto'))] |
 			div1 | div2 | div3 | div4 | div5 | div6 | div7 | div8 | div9 | back | listBibl"
@@ -749,8 +751,6 @@
 
 	<xsl:variable name="tei2html:after-footnote-marker-space" select="'&#xa0;'" as="xs:string"/>
 
-  <xsl:variable name="footnote-ids" select="/TEI/text//note[@type = 'footnote']/@xml:id" as="xs:string*"/>
-
 	<xsl:template match="note" mode="notes">
 		<div class="{name()}" id="fn_{@xml:id}" epub:type="rearnote">
 			<xsl:variable name="note-marker-width"
@@ -1012,7 +1012,7 @@
 	</xsl:template>
 
 	<xsl:template name="tei2html:footnotes">
-	  <xsl:variable name="divs-with-footnotes" select="*[local-name() = ('front', 'body', 'back')]/div[.//note[@type = 'footnote']]" as="element(div)*"/>
+	  <xsl:variable name="divs-with-footnotes" select="*[local-name() = ('front', 'body', 'back')]/*[self::div | self::div1][.//note[@type = 'footnote']]" as="element(div)*"/>
 		<xsl:variable name="footnotes" select=".//note[@type = 'footnote']" as="element(note)*"/>
 	  <xsl:if test="$footnotes">
 	    <div class="notes">
@@ -1032,25 +1032,25 @@
     <xsl:param name="seq" as="element()*"/>
     <xsl:param name="index" as="xs:integer"/>
     <xsl:param name="max" as="xs:integer"/>
-      <xsl:choose>
-        <xsl:when test="$index eq $max">
-          <xsl:apply-templates select="$seq//note[@type = 'footnote']" mode="notes"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:for-each select="$seq">
-            <div class="notes-section level-{$index + 1}">
-              <xsl:apply-templates select="head" mode="notes">
-                <xsl:with-param name="index" select="$index + 1"/>
-              </xsl:apply-templates>
-              <xsl:apply-templates select=".//note[@type = 'footnote'][count(ancestor::div) eq ($index + 1)]" mode="notes"/>
-              <xsl:sequence select="tei2html:create-endnotes(div[.//note[@type = 'footnote']], $index + 1, $max)"/>
-            </div>
-          </xsl:for-each>
-        </xsl:otherwise>
-      </xsl:choose>
+    <xsl:choose>
+      <xsl:when test="$index eq $max">
+        <xsl:apply-templates select="$seq//note[@type = 'footnote']" mode="notes"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:for-each select="$seq">
+          <div class="notes-section level-{$index + 1}">
+            <xsl:apply-templates select="head[not(@type = 'sub')]" mode="notes">
+              <xsl:with-param name="index" select="$index + 1"/>
+            </xsl:apply-templates>
+            <xsl:apply-templates select=".//note[@type = 'footnote'][count(ancestor::div) eq ($index + 1)]" mode="notes"/>
+            <xsl:sequence select="tei2html:create-endnotes(div[.//note[@type = 'footnote']], $index + 1, $max)"/>
+          </div>
+        </xsl:for-each>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:function>
   
-  <xsl:template match="div/head" mode="notes">
+  <xsl:template match="div/head[not(@type = 'sub')]" mode="notes">
     <xsl:param name="index"/>
     <xsl:element name="{concat('h', $index)}">
       <xsl:attribute name="class" select="'notes-headline'"/>
