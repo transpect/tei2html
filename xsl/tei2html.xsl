@@ -1700,7 +1700,7 @@
 		<xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
 		<xsl:if test="not($in-toc)">
 			<span class="indexterm" id="it_{descendant-or-self::index[last()]/@xml:id}">
-				<xsl:attribute name="title" select="replace(term, $indexterm-cstyle-regex, '')"/>
+				<xsl:attribute name="title" select="string-join(for $t in descendant::term return (replace(string-join($t/text(), ''), $indexterm-cstyle-regex, '')), ', ')"/>
 				<xsl:if test="$tei2html:create-index-term-backlink">
 					<a href="#ie_{descendant-or-self::index[last()]/@xml:id}"
 						class="{$tei2html:indexterm-backlink-class}"/>
@@ -1718,12 +1718,12 @@
 		<xsl:apply-templates mode="#current"/>
 	</xsl:template>
 
-	<xsl:template match="see" mode="tei2html">
+	<xsl:template match="see | term[@type = 'see']" mode="tei2html">
 		<xsl:text xml:space="preserve"> see </xsl:text>
 		<xsl:apply-templates mode="#current"/>
 	</xsl:template>
 
-	<xsl:template match="see-also" mode="tei2html">
+	<xsl:template match="see-also | term[@type = 'seealso']" mode="tei2html">
 		<xsl:text xml:space="preserve"> see also </xsl:text>
 		<xsl:apply-templates mode="#current"/>
 	</xsl:template>
