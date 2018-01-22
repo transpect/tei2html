@@ -515,42 +515,46 @@
 			select="distinct-values(tokenize(string-join((local-name(), @type, @rend), ' '), '\s+'))"/>
 	</xsl:template>
 
+  <xsl:template match="floatingText" mode="class-att" priority="2">
+    <xsl:if test="@rend or @type or @rendition">
+      <xsl:attribute name="class">
+        <xsl:choose>
+          <xsl:when test="@rendition and @rendition[matches(., '\.(png|jpe?g)$', 'i')]">
+            <xsl:value-of select="'alt-image'"/>
+          </xsl:when>
+          <xsl:when test="not(@rend)">
+            <xsl:value-of
+              select="
+              if (@type) then
+              @type
+              else
+              ''"/>
+          </xsl:when>
+          <xsl:when test="@rendition and @rendition[matches(., '\.(png|jpe?g)$', 'i')]">
+            <xsl:value-of
+              select="
+              if (@type) then
+              @type
+              else
+              ''"/>
+          </xsl:when>
+          <xsl:otherwise>
+            <xsl:value-of
+              select="
+              if (@rend = @type) 
+              then @rend 
+              else
+              concat(@type, ' ', @rend)"
+            />
+          </xsl:otherwise>
+        </xsl:choose>
+      </xsl:attribute>
+    </xsl:if>
+  </xsl:template>
+
 	<xsl:template match="floatingText" mode="tei2html">
 		<div>
-			<xsl:if test="@rend or @type or @rendition">
-				<xsl:attribute name="class">
-					<xsl:choose>
-						<xsl:when test="@rendition and @rendition[matches(., '\.(png|jpe?g)$', 'i')]">
-							<xsl:value-of select="'alt-image'"/>
-						</xsl:when>
-						<xsl:when test="not(@rend)">
-							<xsl:value-of
-								select="
-									if (@type) then
-										@type
-									else
-										''"/>
-						</xsl:when>
-						<xsl:when test="@rendition and @rendition[matches(., '\.(png|jpe?g)$', 'i')]">
-							<xsl:value-of
-								select="
-									if (@type) then
-										@type
-									else
-										''"/>
-						</xsl:when>
-						<xsl:otherwise>
-							<xsl:value-of
-								select="
-									if (@rend != @type) then
-										concat(@type, ' ', @rend)
-									else
-										@rend"
-							/>
-						</xsl:otherwise>
-					</xsl:choose>
-				</xsl:attribute>
-			</xsl:if>
+    <xsl:apply-templates select="." mode="class-att"/>
 			<xsl:choose>
 				<xsl:when test="@rendition">
 					<xsl:for-each select="tokenize(@rendition, ' ')">
@@ -564,8 +568,7 @@
 					</xsl:for-each>
 				</xsl:when>
 				<xsl:otherwise>
-					<xsl:apply-templates select="@* except (@rend, @type, @rendition), node()" mode="#current"
-					/>
+					<xsl:apply-templates select="@* except (@rend, @type, @rendition), node()" mode="#current"/>
 				</xsl:otherwise>
 			</xsl:choose>
 		</div>
@@ -1536,9 +1539,7 @@
 				<xsl:sort select="current-grouping-key()"
 					collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
 				<xsl:variable name="processed" as="element(*)*">
-					<h4 class="index-subject-heading">
-						<xsl:value-of select="current-grouping-key()"/>
-					</h4>
+					<xsl:call-template name="index-heading"/>
 					<xsl:call-template name="group-index-terms">
 						<xsl:with-param name="level" select="1"/>
 						<xsl:with-param name="index-terms" select="current-group()"/>
@@ -1557,6 +1558,12 @@
 			</xsl:for-each-group>
 		</div>
 	</xsl:template>
+
+  <xsl:template name="index-heading">
+    <h4 class="index-subject-heading">
+      <xsl:value-of select="current-grouping-key()"/>
+    </h4>
+  </xsl:template>
 
 	<!-- override this for actual grouping -->
 	<xsl:template name="tei2html:title-group">
