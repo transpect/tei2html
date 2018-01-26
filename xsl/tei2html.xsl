@@ -475,7 +475,7 @@
 	<xsl:template
 		match="
 			head | quote | seg | p | table | caption | note | italic | bold | unclear | idno |
-			underline | sub | sup | l | lg | hi | argument | emph | add | settlement | orig | date | name | persName | surname | forename | spGrp | sp | speaker | stage"
+			underline | sub | sup | l | lg | hi | argument | emph | add | settlement | orig | date | name | persName | surname | roleName, forename | spGrp | sp | speaker | stage"
 		mode="tei2html" priority="-0.25">
 		<xsl:call-template name="css:content"/>
 	</xsl:template>
@@ -742,6 +742,12 @@
   <xsl:template match="persName | surname | forename | name | abstract | byline | label | unclear | settlement"
     mode="class-att">
     <xsl:attribute name="class" select="local-name()"/>
+  </xsl:template>
+
+  </xsl:template>
+
+  <xsl:template match="roleName" mode="class-att">
+    <xsl:attribute name="class" select="'prefix'"/>
   </xsl:template>
 
   <xsl:template match="byline" mode="tei2html">
@@ -1330,7 +1336,7 @@
 	<xsl:template match="@rendition[. = ('subscript', 'superscript')]" mode="tei2html"/>
 
   <xsl:template
-    match="hi | seg | add | emph | orig | date | name | persName | surname | forename | unclear | idno | settlement"
+    match="hi | seg | add | emph | orig | date | name | persName | surname | roleName | forename | unclear | idno | settlement"
     mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
@@ -1341,6 +1347,17 @@
     <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:if test="preceding-sibling::node()[1][self::*:forename]">
+        <xsl:text> </xsl:text>
+      </xsl:if>
+      <xsl:apply-templates select="node()" mode="#current"/>
+    </xsl:copy>
+  </xsl:template>
+
+
+  <xsl:template match="*:roleName[not(../../../..[self::*:fileDesc])]" mode="epub-alternatives" priority="2">
+    <xsl:copy copy-namespaces="no">
+      <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:if test="following-sibling::node()[1][self::*:forename]">
         <xsl:text> </xsl:text>
       </xsl:if>
       <xsl:apply-templates select="node()" mode="#current"/>
