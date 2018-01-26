@@ -1720,7 +1720,7 @@
 		<xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
 		<xsl:if test="not($in-toc)">
 			<span class="indexterm" id="it_{descendant-or-self::index[last()]/@xml:id}">
-				<xsl:attribute name="title" select="string-join(for $t in descendant::term return (replace(string-join($t/text(), ''), $indexterm-cstyle-regex, '')), ', ')"/>
+				<xsl:attribute name="title" select="replace(term, $indexterm-cstyle-regex, '')"/>
 				<xsl:if test="$tei2html:create-index-term-backlink">
 					<a href="#ie_{descendant-or-self::index[last()]/@xml:id}"
 						class="{$tei2html:indexterm-backlink-class}"/>
