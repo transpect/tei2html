@@ -1843,7 +1843,7 @@
 		</div>
 	</xsl:template>
 
-	<xsl:template match="td/@css:width" mode="hub2htm:css-style-overrides" priority="3"/>
+	<xsl:template match="td/@css:width | th/@css:width" mode="hub2htm:css-style-overrides" priority="3"/>
 
 	<xsl:template
 		match="table[matches(@*[local-name() = 'width'], '(pt|mm)$')][$calculate-table-width]"
