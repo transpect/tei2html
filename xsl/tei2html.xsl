@@ -350,7 +350,7 @@
     </xsl:apply-templates>
 	  <xsl:if test="not($tei2html:chapterwise-footnote)">
 	    <xsl:call-template name="tei2html:footnotes">
-	      <xsl:with-param name="chapterwise" as="xs:boolean" select="false()"/>
+	      <xsl:with-param name="chapterwise" as="xs:boolean" select="false()" tunnel="yes"/>
 	    </xsl:call-template>
 	  </xsl:if>
 	</xsl:template>
@@ -424,7 +424,7 @@
     </xsl:next-match>
     <xsl:if test="$tei2html:chapterwise-footnote">
       <xsl:call-template name="tei2html:footnotes">
-        <xsl:with-param name="chapterwise" as="xs:boolean" select="true()"/>
+        <xsl:with-param name="chapterwise" as="xs:boolean" select="true()" tunnel="yes"/>
       </xsl:call-template>
     </xsl:if>
   </xsl:template>
