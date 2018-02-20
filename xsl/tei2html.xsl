@@ -1869,7 +1869,7 @@
 		</xsl:element>
 	</xsl:template>
 
-	<xsl:template match="table[not(matches(@css:width, '(pt|mm)$'))]" mode="tei2html">
+	<xsl:template match="table[not(matches(@css:width, '(pt|mm)$'))] | table[matches(@css:width, '0(pt|mm)$')]" mode="tei2html">
 		<xsl:variable name="atts" as="attribute(*)*">
 			<xsl:call-template name="css:other-atts"/>
 		</xsl:variable>
@@ -1893,7 +1893,7 @@
 	<xsl:template match="td/@css:width | th/@css:width" mode="hub2htm:css-style-overrides" priority="3"/>
 
 	<xsl:template
-		match="table[matches(@*[local-name() = 'width'], '(pt|mm)$')][$calculate-table-width]"
+		match="table[@*[local-name() = 'width'][matches(., '(pt|mm)$')][not(matches(., '^0(pt|mm)$'))]][$calculate-table-width]"
 		mode="tei2html" priority="3">
 		<xsl:variable name="conditional-percent-widths" as="element(table)">
 			<xsl:apply-templates select="." mode="table-widths"/>
@@ -1902,7 +1902,6 @@
 			<xsl:with-param name="root" select="$root" tunnel="yes" as="document-node()"/>
 		</xsl:apply-templates>
 	</xsl:template>
-
 
 	<xsl:template match="table/head" mode="tei2html">
 		<xsl:param name="not-discard-table-head" as="xs:boolean?" tunnel="yes"/>
