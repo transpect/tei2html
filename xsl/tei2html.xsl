@@ -1185,7 +1185,7 @@
                                 ]
                                 [not(ancestor::divGen[@type = 'toc'])]
                                 [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]
-                                |//*[self::*[local-name() = ('seg', 'p', 'head')]][matches(@rend, '_-_TOC[1-6]')]" mode="toc"/>
+                                |//*[self::*[local-name() = ('seg', 'p', 'l', 'head')]][matches(@rend, '_-_TOC[1-6]')]" mode="toc"/>
   </xsl:template>
 
 	<xsl:template match="div[@type = 'imprint']" mode="tei2html">
@@ -1194,7 +1194,7 @@
 		</div>
 	</xsl:template>
 
-	<xsl:template match="*[self::*:seg or self::*:p]" mode="toc">
+	<xsl:template match="*[self::*:seg or self::*:p or self::*:l or self::*:head[parent::*[self::*:figure | self::*:table | self::*:lg]]]" mode="toc" priority="6">
 		<xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
 	  <xsl:element name="{if($tei2html:epub-type eq '3') then 'li' else 'p'}">
 	    <xsl:attribute name="class" select="replace(@rend, '^(.+)?_-_TOC(\d+)(_-_.+)?$', 'toc$2-nolabel')"/>
@@ -1208,7 +1208,7 @@
 	<xsl:variable name="tei2html:no-toc-style-regex" as="xs:string" select="'_notoc'"/>
 	<xsl:template match="head[matches(@rend, $tei2html:no-toc-style-regex)]" mode="toc" priority="4"/>
 
-	<xsl:template match="head[not(@type = ('sub', 'titleabbrev'))]" mode="toc" priority="3">
+	<xsl:template match="head[not(@type = ('sub', 'titleabbrev'))][not(parent::*[self::figure | self::table | self::lg])]" mode="toc" priority="3">
     <xsl:element name="{if(matches($tei2html:epub-type, '3')) then 'li' else 'p'}">
       <xsl:attribute name="class" select="concat('toc', tei2html:heading-level(.))"/>
       <a href="#{(@xml:id, generate-id())[1]}">
