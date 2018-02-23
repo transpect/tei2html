@@ -1815,7 +1815,7 @@
 
 	<xsl:template match="graphic" mode="tei2html">
 		<img>
-		  <xsl:attribute name="alt" select="normalize-space(../figDesc)"/>
+		  <xsl:attribute name="alt" select="normalize-space((desc,../figDesc)[1])"/>
 		  <xsl:attribute name="src" select="resolve-uri(translate(@url, '[]', '__'))"/>
 			<xsl:apply-templates select="@rend" mode="#current"/>
 			<!--  <xsl:copy-of select="@* except (@url, @rend)">-->
@@ -1825,7 +1825,7 @@
 		</img>
 	</xsl:template>
 
-	<xsl:template match="graphic/@url | graphic/@rend" mode="tei2html"/>
+	<xsl:template match="graphic/@url | graphic/@rend | graphic/desc" mode="tei2html"/>
 
 	<!--  <xsl:template match="@url | @type [. = 'tab']" mode="tei2html" priority="-0.5"/>-->
 
