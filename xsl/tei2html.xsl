@@ -5,7 +5,7 @@
 	xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:css="http://www.w3.org/1996/css"
 	xmlns:hub2htm="http://transpect.io/hub2htm" xmlns:tei2html="http://transpect.io/tei2html"
 	xmlns:l10n="http://transpect.io/l10n" xmlns:tr="http://transpect.io"
-	xmlns:epub="http://www.idpf.org/2007/ops" xmlns:htmltable="http://transpect.io/htmltable"
+	xmlns:epub="http://www.idpf.org/2007/ops" xmlns:aria="http://www.w3.org/ns/wai-aria/" xmlns:htmltable="http://transpect.io/htmltable"
 	xmlns="http://www.w3.org/1999/xhtml" xpath-default-namespace="http://www.tei-c.org/ns/1.0"
 	exclude-result-prefixes="#all" version="2.0">
 
@@ -41,14 +41,14 @@
 	<xsl:param name="tei2html:copy-dt-class-from-dd" select="false()" as="xs:boolean"/>
 
 	<!-- override this in your adaptions with 3, then epub-types are created -->
-	<xsl:variable name="tei2html:epub-type" as="xs:string" select="replace($epub-version, '^EPUB', '')"/>
+	<xsl:variable name="tei2html:epub-type" as="xs:string" select="if ($epub-version) then replace($epub-version, '^EPUB', '') else '2'"/>
 
 	<xsl:variable name="paths" as="xs:string*"
 		select="($s9y1-path, $s9y2-path, $s9y3-path, $s9y4-path, $s9y5-path, $s9y6-path, $s9y7-path, $s9y8-path, $s9y9-path)"/>
-	<xsl:variable name="roles" as="xs:string*"
+	<xsl:variable name="s" as="xs:string*"
 		select="($s9y1-role, $s9y2-role, $s9y3-role, $s9y4-role, $s9y5-role, $s9y6-role, $s9y7-role, $s9y8-role, $s9y9-role)"/>
 	<xsl:variable name="common-path" as="xs:string?"
-		select="$paths[position() = index-of($roles, 'common')]"/>
+		select="$paths[position() = index-of($s, 'common')]"/>
 
 	<xsl:param name="divify-sections" select="'no'"/>
 	<xsl:param name="calculate-table-width" as="xs:boolean" select="true()">
@@ -493,7 +493,7 @@
 	<xsl:template
 		match="
 			head | quote | seg | p | table | caption | note | italic | bold | unclear | idno |
-			underline | sub | sup | l | lg | hi | argument | emph | add | settlement | orig | date | name | persName | surname | roleName | forename | spGrp | sp | speaker | stage"
+			underline | sub | sup | l | lg | hi | argument | emph | add | settlement | orig | date | name | persName | roleName | surname | Name | forename | spGrp | sp | speaker | stage"
 		mode="tei2html" priority="-0.25">
 		<xsl:call-template name="css:content"/>
 	</xsl:template>
@@ -756,12 +756,12 @@
     <xsl:attribute name="class" select="'speech-group'"/>
   </xsl:template>
 
-  <xsl:template match="persName | surname | forename | name | abstract | byline | label | unclear | settlement"
+  <xsl:template match="persName | surname | forename | name | abstract | byline | label | unclear | settlement | roleName"
     mode="class-att">
     <xsl:attribute name="class" select="local-name()"/>
   </xsl:template>
 
-  <xsl:template match="roleName" mode="class-att">
+  <xsl:template match="Name" mode="class-att">
     <xsl:attribute name="class" select="'prefix'"/>
   </xsl:template>
 
@@ -1046,6 +1046,7 @@
 	      <xsl:if test="$footnotes">
 	        <div class="notes">
 	          <xsl:attribute name="epub:type" select="'rearnotes'"/>
+            <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-endnotes'"/></xsl:if>
 	          <xsl:sequence select="tei2html:create-endnotes(if($divs-with-footnotes) then $divs-with-footnotes else $footnotes, 
 	            0,
 	            $tei2html:endnote-heading-level)"/>
@@ -1131,7 +1132,7 @@
         the nav would have to be an ordered list (ol). Currently it’s only p elements
         with class attributes according to the to heading level, which is not permitted 
         (must be ol). -->
-			<!-- The above comment is no longer true. The Epubtools werde changed, so now the attribute is needed -->
+			<!-- The above comment is no longer true. The epubtools were changed, so now the attribute is needed -->
 			<xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
 			<xsl:choose>
 				<xsl:when test="exists(* except head)">
@@ -1160,7 +1161,15 @@
 			</xsl:choose>
 		</xsl:element>
 	</xsl:template>
-  
+
+  <xsl:template match="html:nav/html:ol/html:p" mode="clean-up">
+    <!-- group toc entries -->
+    <xsl:element name="li">
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </xsl:element>
+  </xsl:template>
+
+
   <xsl:template name="generate-toc-headline">
     <xsl:apply-templates select="head" mode="#current"/>
   </xsl:template>
@@ -1381,7 +1390,7 @@
 	<xsl:template match="@rendition[. = ('subscript', 'superscript')]" mode="tei2html"/>
 
   <xsl:template
-    match="hi | seg | add | emph | orig | date | name | persName | surname | roleName | forename | unclear | idno | settlement"
+    match="hi | seg | add | emph | orig | date | name | persName | surname | Name | forename | unclear | idno | settlement| roleName"
     mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
@@ -1398,7 +1407,7 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="*:roleName[not(../../../..[self::*:fileDesc])]" mode="epub-alternatives" priority="3">
+  <xsl:template match="*:Name[not(../../../..[self::*:fileDesc])]" mode="epub-alternatives" priority="3">
     <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@*, node()" mode="#current"/>
       <xsl:if test="following-sibling::node()[1][self::*:forename]">
@@ -1475,7 +1484,7 @@
 		</xsl:if>
 	</xsl:template>
 
-	<xsl:function name="tr:create-epub-type-attribute" as="attribute()?">
+	<xsl:function name="tr:create-epub-type-attribute" as="attribute()*">
 		<xsl:param name="tei2html:epub-type" as="xs:string"/>
 		<xsl:param name="context" as="element(*)"/>
 		<!-- always useful -->
@@ -1483,18 +1492,22 @@
 		<xsl:choose>
 			<xsl:when test="$context[self::*:pb]">
 				<xsl:attribute name="epub:type" select="'pagebreak'"/>
+			  <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-pagebreak'"/></xsl:if>
 			</xsl:when>
 			<xsl:when test="$context[self::*:div[@type = 'index']]">
 				<xsl:attribute name="epub:type" select="$context/@type"/>
+        <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-index'"/></xsl:if>
 			</xsl:when>
 			<xsl:when
 				test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication', 'appendix')]]">
 				<!-- subtype may be glossary for a chapter or appendix that serves also as a glossary. This is a hub2tei convention introduced on 2016-08-06 -->
 				<xsl:attribute name="epub:type"
 					select="string-join(($context/@type, $context/@subtype[not(. = 'subhead')]), ' ')"/>
+      <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="concat('doc-', $context/@type)"/></xsl:if>
 			</xsl:when>
 			<xsl:when test="$context/self::div[@type = ('virtual-part', 'virtual-chapter')]">
 				<xsl:attribute name="epub:type" select="replace($context/@type, '^virtual-', '')"/>
+      <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="concat('doc-', replace($context/@type, '^virtual-', ''))"/></xsl:if>
 			</xsl:when>
 			<xsl:when test="$context/self::div[starts-with(@type, 'sect')][parent::div/@type = 'chapter']">
 				<xsl:attribute name="epub:type" select="'subchapter'"/>
@@ -1504,6 +1517,7 @@
 					$context[self::*:div[@type = 'preface'][not(@rend)
 					or not(matches(@rend, string-join($frontmatter-parts, '|')))]]">
 				<xsl:attribute name="epub:type" select="$context/@type"/>
+        <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-preface'"/></xsl:if>
 			</xsl:when>
 			<xsl:when
 				test="
@@ -1520,26 +1534,40 @@
 						<xsl:attribute name="epub:type" select="'copyright-page'"/>
 					</xsl:when>
 					<xsl:when test="matches($context/@rend, 'about-contrib')">
-						<xsl:attribute name="epub:type" select="'tr:bio'"/>
+						<xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'colophon' else 'tr:bio'"/>
+          <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
+                                                    <xsl:attribute name="aria-label" select="'About the author'"/>
+         </xsl:if>
 					</xsl:when>
 					<xsl:when test="matches($context/@rend, 'acknowledgements')">
 						<xsl:attribute name="epub:type" select="'acknowledgements'"/>
 					</xsl:when>
 					<!-- additional Info in title -->
 					<xsl:when test="matches($context/@rend, 'additional-info')">
-						<xsl:attribute name="epub:type" select="'tr:additional-info'"/>
+						<xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'colophon' else 'tr:additional-info'"/>
+          <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
+                                                    <xsl:attribute name="aria-label" select="'Additional information'"/>
+         </xsl:if>
 					</xsl:when>
 					<xsl:when test="matches($context/@rend, 'series')">
-						<xsl:attribute name="epub:type" select="'tr:additional-info'"/>
+						<xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'colophon' else 'tr:additional-info'"/>
+          <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
+                                                    <xsl:attribute name="aria-label" select="'About the series'"/>
+         </xsl:if>
 					</xsl:when>
 					<xsl:when test="matches($context/@rend, 'about-book')">
-						<xsl:attribute name="epub:type" select="'tr:about-the-book'"/>
+						<xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'colophon' else 'tr:about-the-book'"/>
+          <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
+                                                    <xsl:attribute name="aria-label" select="'About the book'"/>
+         </xsl:if>
 					</xsl:when>
 					<xsl:when test="matches($context/@rend, 'dedication')">
 						<xsl:attribute name="epub:type" select="'dedication'"/>
+            <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-dedication'"/></xsl:if>
 					</xsl:when>
 					<xsl:when test="matches($context/@rend, 'motto')">
 						<xsl:attribute name="epub:type" select="'epigraph'"/>
+            <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-epigraph'"/></xsl:if>
 					</xsl:when>
 				</xsl:choose>
 			</xsl:when>
@@ -1548,10 +1576,12 @@
 			</xsl:when>
 			<xsl:when test="$context[self::*:div[@type = 'motto']]">
 				<xsl:attribute name="epub:type" select="'epigraph'"/>
+        <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-epigraph'"/></xsl:if>
 			</xsl:when>
-			<xsl:when test="$context[self::*:divGen[@type = ('index', 'toc')]]">
-				<xsl:attribute name="epub:type" select="$context/@type"/>
-			</xsl:when>
+		  <xsl:when test="$context[self::*:divGen[@type = ('index')]]">
+		    <xsl:attribute name="epub:type" select="$context/@type"/>
+		    <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="concat('doc-', $context/@type)"/></xsl:if>
+		    </xsl:when>
 			<xsl:when test="$context[self::*:note[@type = ('footnotes')]]">
 				<xsl:attribute name="epub:type" namespace="http://www.idpf.org/2007/ops"
 					select="$context/@type"/>
@@ -1929,7 +1959,7 @@
 	</xsl:template>
 
 	<xsl:template match="cell" mode="tei2html">
-		<xsl:element name="{if (..[@role = 'label']) then 'th' else 'td'}"
+		<xsl:element name="{if (..[@* = 'label']) then 'th' else 'td'}"
 			exclude-result-prefixes="#all">
 			<xsl:call-template name="css:content"/>
 		</xsl:element>
