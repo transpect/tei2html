@@ -1616,18 +1616,14 @@
 			<xsl:apply-templates select="@*" mode="#current"/>
 			<xsl:attribute name="id" select="string-join(((@id, @xml:id)[1], $subtype), '-')"/>
 			<xsl:call-template name="tei2html:title-group"/>
-			<xsl:for-each-group
-				select="
-					//index[if ($subtype)
-					then
-						@indexName = $subtype
-					else
-						not(@indexName)
-					][not(parent::index)]"
-				group-by="tei2html:index-grouping-key((term/@sortKey, term)[1])"
-				collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary">
+			<xsl:for-each-group select="//index[if ($subtype)
+					                                then @indexName = $subtype
+					                                else not(@indexName)
+					                                ][not(parent::index)]"
+				                  group-by="tei2html:index-grouping-key((term/@sortKey, term)[1])"
+				                  collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary">
 				<xsl:sort select="current-grouping-key()"
-					collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
+					        collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
 				<xsl:variable name="processed" as="element(*)*">
 					<xsl:call-template name="index-heading"/>
 					<xsl:call-template name="group-index-terms">
