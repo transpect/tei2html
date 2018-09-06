@@ -1697,18 +1697,33 @@
 					<xsl:when test="$apply-cstyles-in-indexterms">
 						<xsl:apply-templates select="term" mode="indexterms"/>
 					</xsl:when>
-					<xsl:when test="term[@type = 'see']">
-						<span class="localize see">
-							<xsl:value-of select="$tei2html:index-entry-see-string"/>
-							<xsl:apply-templates select="term/node()" mode="#current"/>
-						</span>
-					</xsl:when>
-					<xsl:when test="term[@type = 'seealso']">
-						<span class="localize see-also">
-							<xsl:value-of select="$tei2html:index-entry-seealso-string"/>
-							<xsl:apply-templates select="term/node()" mode="#current"/>
-						</span>
-					</xsl:when>
+				  <xsl:when test="term[@type = 'seealso']">
+				    <span class="localize see-also">
+				      <xsl:apply-templates select="term[not(@type = ('see', 'seealso'))]/node()" mode="#current"/>
+				      <xsl:if test="term[@type = 'seealso']">
+				        <xsl:if test="term[@type = 'see']/preceding-sibling::*[1][self::term[not(@type = ('see', 'seealso'))]]">
+				          <xsl:text>, </xsl:text>
+				        </xsl:if>
+				        <xsl:value-of select="$tei2html:index-entry-see-string"/>
+				        <xsl:apply-templates select="term[@type eq 'see']/node()" mode="#current"/>						    
+				      </xsl:if>
+				      <xsl:if test="term[@type = 'seealso']/preceding-sibling::*[1][self::term[not(@type eq 'seealso')]]">
+				        <xsl:text>, </xsl:text>
+				      </xsl:if>
+				      <xsl:value-of select="$tei2html:index-entry-seealso-string"/>
+				      <xsl:apply-templates select="term/node()" mode="#current"/>
+				    </span>
+				  </xsl:when>
+				  <xsl:when test="term[@type = 'see']">
+				    <span class="localize see">
+				      <xsl:apply-templates select="term[not(@type = ('see', 'seealso'))]/node()" mode="#current"/>
+				      <xsl:if test="term[@type = 'see']/preceding-sibling::*[1][self::term[not(@type = ('see', 'seealso'))]]">
+				        <xsl:text>, </xsl:text>
+				      </xsl:if>
+				      <xsl:value-of select="$tei2html:index-entry-see-string"/>
+				      <xsl:apply-templates select="term[@type eq 'see']/node()" mode="#current"/>
+				    </span>
+				  </xsl:when>
 					<xsl:otherwise>
 						<xsl:apply-templates select="term/node()" mode="#current"/>
 					</xsl:otherwise>
