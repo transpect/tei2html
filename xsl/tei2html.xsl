@@ -1127,7 +1127,6 @@
 		<xsl:variable name="toc_level" as="xs:integer?" select="@rendition"/>
 		<xsl:element name="{if ($tei2html:epub-type = '2') then 'div' else 'nav'}">
 		  <xsl:attribute name="class" select="'toc'"/>
-		  <xsl:attribute name="epub:type" select="'toc'"/>
 		  <xsl:attribute name="id" select="'tei2html_rendered_toc'"/>
       <xsl:if test="$tei2html:epub-type = '3'">
         <xsl:attribute name="epub:prefix" select="'tr: http://transpect.io'"/>
@@ -1498,10 +1497,13 @@
 				<xsl:attribute name="epub:type" select="'pagebreak'"/>
 			  <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-pagebreak'"/></xsl:if>
 			</xsl:when>
-			<xsl:when test="$context[self::*:div[@type = 'index']]">
+		  <xsl:when test="$context[self::*:divGen[@type = 'index'] or self::*:div[@type = 'index']]">
 				<xsl:attribute name="epub:type" select="$context/@type"/>
         <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-index'"/></xsl:if>
 			</xsl:when>
+		  <xsl:when test="$context[self::*:divGen[@type = 'toc'] or self::*:div[@type = 'toc']]">
+		    <xsl:attribute name="epub:type" select="$context/@type"/>
+		  </xsl:when>
 			<xsl:when
 				test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication', 'appendix')]]">
 				<!-- subtype may be glossary for a chapter or appendix that serves also as a glossary. This is a hub2tei convention introduced on 2016-08-06 -->
