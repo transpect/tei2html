@@ -1127,6 +1127,7 @@
 		<xsl:variable name="toc_level" as="xs:integer?" select="@rendition"/>
 		<xsl:element name="{if ($tei2html:epub-type = '2') then 'div' else 'nav'}">
 		  <xsl:attribute name="class" select="'toc'"/>
+		  <xsl:attribute name="epub:type" select="'toc'"/>
 		  <xsl:attribute name="id" select="'tei2html_rendered_toc'"/>
       <xsl:if test="$tei2html:epub-type = '3'">
         <xsl:attribute name="epub:prefix" select="'tr: http://transpect.io'"/>
