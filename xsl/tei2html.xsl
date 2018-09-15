@@ -1091,7 +1091,7 @@
             <xsl:apply-templates select=".//note[@type = 'footnote'][count(ancestor::div) eq ($index + 1)]" mode="notes">
               <xsl:with-param name="fn-ids" select="$footnote-ids" as="xs:string*" tunnel="yes"/>
             </xsl:apply-templates>
-            <xsl:sequence select="tei2html:create-endnotes(div[.//note[@type = 'footnote']], $index + 1, $max)"/>
+            <xsl:sequence select="tei2html:create-endnotes(./div[.//note[@type = 'footnote']], $index + 1, $max)"/>
           </div>
         </xsl:for-each>
       </xsl:otherwise>
