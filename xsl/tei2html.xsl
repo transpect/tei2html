@@ -1215,6 +1215,14 @@
 	    </a>
 	  </xsl:element>
 	</xsl:template>
+	
+	<xsl:template match="html:nav/html:ol/html:p" mode="clean-up">
+    <!-- override r4443 change in order to preserve flat para structure -->
+    <xsl:copy>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </xsl:copy>
+	</xsl:template>
+
 
 	<!-- no HTML toc entry for special headings-->
 	<xsl:variable name="tei2html:no-toc-style-regex" as="xs:string" select="'_notoc'"/>
