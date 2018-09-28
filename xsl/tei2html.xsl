@@ -71,6 +71,8 @@
 
 	<xsl:variable name="l10n" select="document(concat('l10n.', ($lang, 'en')[1], '.xml'))" as="document-node(element(l10n:l10n))"/>
   
+  <xsl:key name="tei2html:content-styled-by-rule" match="*[@class]" use="tokenize(@class, '\s+')"/>
+  
   <!-- table style name for  auxiliary tables (without borders) -->
   <xsl:variable name="tei2html:auxiliary-table-style-regex" select="'letex_aux-table'" as="xs:string"/>
   
