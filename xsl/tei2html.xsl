@@ -1130,9 +1130,9 @@
 		<xsl:element name="{if ($tei2html:epub-type = '2') then 'div' else 'nav'}">
 		  <xsl:attribute name="class" select="'toc'"/>
 		  <xsl:attribute name="id" select="'tei2html_rendered_toc'"/>
-      <xsl:if test="$tei2html:epub-type = '3'">
+      <!--<xsl:if test="$tei2html:epub-type = '3'"> This seems to be wrong. epub:prefix seems to be allowed on /html only
         <xsl:attribute name="epub:prefix" select="'tr: http://transpect.io'"/>
-      </xsl:if>
+      </xsl:if>-->
 			<!-- don’t create an epub:type attribute even for EPUB3 because the content of 
         the nav would have to be an ordered list (ol). Currently it’s only p elements
         with class attributes according to the to heading level, which is not permitted 
