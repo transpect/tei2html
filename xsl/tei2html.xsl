@@ -1749,7 +1749,7 @@
 			<xsl:choose>
 				<xsl:when test="descendant-or-self::*[term[@type = ('see', 'seealso')]]"/>
 				<xsl:otherwise>
-					<xsl:for-each select="current-group()[not(index)]">
+					<xsl:for-each select="current-group()[not(index)][not(@rend = 'hub:not-placed-on-page')]">
 						<a href="#it_{@xml:id}" id="ie_{@xml:id}">
 							<xsl:value-of select="position()"/>
 						</a>
