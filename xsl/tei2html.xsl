@@ -1635,7 +1635,10 @@
 			<xsl:for-each-group select="//index[if ($subtype)
 					                                then @indexName = $subtype
 					                                else not(@indexName)
-					                                ][not(parent::index)]"
+					                                ][not(parent::index)]
+					                                [if (empty(term[@type = ('see', 'seealso')])) 
+                                           then not(tei2html:contains-token(@rend, 'hub:not-placed-on-page'))
+                                           else true()]"
 				                  group-by="tei2html:index-grouping-key((term/@sortKey, term)[1])"
 				                  collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary">
 				<xsl:sort select="current-grouping-key()"
