@@ -1632,11 +1632,11 @@
 			<xsl:apply-templates select="@*" mode="#current"/>
 			<xsl:attribute name="id" select="string-join(((@id, @xml:id)[1], $subtype), '-')"/>
 			<xsl:call-template name="tei2html:title-group"/>
-			<xsl:for-each-group select="//index[if ($subtype)
+			<xsl:for-each-group select="//index[not(parent::index)]
+																				 [if ($subtype)
 					                                then @indexName = $subtype
-					                                else not(@indexName)
-					                                ][not(parent::index)]
-					                                [if (empty(term[@type = ('see', 'seealso')])) 
+					                                else not(@indexName)]
+					                                [if (empty(.//term[@type = ('see', 'seealso')])) 
                                            then not(tei2html:contains-token(@rend, 'hub:not-placed-on-page'))
                                            else true()]"
 				                  group-by="tei2html:index-grouping-key((term/@sortKey, term)[1])"
