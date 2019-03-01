@@ -1218,7 +1218,7 @@
     </xsl:element>
   </xsl:template>
   
-  <xsl:template match="html:nav/html:ol/html:p" mode="clean-up">
+  <xsl:template match="html:nav/html:ol/html:p" mode="clean-up" priority="0.6">
     <!-- override r4443 change in order to preserve flat para structure -->
     <xsl:copy>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
