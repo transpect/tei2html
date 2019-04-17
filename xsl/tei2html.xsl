@@ -1,13 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <xsl:stylesheet xmlns:xs="http://www.w3.org/2001/XMLSchema"
-  xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:html="http://www.w3.org/1999/xhtml"
-  xmlns:tei="http://www.tei-c.org/ns/1.0" xmlns:saxon="http://saxon.sf.net/"
-  xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:css="http://www.w3.org/1996/css"
-  xmlns:hub2htm="http://transpect.io/hub2htm" xmlns:tei2html="http://transpect.io/tei2html"
-  xmlns:l10n="http://transpect.io/l10n" xmlns:tr="http://transpect.io"
-  xmlns:epub="http://www.idpf.org/2007/ops" xmlns:aria="http://www.w3.org/ns/wai-aria/" xmlns:htmltable="http://transpect.io/htmltable"
-  xmlns="http://www.w3.org/1999/xhtml" xpath-default-namespace="http://www.tei-c.org/ns/1.0"
-  exclude-result-prefixes="#all" version="2.0">
+  xmlns:xsl="http://www.w3.org/1999/XSL/Transform" 
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  xmlns:tei="http://www.tei-c.org/ns/1.0" 
+  xmlns:saxon="http://saxon.sf.net/"
+  xmlns:xlink="http://www.w3.org/1999/xlink" 
+  xmlns:css="http://www.w3.org/1996/css"
+  xmlns:hub2htm="http://transpect.io/hub2htm" 
+  xmlns:tei2html="http://transpect.io/tei2html"
+  xmlns:l10n="http://transpect.io/l10n" 
+  xmlns:tr="http://transpect.io"
+  xmlns:epub="http://www.idpf.org/2007/ops" 
+  xmlns:aria="http://www.w3.org/ns/wai-aria/" 
+  xmlns:htmltable="http://transpect.io/htmltable"
+  xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns="http://www.w3.org/1999/xhtml" 
+  xpath-default-namespace="http://www.tei-c.org/ns/1.0"
+  exclude-result-prefixes="#all" 
+  version="2.0">
 
   <xsl:import href="http://transpect.io/hub2html/xsl/css-rules.xsl"/>
   <xsl:import href="http://transpect.io/xslt-util/lengths/xsl/lengths.xsl"/>
@@ -1872,7 +1882,6 @@
     </xsl:for-each-group>
   </xsl:template>
 
-
   <xsl:template match="graphic" mode="tei2html">
     <img>
       <xsl:attribute name="alt" select="normalize-space((desc,../figDesc)[1])"/>
@@ -1883,6 +1892,10 @@
       <!--</xsl:copy-of>-->
       <xsl:call-template name="css:content"/>
     </img>
+  </xsl:template>
+  
+  <xsl:template match="graphic[svg:svg]" mode="tei2html">
+    <xsl:copy-of select="svg:svg"/>
   </xsl:template>
 
   <xsl:template match="graphic/@url | graphic/@rend | graphic/desc" mode="tei2html"/>
