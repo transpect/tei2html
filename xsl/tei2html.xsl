@@ -789,28 +789,22 @@
 
   <xsl:template match="note" mode="notes">
     <xsl:param name="fn-ids" as="xs:string*" tunnel="yes"/>
-    <div class="{name()}" id="fn_{@xml:id}" epub:type="rearnote">
-      <xsl:variable name="note-marker-width"
-        select="
-          if (string-length(xs:string(index-of($fn-ids, @xml:id))) gt 2) then
-            ' large'
-          else
-            ' narrow'"
-        as="xs:string?"/>
-      <p class="{concat('footnote-marker', $note-marker-width)}">
-        <a href="#fna_{@xml:id}">
-          <xsl:value-of select="index-of($fn-ids, @xml:id)"/>
-        </a>
-        <xsl:value-of select="$tei2html:after-footnote-marker-space"/>
-      </p>
-      <div class="footnote-text">
+    <xsl:variable name="note-marker-width" as="xs:string?"
+                  select="if (string-length(xs:string(index-of($fn-ids, @xml:id))) gt 2) 
+                          then 'large'
+                          else 'narrow'"/>
+    <p class="{name()}" id="fn_{@xml:id}" epub:type="rearnote">
+      <a href="#fna_{@xml:id}" class="footnote-marker {$note-marker-width}">
+        <xsl:value-of select="index-of($fn-ids, @xml:id)"/>
+      </a>
+      <xsl:value-of select="$tei2html:after-footnote-marker-space"/>
+      <span class="footnote-text">
         <xsl:apply-templates mode="tei2html">
           <xsl:with-param name="in-notes" tunnel="yes" select="true()"/>
         </xsl:apply-templates>
-      </div>
-    </div>
+      </span>
+    </p>
   </xsl:template>
-
 
   <xsl:template match="note[@type = 'footnote']/p" mode="tei2html">
     <p>
