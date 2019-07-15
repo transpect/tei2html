@@ -1970,7 +1970,7 @@
     </xsl:apply-templates>
   </xsl:template>
 
-  <xsl:template match="table/head" mode="tei2html">
+  <xsl:template match="*:table/head" mode="tei2html">
     <xsl:param name="not-discard-table-head" as="xs:boolean?" tunnel="yes"/>
     <xsl:choose>
       <xsl:when test="$not-discard-table-head">
