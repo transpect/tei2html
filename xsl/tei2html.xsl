@@ -2159,7 +2159,7 @@
 
   <xsl:function name="tei2html:heading-level" as="xs:integer?">
     <xsl:param name="elt" as="element(*)"/>
-    <xsl:variable name="level">
+    <xsl:variable name="level" as="xs:integer?">
       <xsl:choose>
         <xsl:when test="$elt/ancestor::table"/>
         <xsl:when test="$elt/ancestor::lg"/>
