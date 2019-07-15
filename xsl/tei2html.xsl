@@ -1972,14 +1972,11 @@
 
   <xsl:template match="*:table/head" mode="tei2html">
     <xsl:param name="not-discard-table-head" as="xs:boolean?" tunnel="yes"/>
-    <xsl:choose>
-      <xsl:when test="$not-discard-table-head">
-        <xsl:element name="p" exclude-result-prefixes="#all">
-          <xsl:call-template name="css:content"/>
-        </xsl:element>
-      </xsl:when>
-      <xsl:otherwise> </xsl:otherwise>
-    </xsl:choose>
+    <xsl:if test="$not-discard-table-head">
+      <xsl:element name="p" exclude-result-prefixes="#all">
+        <xsl:call-template name="css:content"/>
+      </xsl:element>
+    </xsl:if>
   </xsl:template>
 
   <!-- For tables in HTML model -->
