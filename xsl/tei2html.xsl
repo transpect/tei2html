@@ -903,11 +903,15 @@
       </dt>
   </xsl:template>
 
-  <xsl:template match="item[tei2html:is-varlistentry(.)]/gloss" mode="tei2html">
+  <xsl:template match="item[tei2html:is-varlistentry(.)]" mode="tei2html">
     <dd>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:apply-templates select="gloss/@*, node()" mode="#current"/>
     </dd>
   </xsl:template>
+  
+  <xsl:template match="item[tei2html:is-varlistentry(.)]/gloss" mode="tei2html">
+    <xsl:apply-templates select="node()" mode="#current"/>
+  </xsl:template> 
 
   <xsl:template match="list[@type = ('bulleted', 'simple')]" mode="tei2html">
     <ul>
