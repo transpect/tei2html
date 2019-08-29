@@ -793,11 +793,11 @@
                   select="if (string-length(xs:string(index-of($fn-ids, @xml:id))) gt 2) 
                           then 'large'
                           else 'narrow'"/>
-    <p class="{name()}" id="fn_{@xml:id}" epub:type="rearnote">
+    <p class="{name()} footnote" id="fn_{@xml:id}" epub:type="rearnote">
       <a href="#fna_{@xml:id}" class="footnote-marker {$note-marker-width}">
         <xsl:value-of select="index-of($fn-ids, @xml:id)"/>
+        <xsl:value-of select="$tei2html:after-footnote-marker-space"/>
       </a>
-      <xsl:value-of select="$tei2html:after-footnote-marker-space"/>
       <span class="footnote-text">
         <xsl:apply-templates mode="tei2html">
           <xsl:with-param name="in-notes" tunnel="yes" select="true()"/>
@@ -806,18 +806,11 @@
     </p>
   </xsl:template>
 
-  <xsl:template match="note[@type = 'footnote']/p" mode="tei2html">
-    <p>
-      <xsl:variable name="atts" as="attribute(*)*">
-        <xsl:apply-templates select="@*" mode="#current"/>
-      </xsl:variable>
-      <xsl:variable name="class" as="xs:string+">
-        <xsl:sequence select="string-join(($atts[name() = 'class'], 'footnote'), ' ')"/>
-      </xsl:variable>
-      <xsl:sequence select="$atts"/>
-      <xsl:attribute name="class" select="$class"/>
+  <xsl:template match="note/p" mode="tei2html">
+    <!-- prevent invalid markup, use css to display breaks -->
+    <span class="footnote-p">
       <xsl:apply-templates mode="#current"/>
-    </p>
+    </span>
   </xsl:template>
 
   <xsl:template
