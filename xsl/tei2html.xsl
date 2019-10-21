@@ -806,7 +806,7 @@
     </p>
   </xsl:template>
 
-  <xsl:template match="note/p" mode="tei2html">
+  <xsl:template match="note/*[local-name() = ('p', 'l')]" mode="tei2html">
     <!-- prevent invalid markup, use css to display breaks -->
     <span class="footnote-p">
       <xsl:apply-templates mode="#current"/>
