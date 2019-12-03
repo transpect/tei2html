@@ -2301,7 +2301,7 @@
         select="
           string-join(
           (@srcpath,
-          node()[(every $att in current-group()/@*
+          node()[(every $att in @*
             satisfies ($att/name() = 'srcpath')) and
           not(self::*:hi[@rendition = ('subscript', 'superscript')])
           ]/@srcpath),
