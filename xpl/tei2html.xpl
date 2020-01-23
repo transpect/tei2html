@@ -23,7 +23,10 @@
   </p:input>
   <p:input port="paths" kind="parameter" primary="true"/>
 	
-  <p:output port="result" primary="true" />
+  <p:output port="result" primary="true" >
+    <!-- bound explicitly due to interference with step dynamic-transformation-pipeline in invoking pipeline -->
+    <p:pipe port="result" step="dtp"/>
+  </p:output>
   <p:serialization port="result" 
     omit-xml-declaration="false"
     method="xhtml"
@@ -73,5 +76,7 @@
     </p:input>
     <p:with-option name="status-dir-uri" select="$status-dir-uri"/>
   </tr:simple-progress-msg>
+  
+  <p:sink/>
   
 </p:declare-step>
