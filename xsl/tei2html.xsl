@@ -26,6 +26,7 @@
 
   <xsl:param name="debug" select="'yes'"/>
   <xsl:param name="debug-dir-uri" select="'debug'"/>
+  <xsl:param name="verbose" select="'yes'"/>
 
   <xsl:param name="s9y1-path" as="xs:string?"/>
   <xsl:param name="s9y2-path" as="xs:string?"/>
@@ -107,15 +108,18 @@
   </xsl:template>
 
   <xsl:template match="*" mode="tei2html" priority="-1">
-    <xsl:message>tei2html: unhandled: <xsl:apply-templates select="." mode="css:unhandled"/> </xsl:message>
+    <xsl:if test="$verbose eq 'yes'">
+      <xsl:message>tei2html: unhandled: <xsl:apply-templates select="." mode="css:unhandled"/></xsl:message>
+    </xsl:if>
     <xsl:copy>
       <xsl:apply-templates select="@* | node()" mode="#current"/>
     </xsl:copy>
   </xsl:template>
 
   <xsl:template match="@*" mode="tei2html" priority="-1.5">
-    <xsl:message>tei2html: unhandled attr: <xsl:apply-templates select="." mode="css:unhandled"/>
-    </xsl:message>
+    <xsl:if test="$verbose eq 'yes'">
+      <xsl:message>tei2html: unhandled attr: <xsl:apply-templates select="." mode="css:unhandled"/></xsl:message>
+    </xsl:if>
   </xsl:template>
 
   <!-- collateral. Otherwise the generated IDs might differ due to temporary trees / variables 
