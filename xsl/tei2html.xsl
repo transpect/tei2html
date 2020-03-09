@@ -1217,7 +1217,6 @@
                                                       $start-heading-level, 
                                                       $max-heading-level)"/>
     </xsl:variable>
-    <xsl:message select="$toc-as-tree"></xsl:message>
     <!-- we patch the tree in a separate mode for html-style lists -->
     <xsl:variable name="patched-toc">
       <xsl:apply-templates select="$toc-as-tree" mode="patch-toc-for-epub3"/>
