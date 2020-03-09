@@ -1223,7 +1223,7 @@
     </xsl:variable>
     <xsl:choose>
       <xsl:when test="$tei2html:epub-type eq '3'">
-        <xsl:sequence select="$patched-toc"/>    
+        <xsl:sequence select="$patched-toc"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:sequence select="$toc-headlines-by-level"/>
@@ -1245,9 +1245,6 @@
   
   <xsl:template match="html:ol" mode="patch-toc-for-epub3">
     <xsl:choose>
-      <xsl:when test="parent::html:ol">
-        <xsl:apply-templates mode="#current"/>
-      </xsl:when>
       <xsl:when test="count(*) eq 1 and html:ol">
         <xsl:apply-templates mode="#current"/>
       </xsl:when>
@@ -1257,6 +1254,10 @@
         </xsl:copy>
       </xsl:when>
     </xsl:choose>
+  </xsl:template>
+  
+  <xsl:template match="html:ol/html:ol" mode="clean-up">
+    <xsl:apply-templates mode="#current"/>
   </xsl:template>
   
   <xsl:template match="@*|*" mode="patch-toc-for-epub3">
