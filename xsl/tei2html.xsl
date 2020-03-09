@@ -1196,8 +1196,9 @@
                                             ]
                                             |parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)]|parent::divGen[@type = 'index']
                                 ]
-                                [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] 
-                                                  or following-sibling::*[1][self::head[@type = 'main']])])
+                                [   (@type = 'main') 
+                                 or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] 
+                                     or following-sibling::*[1][self::head[@type = 'main']])])
                                 ]
                                 [not(ancestor::divGen[@type = 'toc'])]
                                 [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]
@@ -1216,6 +1217,7 @@
                                                       $start-heading-level, 
                                                       $max-heading-level)"/>
     </xsl:variable>
+    <xsl:message select="$toc-as-tree"></xsl:message>
     <!-- we patch the tree in a separate mode for html-style lists -->
     <xsl:variable name="patched-toc">
       <xsl:apply-templates select="$toc-as-tree" mode="patch-toc-for-epub3"/>
@@ -1244,6 +1246,9 @@
   
   <xsl:template match="html:ol" mode="patch-toc-for-epub3">
     <xsl:choose>
+      <xsl:when test="parent::html:ol">
+        <xsl:apply-templates mode="#current"/>
+      </xsl:when>
       <xsl:when test="count(*) eq 1 and html:ol">
         <xsl:apply-templates mode="#current"/>
       </xsl:when>
