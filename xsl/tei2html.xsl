@@ -20,9 +20,10 @@
   version="2.0">
 
   <xsl:import href="http://transpect.io/hub2html/xsl/css-rules.xsl"/>
-  <xsl:import href="http://transpect.io/xslt-util/lengths/xsl/lengths.xsl"/>
   <xsl:import href="http://transpect.io/hub2html/xsl/css-atts2wrap.xsl"/>
-  <xsl:import href="http://this.transpect.io/htmltables/xsl/html-tables-normalize.xsl"/>
+  <xsl:import href="http://transpect.io/htmltables/xsl/html-tables-normalize.xsl"/>
+  <xsl:import href="http://transpect.io/xslt-util/lengths/xsl/lengths.xsl"/>
+  <xsl:import href="http://transpect.io/xslt-util/flat-list-to-tree/xsl/flat-list-to-tree.xsl"/>
 
   <xsl:param name="debug" select="'yes'"/>
   <xsl:param name="debug-dir-uri" select="'debug'"/>
@@ -278,7 +279,7 @@
   <xsl:template match="/TEI" mode="tei2html">
     <html>
       <xsl:apply-templates select="@*" mode="#current"/>
-      <xsl:if test="$epub-version eq 'EPUB3'">
+      <xsl:if test="$tei2html:epub-type eq '3'">
         <!-- Extended semantics for EPUB Structural Semantics Vocabulary 
              https://idpf.github.io/a11y-guidelines/content/semantics/epub-type.html#sem005-desc-custom
         -->
@@ -1179,7 +1180,7 @@
   
   <xsl:template name="generate-toc-body">
     <xsl:param name="toc_level"/>
-    <xsl:apply-templates
+    <xsl:variable name="toc-headlines" as="element(head)*" 
                   select="//head[parent::div[@type = ('section', 
                                                       'glossary', 
                                                       'acknowledgements', 
@@ -1189,16 +1190,79 @@
                                                       'dedication', 
                                                       'part', 
                                                       'index', 
-                                                      'listBibl')]
-                                |parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)]|parent::divGen[@type = 'index']
+                                                      'listBibl')
+                                            ]
+                                            |parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)]|parent::divGen[@type = 'index']
                                 ]
                                 [(@type = 'main') or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] 
                                                   or following-sibling::*[1][self::head[@type = 'main']])])
                                 ]
                                 [not(ancestor::divGen[@type = 'toc'])]
                                 [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]
-                                |//*[self::*[local-name() = ('seg', 'p', 'l', 'head')]][matches(@rend, '_-_TOC[1-6]')]" mode="toc"/>
+                                |//*[self::*[local-name() = ('seg', 'p', 'l', 'head')]][matches(@rend, '_-_TOC[1-6]')]"/>
+    <xsl:variable name="start-heading-level" as="xs:integer"
+                  select="min($toc-headlines/tei2html:heading-level(.))"/>
+    <xsl:variable name="max-heading-level" as="xs:integer"
+                  select="$start-heading-level + $toc_level - 1"/>
+    <!-- flat list of li elements with class representing level, e.g. "toc1, toc2, ..."-->
+    <xsl:variable name="toc-headlines-by-level" as="element(html:li)*">
+      <xsl:apply-templates select="$toc-headlines" mode="toc"/>
+    </xsl:variable>
+    <!-- a structured tree generated from a flat sequence of elements -->
+    <xsl:variable name="toc-as-tree">
+      <xsl:sequence select="tei2html:flat-toc-to-tree($toc-headlines-by-level, 
+                                                      $start-heading-level, 
+                                                      $max-heading-level)"/>
+    </xsl:variable>
+    <!-- we patch the tree in a separate mode for html-style lists -->
+    <xsl:variable name="patched-toc">
+      <xsl:apply-templates select="$toc-as-tree" mode="patch-toc-for-epub3"/>
+    </xsl:variable>
+    <xsl:sequence select="$patched-toc"/>
   </xsl:template>
+  
+  <xsl:template match="html:li[following-sibling::*[1][self::html:ol]]" mode="patch-toc-for-epub3">
+    <xsl:variable name="next-ol" select="following-sibling::*[1][self::html:ol]" as="element(html:ol)"/>
+    <xsl:copy>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+      <xsl:if test="$next-ol">
+        <ol>
+          <xsl:apply-templates select="$next-ol/@*, $next-ol/html:*" mode="#current"/>
+        </ol>  
+      </xsl:if>
+    </xsl:copy>
+  </xsl:template>
+  
+  <xsl:template match="html:ol" mode="patch-toc-for-epub3">
+    <xsl:choose>
+      <xsl:when test="count(*) eq 1 and html:ol">
+        <xsl:apply-templates mode="#current"/>
+      </xsl:when>
+      <xsl:when test="not(preceding-sibling::*[1][self::html:li])">
+        <xsl:copy>
+          <xsl:apply-templates select="@*, node()" mode="#current"/>
+        </xsl:copy>
+      </xsl:when>
+    </xsl:choose>
+  </xsl:template>
+  
+  <xsl:template match="@*|*" mode="patch-toc-for-epub3">
+    <xsl:copy>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </xsl:copy>
+  </xsl:template>
+  
+  <xsl:function name="tei2html:flat-toc-to-tree" as="element()*">
+    <xsl:param name="seq" as="element()*"/>
+    <xsl:param name="level" as="xs:integer"/>
+    <xsl:param name="max" as="xs:integer"/>
+    <xsl:sequence select="tr:flat-list-to-tree($seq, 
+                                               $level, 
+                                               $max, 
+                                               QName('http://www.w3.org/1999/xhtml', 'ol'), 
+                                              'class', 
+                                              '[a-z]+')"/>
+  </xsl:function>
 
   <xsl:template match="div[@type = 'imprint']" mode="tei2html">
     <div class="imprint">
