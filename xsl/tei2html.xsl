@@ -1047,7 +1047,9 @@
         <xsl:if test="$footnotes">
           <div class="notes">
             <xsl:attribute name="epub:type" select="'rearnotes'"/>
-            <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-endnotes'"/></xsl:if>
+            <xsl:if test="$tei2html:epub-type eq '3'">
+              <xsl:attribute name="role" select="'doc-endnotes'"/>
+            </xsl:if>
             <xsl:sequence select="tei2html:create-endnotes(if($divs-with-footnotes) then $divs-with-footnotes else $footnotes, 
               0,
               $tei2html:endnote-heading-level)"/>
@@ -1205,7 +1207,7 @@
     <xsl:variable name="max-heading-level" as="xs:integer"
                   select="$start-heading-level + $toc_level - 1"/>
     <!-- flat list of li elements with class representing level, e.g. "toc1, toc2, ..."-->
-    <xsl:variable name="toc-headlines-by-level" as="element(html:li)*">
+    <xsl:variable name="toc-headlines-by-level" as="element()*">
       <xsl:apply-templates select="$toc-headlines" mode="toc"/>
     </xsl:variable>
     <!-- a structured tree generated from a flat sequence of elements -->
@@ -1218,7 +1220,14 @@
     <xsl:variable name="patched-toc">
       <xsl:apply-templates select="$toc-as-tree" mode="patch-toc-for-epub3"/>
     </xsl:variable>
-    <xsl:sequence select="$patched-toc"/>
+    <xsl:choose>
+      <xsl:when test="$tei2html:epub-type eq '3'">
+        <xsl:sequence select="$patched-toc"/>    
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:sequence select="$toc-headlines-by-level"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template match="html:li[following-sibling::*[1][self::html:ol]]" mode="patch-toc-for-epub3">
@@ -2508,7 +2517,7 @@
 
   <xsl:template match="/html:html[some $t in .//@epub:type
                                   satisfies (starts-with($t, 'tr:'))]
-                                  [matches($tei2html:epub-type, '3')]"
+                                  [$tei2html:epub-type eq '3']"
                 mode="clean-up">
     <xsl:copy>
       <xsl:attribute name="epub:prefix" select="'tr: http://transpect.io'"/>
