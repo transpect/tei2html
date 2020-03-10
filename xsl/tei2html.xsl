@@ -1127,7 +1127,7 @@
     select="('title-page', 'copyright-page', 'about-contrib', 'about-book', 'series', 'additional-info', 'dedication', 'motto')"/>
 
   <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
-    <xsl:variable name="toc_level" as="xs:integer?" select="@rendition"/>
+    <xsl:variable name="toc_level" as="xs:integer?" select="(@rendition,1)[1]"/>
     <xsl:element name="{if ($tei2html:epub-type = '2') then 'div' else 'nav'}">
       <xsl:attribute name="class" select="'toc'"/>
       <xsl:attribute name="id" select="'tei2html_rendered_toc'"/>
@@ -1182,7 +1182,7 @@
   
   <xsl:template name="generate-toc-body">
     <xsl:param name="toc_level"/>
-    <xsl:variable name="toc-headlines" as="element(head)*" 
+    <xsl:variable name="toc-headlines" as="element()*" 
                   select="//head[parent::div[@type = ('section', 
                                                       'glossary', 
                                                       'acknowledgements', 
@@ -1275,7 +1275,7 @@
                                                $max, 
                                                QName('http://www.w3.org/1999/xhtml', 'ol'), 
                                               'class', 
-                                              '[a-z]+')"/>
+                                              '[a-z-]+')"/>
   </xsl:function>
 
   <xsl:template match="div[@type = 'imprint']" mode="tei2html">
