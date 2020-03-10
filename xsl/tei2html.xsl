@@ -1183,7 +1183,8 @@
   <xsl:template name="generate-toc-body">
     <xsl:param name="toc_level"/>
     <xsl:variable name="toc-headlines" as="element()*" 
-                  select="//head[parent::div[@type = ('section', 
+                  select="//*[self::*[local-name() = ('seg', 'p', 'l', 'head')]][matches(@rend, '_-_TOC[1-6]')]
+                         |//head[parent::div[@type = ('section', 
                                                       'glossary', 
                                                       'acknowledgements', 
                                                       'bibliography', 
@@ -1201,28 +1202,27 @@
                                      or following-sibling::*[1][self::head[@type = 'main']])])
                                 ]
                                 [not(ancestor::divGen[@type = 'toc'])]
-                                [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]
-                                |//*[self::*[local-name() = ('seg', 'p', 'l', 'head')]][matches(@rend, '_-_TOC[1-6]')]"/>
-    <xsl:variable name="start-heading-level" as="xs:integer"
-                  select="min($toc-headlines/tei2html:heading-level(.))"/>
-    <xsl:variable name="max-heading-level" as="xs:integer"
-                  select="$start-heading-level + $toc_level - 1"/>
+                                [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]"/>
     <!-- flat list of li elements with class representing level, e.g. "toc1, toc2, ..."-->
     <xsl:variable name="toc-headlines-by-level" as="element()*">
       <xsl:apply-templates select="$toc-headlines" mode="toc"/>
     </xsl:variable>
-    <!-- a structured tree generated from a flat sequence of elements -->
-    <xsl:variable name="toc-as-tree">
-      <xsl:sequence select="tei2html:flat-toc-to-tree($toc-headlines-by-level, 
-                                                      $start-heading-level, 
-                                                      $max-heading-level)"/>
-    </xsl:variable>
-    <!-- we patch the tree in a separate mode for html-style lists -->
-    <xsl:variable name="patched-toc">
-      <xsl:apply-templates select="$toc-as-tree" mode="patch-toc-for-epub3"/>
-    </xsl:variable>
     <xsl:choose>
       <xsl:when test="$tei2html:epub-type eq '3'">
+        <xsl:variable name="start-heading-level" as="xs:integer"
+                      select="min($toc-headlines/tei2html:heading-level(.))"/>
+        <xsl:variable name="max-heading-level" as="xs:integer"
+                      select="$start-heading-level + $toc_level - 1"/>
+        <!-- a structured tree generated from a flat sequence of elements -->
+        <xsl:variable name="toc-as-tree">
+          <xsl:sequence select="tei2html:flat-toc-to-tree($toc-headlines-by-level, 
+                                                          $start-heading-level, 
+                                                          $max-heading-level)"/>
+        </xsl:variable>      
+        <!-- we patch the tree in a separate mode for html-style lists -->
+        <xsl:variable name="patched-toc">
+          <xsl:apply-templates select="$toc-as-tree" mode="patch-toc-for-epub3"/>
+        </xsl:variable>
         <xsl:sequence select="$patched-toc"/>
       </xsl:when>
       <xsl:otherwise>
