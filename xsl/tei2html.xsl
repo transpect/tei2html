@@ -1210,7 +1210,7 @@
     <xsl:choose>
       <xsl:when test="$tei2html:epub-type eq '3'">
         <xsl:variable name="start-heading-level" as="xs:integer"
-                      select="min($toc-headlines/tei2html:heading-level(.))"/>
+                      select="(min($toc-headlines/tei2html:heading-level(.)), 0)[1]"/>
         <xsl:variable name="max-heading-level" as="xs:integer"
                       select="$start-heading-level + $toc_level - 1"/>
         <!-- a structured tree generated from a flat sequence of elements -->
