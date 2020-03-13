@@ -1127,7 +1127,7 @@
     select="('title-page', 'copyright-page', 'about-contrib', 'about-book', 'series', 'additional-info', 'dedication', 'motto')"/>
 
   <xsl:template match="divGen[@type = 'toc']" mode="tei2html">
-    <xsl:variable name="toc_level" as="xs:integer?" select="@rendition"/>
+    <xsl:variable name="toc_level" as="xs:integer?" select="(@rendition, 10)[1]"/>
     <xsl:element name="{if ($tei2html:epub-type = '2') then 'div' else 'nav'}">
       <xsl:attribute name="class" select="'toc'"/>
       <xsl:attribute name="id" select="'tei2html_rendered_toc'"/>
