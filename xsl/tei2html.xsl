@@ -1284,7 +1284,8 @@
     </div>
   </xsl:template>
 
-  <xsl:template match="*[self::*:seg or self::*:p or self::*:l or self::*:head[parent::*[self::*:figure | self::*:table | self::*:lg]]]" mode="toc" priority="6">
+  <xsl:template match="*[self::*:seg or self::*:p or self::*:l or self::*:head[parent::*[self::*:figure | self::*:table | self::*:lg]]]" 
+                mode="toc" priority="6">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:element name="{if($tei2html:epub-type eq '3') then 'li' else 'p'}">
       <xsl:attribute name="class" select="replace(@rend, '^(.+)?_-_TOC(\d+)(_-_.+)?$', 'toc$2-nolabel')"/>
@@ -1304,11 +1305,16 @@
 
   <!-- no HTML toc entry for special headings-->
   <xsl:variable name="tei2html:no-toc-style-regex" as="xs:string" select="'_notoc'"/>
+  
   <xsl:template match="head[matches(@rend, $tei2html:no-toc-style-regex)]" mode="toc" priority="4"/>
-
-  <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))][not(parent::*[self::figure | self::table | self::lg])]" mode="toc" priority="3">
+  
+  <xsl:template match="head[not(@type = ('sub', 'titleabbrev'))][not(parent::*[self::figure | self::table | self::lg])]" 
+                mode="toc" priority="3">
+    <xsl:variable name="author" select="preceding-sibling::byline/persName" as="element(persName)?"/>
+    <xsl:variable name="subtitle" select="preceding-sibling::head[@type eq 'sub']" as="element(head)?"/>
     <xsl:element name="{if(matches($tei2html:epub-type, '3')) then 'li' else 'p'}">
       <xsl:attribute name="class" select="concat('toc', tei2html:heading-level(.))"/>
+      <xsl:apply-templates select="$author" mode="#current"/>
       <a href="#{(@xml:id, generate-id())[1]}">
         <!--        <xsl:call-template name="heading-content"/>-->
         <xsl:if test="label">
@@ -1318,8 +1324,23 @@
         <xsl:apply-templates select="node() except label" mode="strip-indexterms-etc">
           <xsl:with-param name="in-toc" select="true()" as="xs:boolean" tunnel="yes"/>
         </xsl:apply-templates>
+        <xsl:apply-templates select="$subtitle" mode="#current"/>
       </a>
     </xsl:element>
+  </xsl:template>
+  
+  <xsl:template match="byline/persName" mode="toc">
+    <span class="toc-author">
+      <xsl:value-of select="."/>
+    </span>
+    <br/>
+  </xsl:template>
+  
+  <xsl:template match="head[@type eq 'sub']" mode="toc">
+    <br/>
+    <span class="toc-subtitle">
+      <xsl:apply-templates mode="tei2html"/>
+    </span>
   </xsl:template>
 
 
