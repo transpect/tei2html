@@ -400,10 +400,10 @@
   -->
 
   <xsl:template name="lof">
-    <xsl:if test="//figure[head]">
+    <xsl:if test="//figure[normalize-space(head)]">
       <div epub:type="loi" class="lox loi">
         <h2>List of Figures</h2>
-        <xsl:apply-templates select="//figure[head]" mode="lox"/>
+        <xsl:apply-templates select="//figure[normalize-space(head)]" mode="lox"/>
       </div>
     </xsl:if>
   </xsl:template>
@@ -418,10 +418,10 @@
   </xsl:template>
 
   <xsl:template name="lot">
-    <xsl:if test="//table[head]">
+    <xsl:if test="//table[normalize-space(head)]">
       <div epub:type="lot" class="lox lot">
         <h2>List of Tables</h2>
-        <xsl:apply-templates select="//table[head]" mode="lox"/>
+        <xsl:apply-templates select="//table[normalize-space(head)]" mode="lox"/>
       </div>
     </xsl:if>
   </xsl:template>
