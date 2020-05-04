@@ -1218,7 +1218,7 @@
           <xsl:sequence select="tei2html:flat-toc-to-tree($toc-headlines-by-level, 
                                                           $start-heading-level, 
                                                           $max-heading-level)"/>
-        </xsl:variable>      
+        </xsl:variable>
         <!-- we patch the tree in a separate mode for html-style lists -->
         <xsl:variable name="patched-toc">
           <xsl:apply-templates select="$toc-as-tree" mode="patch-toc-for-epub3"/>
@@ -1231,8 +1231,8 @@
     </xsl:choose>
   </xsl:template>
   
-  <xsl:template match="html:li[following-sibling::*[1][self::html:ol]]" mode="patch-toc-for-epub3">
-    <xsl:variable name="next-ol" select="following-sibling::*[1][self::html:ol]" as="element(html:ol)"/>
+  <xsl:template match="html:li[following-sibling::*[1][self::html:ol][html:li]]" mode="patch-toc-for-epub3">
+    <xsl:variable name="next-ol" select="following-sibling::*[1][self::html:ol][html:li]" as="element(html:ol)"/>
     <xsl:copy>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
       <xsl:if test="$next-ol">
