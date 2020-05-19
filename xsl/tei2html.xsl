@@ -1039,7 +1039,7 @@
   </xsl:template>
 
   <xsl:template name="tei2html:footnotes">
-    <xsl:param name="chapterwise" as="xs:boolean?"/>
+    <xsl:param name="chapterwise" as="xs:boolean?" tunnel="yes"/>
     <xsl:choose>
       <xsl:when test="not($chapterwise)">
         <xsl:variable name="divs-with-footnotes" select="*[local-name() = ('front', 'body', 'back')]/*[self::div | self::div1][.//note[@type = 'footnote']]" as="element(div)*"/>
