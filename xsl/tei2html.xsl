@@ -418,10 +418,10 @@
   </xsl:template>
 
   <xsl:template name="lot">
-    <xsl:if test="//table[normalize-space(head)]">
+    <xsl:if test="//table/head[normalize-space()]">
       <div epub:type="lot" class="lox lot">
         <h2>List of Tables</h2>
-        <xsl:apply-templates select="//table[normalize-space(head)]" mode="lox"/>
+        <xsl:apply-templates select="//table[head[normalize-space()]]" mode="lox"/>
       </div>
     </xsl:if>
   </xsl:template>
@@ -429,7 +429,9 @@
   <xsl:template match="table" mode="lox">
     <p>
       <a href="#{@xml:id}">
-        <xsl:apply-templates select="(head[@type = 'titleabbrev'], head[not(@type)])[1]/node()"
+        <xsl:apply-templates select="(head[@type = 'titleabbrev'], 
+                                      head[not(@type)],
+                                      head)[1]/node()"
           mode="strip-indexterms-etc"/>
       </a>
     </p>
