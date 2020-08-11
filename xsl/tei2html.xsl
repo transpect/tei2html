@@ -1006,6 +1006,8 @@
     </div>
   </xsl:template>
 
+  <xsl:template match="argument/p[not(@*) and not(node())]" mode="tei2html" priority="2"/>
+  
   <xsl:template match="quote" mode="tei2html">
     <blockquote>
       <xsl:call-template name="css:content"/>
