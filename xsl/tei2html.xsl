@@ -224,11 +224,13 @@
     <xsl:attribute name="{name()}" select="string-join((., $percent), ' ')"/>
   </xsl:template>
 
-  <xsl:template
-    match="
-      *[local-name() = ('td')][../..[*:colgroup]][parent::*:tr[*[xs:integer(@colspan) gt 1]]][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]] |
-      *[local-name() = ('th')][../../..[*:colgroup] or ../../../..[*:colgroup]][parent::*:tr[*[xs:integer(@colspan) gt 1]]][@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
-    mode="create-table-width-classes" priority="2">
+  <xsl:template match="*[local-name() = ('td')][../..[*:colgroup]]
+                        [parent::*:tr[*[xs:integer(@colspan) gt 1]]]
+                        [@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]
+                      |*[local-name() = ('th')][../../..[*:colgroup] 
+                       or ../../../..[*:colgroup]][parent::*:tr[*[xs:integer(@colspan) gt 1]]]
+             [@data-twips-width]/@*[name() = (/*/@css:rule-selection-attribute, 'rend')[1]]"
+      mode="create-table-width-classes" priority="2">
     <xsl:variable name="elt" select=".." as="element(*)"/>
     <xsl:variable name="pos" select="xs:integer(replace($elt/@data-colnum, '^.+?-(\d)+', '$1'))"/>
     <xsl:variable name="cell-with-correct-width" as="element(*)+"
