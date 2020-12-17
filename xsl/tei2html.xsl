@@ -2096,7 +2096,14 @@
       select="replace((xs:string((100 * $cell-width) div $table-width)), '(\d+)(\.?)(\d{2})?(\d*)', '$1$2$3%')"
     />
   </xsl:template>
-
+  
+  <xsl:template match="cell/@cols" mode="tei2html">
+    <xsl:attribute name="colspan" select="."/>
+  </xsl:template>
+  
+  <xsl:template match="cell/@rows" mode="tei2html">
+    <xsl:attribute name="rowspan" select="."/>
+  </xsl:template>
 
   <!-- There should always be @css:width. @width is only decorational (will be valuable just in case 
     all @css:* will be stripped -->
