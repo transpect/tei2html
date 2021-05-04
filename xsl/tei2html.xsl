@@ -799,7 +799,7 @@
   <xsl:template match="note" mode="notes">
     <xsl:param name="fn-ids" as="xs:string*" tunnel="yes"/>
     <xsl:variable name="note-marker-width" as="xs:string?"
-                  select="if (string-length(xs:string(index-of($fn-ids, @xml:id))) gt 2) 
+                  select="if (string-length(xs:string(index-of($fn-ids, @xml:id)[1])) gt 2) 
                           then 'large'
                           else 'narrow'"/>
     <p class="{name()} footnote" id="fn_{@xml:id}" epub:type="rearnote">
