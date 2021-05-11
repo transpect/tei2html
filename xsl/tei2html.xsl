@@ -439,7 +439,7 @@
     </p>
   </xsl:template>
 
-  <xsl:template match="div[@type = 'chapter']" mode="tei2html" priority="5">
+  <xsl:template match="div[@type = ('chapter', 'article')]" mode="tei2html" priority="5">
     <xsl:next-match>
       <xsl:with-param name="fn-ids" select="if ($tei2html:chapterwise-footnote) then .//note[@type = 'footnote']/@xml:id else $footnote-ids" as="xs:string*" tunnel="yes"/>
     </xsl:next-match>
