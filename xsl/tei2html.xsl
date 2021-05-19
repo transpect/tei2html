@@ -1201,7 +1201,7 @@
                                                       'index', 
                                                       'listBibl')
                                             ]
-                                            |parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)]|parent::divGen[@type = 'index']
+                                            |parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)]|parent::divGen[@type = 'index']|parent::listBibl
                                 ]
                                 [   (@type = 'main') 
                                  or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] 
@@ -1290,7 +1290,7 @@
     </div>
   </xsl:template>
 
-  <xsl:template match="*[self::*:seg or self::*:p or self::*:l or self::*:head[parent::*[self::*:figure | self::*:table | self::*:lg]]]" 
+  <xsl:template match="*[self::*:seg or self::*:p or self::*:l or self::*:head[parent::*[self::*:figure | self::*:table | self::*:lg | self::listBibl]]]" 
                 mode="toc" priority="6">
     <xsl:param name="in-toc" as="xs:boolean?" tunnel="yes"/>
     <xsl:element name="{if($tei2html:epub-type eq '3') then 'li' else 'p'}">
