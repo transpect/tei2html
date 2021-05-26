@@ -504,6 +504,10 @@
     <meta name="lang" content="{@ident}"/>
   </xsl:template>
 
+  <xsl:template match="/TEI/teiHeader/fileDesc/publicationStmt/date" mode="tei2html" priority="5">
+    <meta name="date" content="{.}"/>
+  </xsl:template>
+
   <!-- Default handler for the content of para-like and phrase-like elements,
     invoked by an xsl:next-match for the same matching elements. Don't forget 
     to include the names of the elements that you want to handle here. Otherwise
@@ -1504,7 +1508,7 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="*:Name[not(../../../..[self::*:fileDesc])]" mode="epub-alternatives" priority="3">
+  <xsl:template match="*:name[not(../../../..[self::*:fileDesc])]" mode="epub-alternatives" priority="3">
     <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@*, node()" mode="#current"/>
       <xsl:if test="following-sibling::node()[1][self::*:forename]">
