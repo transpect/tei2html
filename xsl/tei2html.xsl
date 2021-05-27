@@ -405,7 +405,7 @@
     <xsl:if test="//figure[normalize-space(head)]">
       <div epub:type="loi" class="lox loi">
         <h2>List of Figures</h2>
-        <xsl:apply-templates select="//figure[normalize-space(head)]" mode="lox"/>
+        <xsl:apply-templates select="//figure[normalize-space(string-join(head, ' '))]" mode="lox"/>
       </div>
     </xsl:if>
   </xsl:template>
