@@ -98,7 +98,7 @@
   <xsl:key name="l10n-string" match="l10n:string" use="@id"/>
   <xsl:key name="rule-by-name" match="css:rule" use="@name"/>
   <xsl:key name="by-id" match="*[@id | @xml:id]" use="@id | @xml:id"/>
-  <xsl:key name="link-by-anchor" match="ref" use="@target"/>
+  <xsl:key name="link-by-anchor" match="*:ref" use="@target"/>
 
   <!-- identity template -->
   <xsl:template match="* | @*" mode="expand-css clean-up table-widths epub-alternatives join-segs"
