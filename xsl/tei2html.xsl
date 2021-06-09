@@ -1559,7 +1559,7 @@
   </xsl:template>
 
   <xsl:template match="*[@rend][@rend != 'title-page']" mode="class-att" priority="0.75">
-    <xsl:attribute name="class" select="@rend"/>
+    <xsl:attribute name="class" select="replace(@rend, '^hub:', '')"/>
   </xsl:template>
 
   <xsl:template match="*" mode="class-att"/>
