@@ -1199,6 +1199,7 @@
                                                       'acknowledgements', 
                                                       'bibliography', 
                                                       'appendix', 
+                                                      'article',
                                                       'chapter', 
                                                       'dedication', 
                                                       'part', 
