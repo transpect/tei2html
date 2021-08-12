@@ -1196,6 +1196,7 @@
                   select="//*[self::*[local-name() = ('seg', 'p', 'l', 'head')]][matches(@rend, '_-_TOC[1-6]')]
                          |//head[parent::div[@type = ('section', 
                                                       'glossary', 
+                                                      'acknowledgments',
                                                       'acknowledgements', 
                                                       'bibliography', 
                                                       'appendix', 
@@ -1604,11 +1605,15 @@
         <xsl:attribute name="epub:type" select="$context/@type"/>
       </xsl:when>
       <xsl:when
-        test="$context[self::*:div[@type = ('glossary', 'bibliography', 'acknowledgements', 'chapter', 'foreword', 'part', 'dedication', 'appendix')]]">
+        test="$context[self::*:div[@type = ('glossary', 'bibliography', 'chapter', 'foreword', 'part', 'dedication', 'appendix', 'acknowledgments')]]">
         <!-- subtype may be glossary for a chapter or appendix that serves also as a glossary. This is a hub2tei convention introduced on 2016-08-06 -->
         <xsl:attribute name="epub:type"
           select="string-join(($context/@type, $context/@subtype[not(. = 'subhead')]), ' ')"/>
       <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="concat('doc-', $context/@type)"/></xsl:if>
+      </xsl:when>
+      <xsl:when test="$context/self::div[self::*:div[@type = 'acknowledgements']]">
+         <xsl:attribute name="epub:type" select="'acknowledgments'"/>
+         <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-acknowledgments'"/></xsl:if>
       </xsl:when>
       <xsl:when test="$context/self::div[@type = ('virtual-part', 'virtual-chapter')]">
         <xsl:attribute name="epub:type" select="replace($context/@type, '^virtual-', '')"/>
@@ -1644,8 +1649,9 @@
                                                     <xsl:attribute name="aria-label" select="'About the author'"/>
          </xsl:if>
           </xsl:when>
-          <xsl:when test="matches($context/@rend, 'acknowledgements')">
-            <xsl:attribute name="epub:type" select="'acknowledgements'"/>
+          <xsl:when test="matches($context/@rend, 'acknowledge?ments')">
+            <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'acknowledgments' else 'acknowledgements'"/>
+            <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-acknowledgments'"/></xsl:if>
           </xsl:when>
           <!-- additional Info in title -->
           <xsl:when test="matches($context/@rend, 'additional-info')">
