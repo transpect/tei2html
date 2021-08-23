@@ -1277,7 +1277,11 @@
       <xsl:apply-templates select="@*, node()" mode="#current"/>
     </xsl:copy>
   </xsl:template>
-  
+
+  <xsl:template match="@srcpath" mode="patch-toc-for-epub3">
+    <!-- avoid duplication of sourcepaths-->
+  </xsl:template>
+
   <xsl:function name="tei2html:flat-toc-to-tree" as="element()*">
     <xsl:param name="seq" as="element()*"/>
     <xsl:param name="level" as="xs:integer"/>
