@@ -1409,7 +1409,7 @@
 
   <xsl:template name="heading-content">
     <xsl:param name="in-toc" tunnel="yes" select="false()"/>
-    <xsl:variable name="content" as="node()*">
+    <xsl:variable name="content" as="item()*">
       <xsl:apply-templates select="node() except label" mode="tei2html"/>
     </xsl:variable>
     <xsl:if test="label">
