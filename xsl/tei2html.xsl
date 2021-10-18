@@ -71,6 +71,8 @@
   <xsl:param name="page-width" select="'180mm'"/>
   <xsl:param name="page-width-twips" select="tr:length-to-unitless-twip($page-width)" as="xs:double"/>
   <xsl:param name="srcpaths" select="'no'"/>
+  <xsl:variable name="tei2html:set-bodymatter-epub-type" select="false()"/>
+
 
   <xsl:output method="xhtml" indent="no"
     doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
@@ -1711,9 +1713,9 @@
   <xsl:variable name="tei:endnote-style-regex" select="'tr_endnote-para'"/>
   <xsl:function name="tei2html:is-endnote-section" as="xs:boolean">
     <xsl:param name="section" as="element()"/>
-    <xsl:sequence select="every $p in $section/descendant::*:p[not(ancestor::*[self::*:note | self::*:table | self::*:figure])] satisfies $p[matches(@rend, $tei:endnote-style-regex)]
+    <xsl:sequence select="(some $p in $section/descendant::* satisfies $p[self::*:p]/@rend[matches(., $tei:endnote-style-regex)])
                             and
-                          not($section/descendant::*[local-name() = ('listBibl', 'table') or self::*[@type = ('appendix', 'gloss')]])"/>
+                          not($section/descendant::*[local-name() = ('listBibl', 'table') or self::*[@type = ('appendix', 'gloss', 'glossary', 'index')]])"/>
   </xsl:function>
 
   <xsl:template match="lb" mode="tei2html">
@@ -2645,7 +2647,7 @@
     <xsl:attribute name="{name()}" select="concat(., tei2html:label-width(..))"/>
   </xsl:template>
 
-  <xsl:template match="/html:html/html:body/*[@epub:type = ('chapter', 'part', 'virtual.cahpter', 'virtual-part')][1]/@epub:type" mode="clean-up" priority="3">
+  <xsl:template match="/html:html/html:body/*[@epub:type = ('chapter', 'part', 'virtual-chapter', 'virtual-part')][1]/@epub:type[$tei2html:set-bodymatter-epub-type]" mode="clean-up" priority="3">
     <xsl:attribute name="{name()}" select="concat(., ' bodymatter')"/>
   </xsl:template>
 
