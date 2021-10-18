@@ -1640,16 +1640,16 @@
             satisfies matches($class, @rend)]]">
         <xsl:choose>
           <xsl:when test="matches($context/@rend, 'title-page')">
-            <xsl:attribute name="epub:type" select="'titlepage'"/>
+            <xsl:attribute name="epub:type" select="'fulltitle'"/>
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'halftitle')">
-            <xsl:attribute name="epub:type" select="'halftitlepage'"/>
+            <xsl:attribute name="epub:type" select="'halftitle'"/>
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'copyright-page')">
             <xsl:attribute name="epub:type" select="'copyright-page'"/>
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'about-contrib')">
-            <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'contributors' else 'tr:bio'"/>
+            <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'colophon' else 'tr:bio'"/>
   <!--        <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
                                                     <xsl:attribute name="aria-label" select="'About the author'"/>-->
          <!--</xsl:if>-->
@@ -1673,7 +1673,7 @@
          </xsl:if>
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'about-book')">
-            <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'preamble' else 'tr:about-the-book'"/>
+            <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'colophon' else 'tr:about-the-book'"/>
 <!--          <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
                                                     <xsl:attribute name="aria-label" select="'About the book'"/>-->
          <!--</xsl:if>-->
