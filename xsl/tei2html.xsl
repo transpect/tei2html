@@ -1612,8 +1612,9 @@
       <xsl:when
         test="$context[self::*:div[@type = ('glossary', 'bibliography', 'chapter', 'foreword', 'part', 'dedication', 'appendix', 'acknowledgments')]]">
         <!-- subtype may be glossary for a chapter or appendix that serves also as a glossary. This is a hub2tei convention introduced on 2016-08-06 -->
-        <xsl:attribute name="epub:type"
-          select="string-join(($context/@type, $context/@subtype[not(. = 'subhead')]), ' ')"/>
+        <xsl:attribute name="epub:type" select="if ($context[self::*:div[@type = ('appendix', 'chapter', 'part')]][tei2html:is-endnote-section(.)]) 
+                                                then concat('endnotes ', $context/@type)
+                                                else string-join(($context/@type, $context/@subtype[not(. = 'subhead')]), ' ')"/>
       <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="concat('doc-', $context/@type)"/></xsl:if>
       </xsl:when>
       <xsl:when test="$context/self::div[self::*:div[@type = 'acknowledgements']]">
@@ -1699,12 +1700,18 @@
         <xsl:attribute name="epub:type" select="$context/@type"/>
         <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="concat('doc-', $context/@type)"/></xsl:if>
         </xsl:when>
-      <xsl:when test="$context[self::*:note[@type = ('footnotes', 'endnotes')]]">
+      <xsl:when test="$context[self::*:note[@type = ('footnote', 'endnote')]]">
         <xsl:attribute name="epub:type" namespace="http://www.idpf.org/2007/ops"
           select="$context/@type"/>
       </xsl:when>
     </xsl:choose>
     <!--</xsl:if>-->
+  </xsl:function>
+
+  <xsl:variable name="tei:endnote-style-regex" select="'tr_endnote-para'"/>
+  <xsl:function name="tei2html:is-endnote-section" as="xs:boolean">
+    <xsl:param name="section" as="element()"/>
+    <xsl:sequence select="every $p in $section/descendant::*:p[not(ancestor::*[self::*:note | self::*:table | self::*:figure])] satisfies $p[matches(@rend, $tei:endnote-style-regex)]"/>
   </xsl:function>
 
   <xsl:template match="lb" mode="tei2html">
