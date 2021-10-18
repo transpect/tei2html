@@ -1711,7 +1711,9 @@
   <xsl:variable name="tei:endnote-style-regex" select="'tr_endnote-para'"/>
   <xsl:function name="tei2html:is-endnote-section" as="xs:boolean">
     <xsl:param name="section" as="element()"/>
-    <xsl:sequence select="every $p in $section/descendant::*:p[not(ancestor::*[self::*:note | self::*:table | self::*:figure])] satisfies $p[matches(@rend, $tei:endnote-style-regex)]"/>
+    <xsl:sequence select="every $p in $section/descendant::*:p[not(ancestor::*[self::*:note | self::*:table | self::*:figure])] satisfies $p[matches(@rend, $tei:endnote-style-regex)]
+                            and
+                          not($section/descendant::*[local-name() = ('listBibl', 'table', 'appendix')])"/>
   </xsl:function>
 
   <xsl:template match="lb" mode="tei2html">
