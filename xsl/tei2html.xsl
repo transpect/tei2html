@@ -1713,7 +1713,7 @@
     <xsl:param name="section" as="element()"/>
     <xsl:sequence select="every $p in $section/descendant::*:p[not(ancestor::*[self::*:note | self::*:table | self::*:figure])] satisfies $p[matches(@rend, $tei:endnote-style-regex)]
                             and
-                          not($section/descendant::*[local-name() = ('listBibl', 'table', 'appendix')])"/>
+                          not($section/descendant::*[local-name() = ('listBibl', 'table') or self::*[@type = ('appendix', 'gloss')]])"/>
   </xsl:function>
 
   <xsl:template match="lb" mode="tei2html">
