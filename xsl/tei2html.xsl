@@ -1192,10 +1192,12 @@
     <xsl:apply-templates select="head" mode="#current"/>
   </xsl:template>
   
+  <xsl:variable name="add-to-toc-style" as="xs:string" select="'_-_TOC[1-6]'"/>
+
   <xsl:template name="generate-toc-body">
     <xsl:param name="toc_level"/>
     <xsl:variable name="toc-headlines" as="element()*" 
-                  select="//*[self::*[local-name() = ('seg', 'p', 'l', 'head')]][matches(@rend, '_-_TOC[1-6]')]
+                  select="//*[self::*[local-name() = ('seg', 'p', 'l', 'head')]][matches(@rend, $add-to-toc-style)]
                          |//head[parent::div[@type = ('section', 
                                                       'glossary', 
                                                       'acknowledgments',
