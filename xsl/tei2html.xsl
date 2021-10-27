@@ -1191,7 +1191,7 @@
   <xsl:template name="generate-toc-headline">
     <xsl:apply-templates select="head" mode="#current"/>
   </xsl:template>
-  
+
   <xsl:variable name="add-to-toc-style" as="xs:string" select="'_-_TOC[1-6]'"/>
 
   <xsl:template name="generate-toc-body">
