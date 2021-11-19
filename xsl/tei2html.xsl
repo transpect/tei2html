@@ -49,7 +49,10 @@
   <xsl:param name="s9y9-role" as="xs:string?"/>
   
   <xsl:param name="epub-version" select="'EPUB2'" as="xs:string"/>
-
+  <xsl:param name="xhtml-version" select="'1.0'" as="xs:string">
+    <!-- supported values: '1.0', '5.0' -->
+  </xsl:param>
+  
   <xsl:param name="tei2html:copy-dt-class-from-dd" select="false()" as="xs:boolean"/>
 
   <!-- override this in your adaptions with 3, then epub-types are created -->
@@ -378,7 +381,7 @@
 
   <xsl:variable name="footnote-ids" as="xs:string*" select="/TEI/text//note[@type = 'footnote']/@xml:id"/>
   
-<xsl:template
+  <xsl:template
     match="
       body | front | div[$divify-sections = 'no'][not(@type = ('imprint', 'dedication', 'preface', 'marginal', 'motto'))] |
       div1 | div2 | div3 | div4 | div5 | div6 | div7 | div8 | div9 | back | listBibl"
