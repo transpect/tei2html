@@ -720,11 +720,22 @@
   <xsl:template
     match="
             *[name() = $default-structural-containers][$divify-sections = 'yes']
-            | figure | caption | abstract | lg | spGrp"
+            | caption | abstract | lg | spGrp"
     mode="tei2html" priority="2">
     <div>
       <xsl:call-template name="css:content"/>
     </div>
+  </xsl:template>
+
+  <xsl:template match="figure | figure/caption" mode="tei2html" priority="3">
+    <xsl:element name="{if (xs:double($xhtml-version) ge 5) 
+                        then 
+                          if (self::figure) 
+                          then 'figure' 
+                          else 'figcaption' 
+                        else 'div'}">
+      <xsl:call-template name="css:content"/>
+   </xsl:element>
   </xsl:template>
 
   <xsl:template match="*[name() = $default-structural-containers][not($divify-sections = 'yes')]"
