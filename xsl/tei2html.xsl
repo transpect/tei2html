@@ -823,11 +823,11 @@
                           then 'large'
                           else 'narrow'"/>
     <p class="{name()} footnote" id="fn_{@xml:id}" epub:type="endnote">
-      <a href="#fna_{@xml:id}" class="footnote-marker {$note-marker-width}">
+      <a href="#fna_{@xml:id}" class="fn-m {$note-marker-width}">
         <xsl:value-of select="index-of($fn-ids, @xml:id)"/>
         <xsl:value-of select="$tei2html:after-footnote-marker-space"/>
       </a>
-      <span class="footnote-text">
+      <span class="fn-t">
         <xsl:apply-templates mode="tei2html">
           <xsl:with-param name="in-notes" tunnel="yes" select="true()"/>
         </xsl:apply-templates>
@@ -837,7 +837,7 @@
 
   <xsl:template match="note/*[local-name() = ('p', 'l')]" mode="tei2html">
     <!-- prevent invalid markup, use css to display breaks -->
-    <span class="footnote-p">
+    <span class="fn-p">
       <xsl:apply-templates mode="#current"/>
     </span>
   </xsl:template>
