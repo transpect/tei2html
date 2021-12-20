@@ -75,7 +75,7 @@
   <xsl:param name="page-width-twips" select="tr:length-to-unitless-twip($page-width)" as="xs:double"/>
   <xsl:param name="srcpaths" select="'no'"/>
   <xsl:variable name="tei2html:set-bodymatter-epub-type" select="false()"/>
-
+  <xsl:variable name="tei2html:set-backmatter-epub-type" select="false()"/>
 
   <xsl:output method="xhtml" indent="no"
     doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
@@ -1250,6 +1250,7 @@
                                                           $max-heading-level)"/>
         </xsl:variable>
         <!-- we patch the tree in a separate mode for html-style lists -->
+
         <xsl:variable name="patched-toc">
           <xsl:apply-templates select="$toc-as-tree" mode="patch-toc-for-epub3"/>
         </xsl:variable>
@@ -1659,7 +1660,7 @@
             satisfies matches($class, @rend)]]">
         <xsl:choose>
           <xsl:when test="matches($context/@rend, 'title-page')">
-            <xsl:attribute name="epub:type" select="'fulltitle'"/>
+            <xsl:attribute name="epub:type" select="'titlepage'"/>
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'halftitle')">
             <xsl:attribute name="epub:type" select="'halftitle'"/>
@@ -1668,7 +1669,7 @@
             <xsl:attribute name="epub:type" select="'copyright-page'"/>
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'about-contrib')">
-            <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'colophon' else 'tr:bio'"/>
+            <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'contributors' else 'tr:bio'"/>
   <!--        <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
                                                     <xsl:attribute name="aria-label" select="'About the author'"/>-->
          <!--</xsl:if>-->
@@ -2668,7 +2669,19 @@
   <xsl:template match="/html:html/html:body/*[@epub:type = ('chapter', 'part', 'virtual-chapter', 'virtual-part')][1]/@epub:type[$tei2html:set-bodymatter-epub-type]" mode="clean-up" priority="3">
     <xsl:attribute name="{name()}" select="concat(., ' bodymatter')"/>
   </xsl:template>
+  <xsl:template match="/html:html/html:body/*[@epub:type = ('appendix', 'bibliography', 'index', 'glossary', 'rearnotes')
+                                             or
+                                             (@epub:type = 'part' and (every $c in * satisfies $c[@epub:type = ('appendix', 'bibliography', 'index', 'glossary', 'rearnotes')]))
+                                              ][1]/@epub:type[$tei2html:set-backmatter-epub-type]" mode="clean-up" priority="3">
+    <xsl:attribute name="{name()}" select="concat(., ' backmatter')"/>
+  </xsl:template>
+
 
   <xsl:template match="html:nav[@epub:type= 'toc'][empty(descendant::html:li)]" mode="clean-up" priority="3"/>
+
+  <xsl:template match="html:nav[@epub:type= 'toc']//html:span[not(normalize-space())]" mode="clean-up" priority="3">
+    <xsl:apply-templates select="node()" mode="#current"/>
+    <!-- spans in nav must contain Text-->
+  </xsl:template>
 
 </xsl:stylesheet>
