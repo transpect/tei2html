@@ -955,11 +955,9 @@
        Only if the parameter change-orderer-to-deflist is set true.
         The regex to determine which ordered list items are changed is $ordered-to-def-list-regex. 
         For example if it is important that 1) is displayed as "1)" and not "1." in HTML you have to create a definition list.-->
-  <xsl:template
-    match="
-      list[$tei2html:change-ordered-to-deflist]
-      [@type eq 'ordered']
-      [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]"
+  <xsl:template match="list[$tei2html:change-ordered-to-deflist]
+                           [@type eq 'ordered']
+                           [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex, 'i'))]]"
     mode="tei2html" priority="3">
     <dl class="{@style}">
       <xsl:apply-templates mode="#current"/>
