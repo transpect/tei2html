@@ -966,11 +966,10 @@
 
   <xsl:param name="tei2html:copy-class-from-item-to-dt" as="xs:boolean" select="false()"/>
 
-  <xsl:template  match="
-                          item[$tei2html:change-ordered-to-deflist]
-                              [parent::list[@type eq 'ordered']]
-                              [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]"
-                   mode="tei2html" priority="3">
+  <xsl:template  match="item[$tei2html:change-ordered-to-deflist]
+                            [parent::list[@type eq 'ordered']
+                                         [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]]"
+                 mode="tei2html" priority="3">
     <xsl:variable name="wide-label" as="xs:string?"
                 select="if (string-length(@n) ge 3) 
                         then 'wide'
