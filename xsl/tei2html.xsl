@@ -2287,77 +2287,46 @@
       <xsl:apply-templates select="node()" mode="tei2html"/>
     </p>
   </xsl:template>
+  
+  <xsl:template match="*[ancestor::*/local-name()=('table','lg','spGrp','figure','floatingText')]" mode="tei2html_heading-level"/>
+  
+  <xsl:template match="*[parent::div/@type = ('part', 'appendix', 'imprint', 'acknowledgements', 'dedication', 'glossary', 'preface') or
+                         parent::divGen/@type = ('index', 'toc') or
+                         parent::listBibl]" mode="tei2html_heading-level">
+    <xsl:sequence select="2"/>
+  </xsl:template>
+  
+  <xsl:template match="*[parent::div/@type = ('chapter')]" mode="tei2html_heading-level">
+    <xsl:sequence select="if (ancestor::div/@type = 'virtual-part') then 2 else 3"/>
+  </xsl:template>
+  
+  <xsl:template match="*[parent::div[@type = ('section')]]" mode="tei2html_heading-level">
+    <xsl:sequence select="count(ancestor::div[@type eq 'section']) + 3"/>
+  </xsl:template>
+  
+  <xsl:template match="*[parent::div/@type = ('bibliography')]" mode="tei2html_heading-level">
+    <xsl:sequence select=" if (ancestor::div/@type = 'chapter') then 3 else 3"/>
+  </xsl:template>
+  
+  <xsl:template match="*[parent::*[matches(local-name(.), '^div\d')]]" mode="tei2html_heading-level">
+    <xsl:sequence select="count(ancestor::*[matches(local-name(.), '^div')])"/>
+  </xsl:template>
 
   <xsl:function name="tei2html:heading-level" as="xs:integer?">
     <xsl:param name="elt" as="element(*)"/>
     <xsl:variable name="level" as="xs:integer?">
-      <xsl:choose>
-        <xsl:when test="$elt/ancestor::table"/>
-        <xsl:when test="$elt/ancestor::lg"/>
-        <xsl:when test="$elt/ancestor::spGrp"/>
-        <xsl:when test="$elt/ancestor::figure"/>
-        <xsl:when test="$elt/ancestor::floatingText"/>
-        <!--<xsl:when test="$elt/ancestor::div1"/>
-        <xsl:when test="$elt/ancestor::div2"/>-->
-        <xsl:when
-          test="
-            $elt/parent::div/@type = ('part', 'appendix', 'imprint', 'acknowledgements', 'dedication', 'glossary', 'preface') or
-            $elt/parent::divGen/@type = ('index', 'toc') or
-            $elt/parent::listBibl">
-          <xsl:sequence select="2"/>
-        </xsl:when>
-        <xsl:when test="$elt/parent::div/@type = ('chapter')">
-          <xsl:sequence
-            select="
-              if ($elt/ancestor::div/@type = 'virtual-part') then
-                2
-              else
-                3"
-          />
-        </xsl:when>
-        <xsl:when test="$elt/parent::div[@type = ('section')]">
-          <xsl:sequence select="count($elt/ancestor::div[@type eq 'section']) + 3"/>
-        </xsl:when>
-        <xsl:when test="$elt/parent::div/@type = ('bibliography')">
-          <xsl:sequence
-            select="
-              if ($elt/ancestor::div/@type = 'chapter') then
-                3
-              else
-                3"
-          />
-        </xsl:when>
-        <xsl:when test="$elt/parent::*[matches(local-name(.), '^div\d')]">
-          <xsl:sequence select="count($elt/ancestor::*[matches(local-name(.), '^div')])"/>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:variable name="custom" as="xs:integer?">
-            <xsl:apply-templates select="$elt" mode="tei2html_heading-level"/>
-          </xsl:variable>
-          <xsl:choose>
-            <xsl:when test="$custom">
-              <xsl:sequence select="$custom"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:message>(tei2html) No heading level for <xsl:copy-of select="$elt/.."
-                /></xsl:message>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:otherwise>
-      </xsl:choose>
+      <xsl:apply-templates select="$elt" mode="tei2html_heading-level"/>
     </xsl:variable>
-    <xsl:sequence
-      select="
-        if ($level castable as xs:integer)
-        then
-          if (xs:integer($level) gt 6)
-          then
-            6
-          else
-            $level
-        else
-          $level"
-    />
+    <xsl:choose>
+      <xsl:when test="$level castable as xs:integer">
+        <xsl:sequence select="if (xs:integer($level) gt 6)
+                              then 6
+                              else $level"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:message>(tei2html) No heading level for <xsl:copy-of select="$elt/.."/></xsl:message>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:function>
 
   <xsl:template match="*" mode="tei2html_heading-level" as="xs:integer?"/>
