@@ -311,6 +311,14 @@
     </html>
   </xsl:template>
 
+  <xsl:variable name="suppress-docProps" as="xs:boolean" select="true()"/>
+  
+  <xsl:template match="textClass/keywords[@rendition = 'docProps']" mode="tei2html" priority="5">
+    <xsl:if test="not($suppress-docProps)">
+      <xsl:next-match/>
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template match="textClass/keywords[@rendition]" mode="tei2html">
     <xsl:variable name="keywords" select="string-join(term/text(), ', ')"/>
     <xsl:variable name="zahl" select="5" as="xs:integer"/>
