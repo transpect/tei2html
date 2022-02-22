@@ -1746,6 +1746,12 @@
     <br/>
   </xsl:template>
 
+  <xsl:template match="p//bibl[@type = 'citation']" mode="tei2html" priority="2">
+    <span>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </span>
+  </xsl:template>
+
   <xsl:template match="bibl | biblFull" mode="tei2html">
     <p>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
