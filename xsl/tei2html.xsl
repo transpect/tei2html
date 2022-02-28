@@ -380,13 +380,41 @@
     <xsl:apply-templates select="node()" mode="#current">
         <xsl:with-param name="fn-ids" select="$footnote-ids" as="xs:string*" tunnel="yes"/>
     </xsl:apply-templates>
-    <xsl:if test="not($tei2html:chapterwise-footnote)">
+    <xsl:if test="not($tei2html:chapterwise-footnote) and (every $h in descendant::head satisfies $h[not(tei2html:is-global-note-heading(.))])">
       <xsl:call-template name="tei2html:footnotes">
         <xsl:with-param name="chapterwise" as="xs:boolean" select="false()" tunnel="yes"/>
       </xsl:call-template>
     </xsl:if>
   </xsl:template>
 
+  <xsl:variable name="tei2html:global-note-heading-style" select="'transpect_global-endnote-style'" as="xs:string"/>
+
+  <xsl:function name="tei2html:is-global-note-heading" as="xs:boolean">
+    <xsl:param name="context" as="element()"/>
+    <xsl:sequence select="exists($context[self::*:head[@type = 'main']
+                                             [matches(@rend, $tei2html:global-note-heading-style)]
+                                             [count(../*) le 3]
+                                   ]
+                                )"/>
+  </xsl:function>
+
+
+  <xsl:template match="*:head[tei2html:is-global-note-heading(.)]" mode="tei2html" priority="25">
+    <xsl:next-match/>
+    <xsl:message select="'-----------'"></xsl:message>
+    <xsl:if test="not($tei2html:chapterwise-footnote)">
+    <xsl:variable name="footnotes" select="//note[@type = 'footnote']" as="element(note)*"/>
+        <xsl:if test="$footnotes">
+          <div class="notes">
+            <xsl:attribute name="epub:type" select="'footnotes'"/>
+            <xsl:apply-templates select="//note[@type = 'footnote']" mode="notes">
+              <xsl:with-param name="fn-ids" select="//note[@type = 'footnote']/@xml:id" as="xs:string*" tunnel="yes"/>
+            </xsl:apply-templates>
+          </div>
+        </xsl:if>
+    </xsl:if>
+  </xsl:template>
+  
   <xsl:variable name="footnote-ids" as="xs:string*" select="/TEI/text//note[@type = 'footnote']/@xml:id"/>
   
   <xsl:template
