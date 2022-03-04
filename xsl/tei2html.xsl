@@ -1727,9 +1727,9 @@
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'about-book')">
             <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'colophon' else 'tr:about-the-book'"/>
-<!--          <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
-                                                    <xsl:attribute name="aria-label" select="'About the book'"/>-->
-         <!--</xsl:if>-->
+          <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
+                                                    <xsl:attribute name="aria-label" select="'About the book'"/>
+         </xsl:if><!-- perhaps preamble as type? -->
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'dedication')">
             <xsl:attribute name="epub:type" select="'dedication'"/>
