@@ -1677,9 +1677,6 @@
         <xsl:attribute name="epub:type" select="replace($context/@type, '^virtual-', '')"/>
       <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="concat('doc-', replace($context/@type, '^virtual-', ''))"/></xsl:if>
       </xsl:when>
-      <xsl:when test="$context/self::div[starts-with(@type, 'sect')][parent::div/@type = 'chapter']">
-        <xsl:attribute name="epub:type" select="'subchapter'"/>
-      </xsl:when>
       <xsl:when
         test="
           $context[self::*:div[@type = 'preface'][not(@rend)
