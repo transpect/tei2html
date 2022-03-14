@@ -2671,13 +2671,13 @@
     <xsl:attribute name="{name()}" select="concat(., tei2html:label-width(..))"/>
   </xsl:template>
 
-  <xsl:template match="/html:html/html:body/*[@epub:type = ('chapter', 'part', 'virtual-chapter', 'virtual-part')][1]/@epub:type[$tei2html:set-bodymatter-epub-type]" mode="clean-up" priority="3">
+  <xsl:template match="/html:html/html:body/*[@epub:type = ('chapter', 'part', 'virtual-chapter', 'virtual-part')][1]/@epub:type[$tei2html:set-bodymatter-epub-type and $epub-version ne 'EPUB2']" mode="clean-up" priority="3">
     <xsl:attribute name="{name()}" select="concat(., ' bodymatter')"/>
   </xsl:template>
   <xsl:template match="/html:html/html:body/*[@epub:type = ('appendix', 'bibliography', 'index', 'glossary', 'rearnotes')
                                              or
                                              (@epub:type = 'part' and (every $c in * satisfies $c[@epub:type = ('appendix', 'bibliography', 'index', 'glossary', 'rearnotes')]))
-                                              ][1]/@epub:type[$tei2html:set-backmatter-epub-type]" mode="clean-up" priority="3">
+                                              ][1]/@epub:type[$tei2html:set-backmatter-epub-type and $epub-version ne 'EPUB2']" mode="clean-up" priority="3">
     <xsl:attribute name="{name()}" select="concat(., ' backmatter')"/>
   </xsl:template>
 
