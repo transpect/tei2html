@@ -401,7 +401,6 @@
 
   <xsl:template match="*:head[tei2html:is-global-note-heading(.)]" mode="tei2html" priority="25">
     <xsl:next-match/>
-    <xsl:message select="'-----------'"></xsl:message>
     <xsl:if test="not($tei2html:chapterwise-footnote)">
     <xsl:variable name="footnotes" select="//note[@type = 'footnote']" as="element(note)*"/>
         <xsl:if test="$footnotes">
@@ -897,6 +896,9 @@
     <xsl:if test="not($in-toc)">
       <span class="note-anchor" id="fna_{@xml:id}">
         <a href="#fn_{@xml:id}">
+          <xsl:if test="$tei2html:epub-type eq '3'">
+            <xsl:attribute name="epub:type" select="'noteref'"/>
+          </xsl:if>
           <xsl:choose>
             <xsl:when test="exists(ancestor::*[local-name() = ('hi', 'sup')])">
               <xsl:value-of select="index-of($fn-ids, @xml:id)"/>
