@@ -1774,11 +1774,24 @@
   </xsl:template>
 
   <xsl:template match="p//bibl[@type = 'citation']" mode="tei2html" priority="2">
-    <span>
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
-    </span>
+    <xsl:choose>
+      <xsl:when test="exists(key('by-id', tokenize(translate(@corresp, '#', ''), '\s+'))[@xml:id])">
+        <a href="{tokenize(@corresp, '\s+')[1]}" class="citation">
+          <xsl:apply-templates select="@* except @corresp, node()" mode="#current"/>
+        </a>   
+      </xsl:when>
+      <xsl:otherwise>
+        <span>
+          <xsl:apply-templates select="@* except @corresp, node()" mode="#current"/>
+        </span>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
+  <xsl:template match="@corresp" mode="hub2htm-default">
+    <xsl:attribute name="href" select="if (contains(., '#')) then . else concat('#', .)"/>
+  </xsl:template>
+  
   <xsl:template match="bibl | biblFull" mode="tei2html">
     <p>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
