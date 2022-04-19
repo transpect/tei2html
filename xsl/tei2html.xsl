@@ -885,7 +885,8 @@
       | *:seg[matches(string-join(.//text(), ''), '^\p{Zs}*$')][ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]
       | text()[ancestor::*[self::note]]
               [preceding-sibling::*[1][self::*:seg[@type = 'footnotemarker']]]
-              [matches(., '^\p{Zs}*$')]"
+              [matches(., '^\p{Zs}*$')]
+      | *:index"
     mode="notes"/>
 
   <xsl:template match="*:note/@xml:id" mode="tei2html"/>
