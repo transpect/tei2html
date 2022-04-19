@@ -54,6 +54,7 @@
   </xsl:param>
   
   <xsl:param name="tei2html:copy-dt-class-from-dd" select="false()" as="xs:boolean"/>
+  <xsl:param name="generate-note-link-title" select="false()" as="xs:boolean"/>
 
   <!-- override this in your adaptions with 3, then epub-types are created -->
   <xsl:variable name="tei2html:epub-type" as="xs:string" select="if ($epub-version) then replace($epub-version, '^EPUB', '') else '2'"/>
@@ -881,7 +882,10 @@
     match="
       *:seg[@type = 'tab'][ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]
       | *:p/*:label[ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]
-      | *:seg[matches(string-join(.//text(), ''), '^\p{Zs}*$')][ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]"
+      | *:seg[matches(string-join(.//text(), ''), '^\p{Zs}*$')][ancestor::*[self::note]][not(preceding-sibling::*)][. is parent::*[self::*:p]/*[1]]
+      | text()[ancestor::*[self::note]]
+              [preceding-sibling::*[1][self::*:seg[@type = 'footnotemarker']]]
+              [matches(., '^\p{Zs}*$')]"
     mode="notes"/>
 
   <xsl:template match="*:note/@xml:id" mode="tei2html"/>
@@ -899,6 +903,7 @@
           <xsl:if test="$tei2html:epub-type eq '3'">
             <xsl:attribute name="epub:type" select="'noteref'"/>
           </xsl:if>
+          <xsl:call-template name="note-link-title"/>
           <xsl:choose>
             <xsl:when test="exists(ancestor::*[local-name() = ('hi', 'sup')])">
               <xsl:value-of select="index-of($fn-ids, @xml:id)"/>
@@ -911,6 +916,15 @@
           </xsl:choose>
         </a>
       </span>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template name="note-link-title" as="attribute(title)?">
+    <!-- optional template to be overwritten in customer a9s -->
+    <xsl:if test="$generate-note-link-title">
+      <xsl:attribute name="title">
+        <xsl:apply-templates select="node()" mode="notes"/>
+      </xsl:attribute>
     </xsl:if>
   </xsl:template>
 
