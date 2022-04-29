@@ -78,6 +78,8 @@
   <xsl:variable name="tei2html:set-bodymatter-epub-type" select="false()"/>
   <xsl:variable name="tei2html:set-backmatter-epub-type" select="false()"/>
 
+  <xsl:variable name="box-to-image-via-rendition" select="true()"/>
+
   <xsl:output method="xhtml" indent="no"
     doctype-system="http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"
     doctype-public="-//W3C//DTD XHTML 1.0//EN"
@@ -640,7 +642,7 @@
     <div>
     <xsl:apply-templates select="." mode="class-att"/>
       <xsl:choose>
-        <xsl:when test="@rendition">
+        <xsl:when test="@rendition and $box-to-image-via-rendition">
           <xsl:for-each select="tokenize(@rendition, ' ')">
             <xsl:element name="img" exclude-result-prefixes="#all">
               <xsl:attribute name="src" select="."/>
