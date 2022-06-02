@@ -14,6 +14,7 @@
   xmlns:aria="http://www.w3.org/ns/wai-aria/" 
   xmlns:htmltable="http://transpect.io/htmltable"
   xmlns:svg="http://www.w3.org/2000/svg"
+  xmlns:mml="http://www.w3.org/1998/Math/MathML"
   xmlns="http://www.w3.org/1999/xhtml" 
   xpath-default-namespace="http://www.tei-c.org/ns/1.0"
   exclude-result-prefixes="#all" 
@@ -2730,4 +2731,10 @@
     <!-- spans in nav must contain Text-->
   </xsl:template>
 
+  <xsl:template match="mml:*" mode="tei2html">
+    <xsl:element name="{local-name()}" xmlns="http://www.w3.org/1998/Math/MathML">
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </xsl:element>
+  </xsl:template>
+  
 </xsl:stylesheet>
