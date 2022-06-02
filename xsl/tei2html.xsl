@@ -1610,9 +1610,20 @@
   </xsl:template>
 
   <xsl:template match="formula" mode="tei2html">
-    <xsl:element name="{if (@rend = 'inline') then 'span' else 'p'}">
-      <xsl:apply-templates select="@*, node()" mode="#current"/>
-    </xsl:element>
+    <xsl:choose>
+      <xsl:when test="@rend = 'inline'">    <xsl:element name="{if (@rend = 'inline') then 'span' else 'p'}">
+        <span> <xsl:apply-templates select="@*, node()" mode="#current"/></span>
+      </xsl:element>
+      </xsl:when>
+      <xsl:when test="..[self::p] and not(@rend = 'inline')">   
+        <xsl:apply-templates select="@*, node()" mode="#current"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <p>
+          <xsl:apply-templates select="@*, node()" mode="#current"/>
+        </p>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="state" mode="tei2html">
@@ -1704,9 +1715,7 @@
         <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-preface'"/></xsl:if>
       </xsl:when>
       <xsl:when
-        test="
-          $context[self::*:div[@type = 'preface'][some $class in $frontmatter-parts
-            satisfies matches($class, @rend)]]">
+        test="$context[self::*:div[@type = 'preface'][some $class in $frontmatter-parts satisfies matches($class, @rend)]]">
         <xsl:choose>
           <xsl:when test="matches($context/@rend, 'title-page')">
             <xsl:attribute name="epub:type" select="'titlepage'"/>
