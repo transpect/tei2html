@@ -1842,6 +1842,7 @@
       <xsl:attribute name="id" select="string-join(((@id, @xml:id)[1], $subtype), '-')"/>
       <xsl:call-template name="tei2html:title-group"/>
       <xsl:for-each-group select="//index[not(parent::index)]
+                                         [term](:broken indexterm:)
                                          [if ($subtype)
                                           then @indexName = $subtype
                                           else not(@indexName)]
