@@ -1005,7 +1005,7 @@
   </xsl:template>
 
   <xsl:param name="tei2html:change-ordered-to-deflist" as="xs:boolean" select="true()"/>
-  <xsl:variable name="tei2html:ordered-to-def-list-regex" select="'^[1a][\.\)]?$'" as="xs:string"/>
+  <xsl:variable name="tei2html:ordered-to-def-list-regex" select="'^[1aA][\.\)]?$'" as="xs:string"/>
 
   <!-- ordered list whose first list item doesn't start with "1.", "1)", "a." or "a)" will be displayed as definition list then. 
        Only if the parameter change-orderer-to-deflist is set true.
@@ -1013,7 +1013,7 @@
         For example if it is important that 1) is displayed as "1)" and not "1." in HTML you have to create a definition list.-->
   <xsl:template match="list[$tei2html:change-ordered-to-deflist]
                            [@type eq 'ordered']
-                           [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex, 'i'))]]"
+                           [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]"
     mode="tei2html" priority="3">
     <dl class="{@style}">
       <xsl:apply-templates mode="#current"/>
@@ -1024,7 +1024,7 @@
 
   <xsl:template  match="item[$tei2html:change-ordered-to-deflist]
                             [parent::list[@type eq 'ordered']
-                                         [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex, 'i'))]]]"
+                                         [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]]"
                  mode="tei2html" priority="3">
     <xsl:variable name="wide-label" as="xs:string?"
                 select="if (string-length(@n) ge 3) 
