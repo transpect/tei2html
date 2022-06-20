@@ -1024,7 +1024,7 @@
 
   <xsl:template  match="item[$tei2html:change-ordered-to-deflist]
                             [parent::list[@type eq 'ordered']
-                                         [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex))]]]"
+                                         [item[1][not(matches(@n, $tei2html:ordered-to-def-list-regex, 'i'))]]]"
                  mode="tei2html" priority="3">
     <xsl:variable name="wide-label" as="xs:string?"
                 select="if (string-length(@n) ge 3) 
