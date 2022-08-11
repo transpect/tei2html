@@ -2732,6 +2732,10 @@
     <!-- spans in nav must contain Text-->
   </xsl:template>
 
+  <xsl:template match="mml:math" mode="epub-alternatives clean-up">
+    <xsl:copy-of select="."/>
+  </xsl:template>
+
   <xsl:template match="mml:*" mode="tei2html">
     <xsl:element name="{local-name()}" xmlns="http://www.w3.org/1998/Math/MathML">
       <xsl:apply-templates select="@*, node()" mode="#current"/>
