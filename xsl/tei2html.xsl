@@ -2736,7 +2736,10 @@
     <xsl:copy-of select="."/>
   </xsl:template>
 
-  <xsl:template match="mml:*/@*" mode="tei2html">
+  <xsl:template match="mml:*/@*[local-name() = ('class', 'color', 'display', 'fontfamily', 'fontsize', 
+                                                'fontstyle', 'fontweight', 'id', 'mathbackground', 
+                                                'mathcolor', 'mathsize', 'mathvariant', 'href', 
+                                                'type', 'other', 'style', 'xref')]" mode="tei2html">
     <xsl:copy-of select="."/>
   </xsl:template>
 
