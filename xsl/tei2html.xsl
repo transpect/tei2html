@@ -1002,10 +1002,17 @@
 
   <xsl:template match="list[@type eq 'ordered']" mode="class-att" priority="2">
     <xsl:attribute name="class" select="@style"/>
+    <xsl:if test="$tei2html:generate-ol-type">
+      <xsl:attribute name="type" select="if (@style = 'loweralpha') then 'a' else
+                                          if (@style = 'upperalpha') then 'A' else 
+                                          if (@style = 'lowerroman') then 'i' else
+                                          if (@style = 'upperroman') then 'I' else '1'"/>
+    </xsl:if>
   </xsl:template>
 
-  <xsl:param name="tei2html:change-ordered-to-deflist" as="xs:boolean" select="true()"/>
-  <xsl:variable name="tei2html:ordered-to-def-list-regex" select="'^[1aA][\.\)]?$'" as="xs:string"/>
+ <xsl:param name="tei2html:change-ordered-to-deflist" as="xs:boolean" select="true()"/>
+ <xsl:variable name="tei2html:ordered-to-def-list-regex" select="'^[1aA][\.\)]?$'" as="xs:string"/>
+ <xsl:variable name="tei2html:generate-ol-type" select="false()" as="xs:boolean"/>
 
   <!-- ordered list whose first list item doesn't start with "1.", "1)", "a." or "a)" will be displayed as definition list then. 
        Only if the parameter change-orderer-to-deflist is set true.
