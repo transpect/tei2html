@@ -2652,18 +2652,26 @@
   </xsl:template>
 
   <xsl:template match="html:a[@class = $tei2html:indexterm-backlink-class][@href]" mode="clean-up">
-    <xsl:variable name="matching-entry" as="element(*)?"
+    <xsl:variable name="matching-entry" as="element(*)*"
       select="key('by-id', substring-after(@href, '#'))"/>
-    <xsl:if test="exists($matching-entry)">
-      <xsl:copy copy-namespaces="no">
-        <xsl:attribute name="title"
-          select="$matching-entry/ancestor-or-self::html:p/html:span[@class = 'ie-term']"/>
-        <xsl:apply-templates select="@*" mode="#current"/>
-        <xsl:text>(</xsl:text>
-        <xsl:value-of select="key('by-id', substring-after(@href, '#'))"/>
-        <xsl:text>)</xsl:text>
-      </xsl:copy>
-    </xsl:if>
+    <xsl:choose>    
+      <xsl:when test="(exists($matching-entry)) and (count($matching-entry) eq 1)">
+        <xsl:copy copy-namespaces="no">
+          <xsl:attribute name="title"
+            select="$matching-entry/ancestor-or-self::html:p/html:span[@class = 'ie-term']"/>
+          <xsl:apply-templates select="@*" mode="#current"/>
+          <xsl:text>(</xsl:text>
+          <xsl:value-of select="key('by-id', substring-after(@href, '#'))"/>
+          <xsl:text>)</xsl:text>
+        </xsl:copy>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:if test="count($matching-entry) gt 1">
+          <xsl:comment select="'### more than one entry generated!'"/>
+        </xsl:if>
+      </xsl:otherwise>
+    </xsl:choose>
+
   </xsl:template>
 
   <!-- for sub and sup (but not limited to them) -->
