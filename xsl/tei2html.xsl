@@ -457,10 +457,18 @@
   <xsl:template match="figure" mode="lox">
     <p>
       <a href="#{@xml:id}">
-        <xsl:apply-templates select="(head[@type = 'titleabbrev'], head[not(@type)])[1]/node()"
+        <xsl:apply-templates select="(head[@type = 'titleabbrev'], head[not(@type)])[1]/label" mode="lox"/>
+        <xsl:apply-templates select="(head[@type = 'titleabbrev'], head[not(@type)])[1]/node()[not(self::label)]"
           mode="strip-indexterms-etc"/>
       </a>
     </p>
+  </xsl:template>
+
+  <xsl:template match="(table|figure)/head//label" mode="lox">
+    <xsl:apply-templates select="node()" mode="strip-indexterms-etc"/>
+    <xsl:if test="following::node()[1][ancestor::head is current()/ancestor::head][not(matches(., '^\p{Zs}'))]">
+      <xsl:apply-templates select="." mode="label-sep"/>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template name="lot">
@@ -475,9 +483,10 @@
   <xsl:template match="table" mode="lox">
     <p>
       <a href="#{@xml:id}">
+        <xsl:apply-templates select="(head[@type = 'titleabbrev'], head[not(@type)])[1]/label" mode="lox"/>
         <xsl:apply-templates select="(head[@type = 'titleabbrev'], 
                                       head[not(@type)],
-                                      head)[1]/node()"
+                                      head)[1]/node()[not(self::label)]"
           mode="strip-indexterms-etc"/>
       </a>
     </p>
