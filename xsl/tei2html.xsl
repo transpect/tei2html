@@ -2100,7 +2100,7 @@
 
   <xsl:template match="graphic" mode="tei2html">
     <img>
-      <xsl:attribute name="alt" select="normalize-space((desc,../figDesc)[1])"/>
+      <xsl:attribute name="alt" select="normalize-space((desc,../figDesc, ../desc)[1])"/>
       <xsl:attribute name="src" select="resolve-uri(translate(@url, '[]', '__'))"/>
       <xsl:apply-templates select="@rend" mode="#current"/>
       <!--  <xsl:copy-of select="@* except (@url, @rend)">-->
@@ -2110,6 +2110,15 @@
     </img>
   </xsl:template>
   
+  <xsl:template match="graphic[exists((desc,../figDesc, ../desc)/ref)]" mode="epub-alternatives">
+    <xsl:element name="ref" namespace="http://www.tei-c.org/ns/1.0">
+      <xsl:copy select="((desc,../figDesc, ../desc)/ref)[1]/@target"/>
+      <xsl:next-match/>
+    </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="desc/ref | figDesc/ref | *[self::desc|self::figDesc][every $n in node() satisfies $n[self::ref]]" mode="epub-alternatives"/>
+
   <xsl:template match="graphic[svg:svg]" mode="tei2html">
     <xsl:copy-of select="svg:svg"/>
   </xsl:template>
