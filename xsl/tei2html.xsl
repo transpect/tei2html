@@ -1545,8 +1545,7 @@
     </xsl:choose>
   </xsl:template>
 
-  <xsl:template match="index/term | note[matches(@type, '(foot|end)note')]"
-    mode="strip-indexterms-etc"/>
+  <xsl:template match="index/term | note[matches(@type, '(foot|end)note')] | graphic/desc" mode="strip-indexterms-etc"/>
 
   <!-- Discard certain css markup on titles that would otherwise survive on paras: -->
   <xsl:template match="title/@css:*[matches(local-name(), '^(margin-|text-align)')]" mode="tei2html"/>
