@@ -830,9 +830,16 @@
   </xsl:template>
 
   <xsl:template match="note[not(@type = 'footnote')]" mode="tei2html">
-    <p>
-      <xsl:next-match/>
-    </p>
+    <xsl:choose>
+      <xsl:when test="text()[normalize-space()]">   
+        <p><!-- only create p if text is contained (avoid creatin p around lists or paras) -->
+          <xsl:next-match/>
+        </p>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:next-match/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="docAuthor" mode="tei2html">
