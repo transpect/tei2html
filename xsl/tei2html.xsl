@@ -1553,6 +1553,11 @@
   </xsl:template>
 
   <xsl:template match="index/term | note[matches(@type, '(foot|end)note')] | graphic/desc" mode="strip-indexterms-etc"/>
+  
+  <xsl:template match="seg[@rend='caption-numtext-separator']" mode="strip-indexterms-etc">
+    <xsl:apply-templates mode="#current"/>
+    <xsl:text>&#160;</xsl:text>
+  </xsl:template>
 
   <!-- Discard certain css markup on titles that would otherwise survive on paras: -->
   <xsl:template match="title/@css:*[matches(local-name(), '^(margin-|text-align)')]" mode="tei2html"/>
