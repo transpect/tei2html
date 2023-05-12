@@ -2145,7 +2145,7 @@
   <xsl:template match="graphic/@css:*" mode="tei2html"/>
 
   <xsl:template
-    match="css:rule/@css:*[matches(., 'pt$')] | @css:*[matches(local-name(), '-width')][matches(., 'pt$')][parent::*[local-name() = ('table', 'col', 'td')]]"
+    match="css:rule/@css:*[matches(., 'pt$')] | @css:*[matches(local-name(), '-width')][matches(., 'pt$')][parent::*[local-name() = ('table', 'col', 'td', 'th')]]"
     mode="epub-alternatives">
     <xsl:attribute name="{name()}" select="hub2htm:pt2px(.)"/>
   </xsl:template>
