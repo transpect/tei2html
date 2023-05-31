@@ -2092,7 +2092,7 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
-  <xsl:template match="p[floatingText | figure | table]" mode="tei2html" priority="1.2">
+  <xsl:template match="p[floatingText[not(@type = 'marginal')] | figure | table]" mode="tei2html" priority="1.2">
     <xsl:for-each-group select="node()"
       group-adjacent="boolean(self::floatingText | self::figure | self::table)">
       <xsl:choose>
