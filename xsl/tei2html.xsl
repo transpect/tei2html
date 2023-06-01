@@ -79,6 +79,9 @@
   <xsl:variable name="tei2html:set-bodymatter-epub-type" select="false()"/>
   <xsl:variable name="tei2html:set-backmatter-epub-type" select="false()"/>
 
+  <xsl:variable name="tei2html:allow-floats-in-para" select="('inline-marginal')" as="xs:string+">
+    <!-- value 'inline-marginal' is not defined only as placeholder. if you want to exclude marginals or other floatingTexts from splittin paras, insert its type here as sting list. example ('marginal') -->
+  </xsl:variable>
   <xsl:variable name="box-to-image-via-rendition" select="true()"/>
 
   <xsl:output method="xhtml" indent="no"
@@ -2092,7 +2095,7 @@
     <xsl:apply-templates mode="#current"/>
   </xsl:template>
 
-  <xsl:template match="p[floatingText[not(@type = 'marginal')] | figure | table]" mode="tei2html" priority="1.2">
+  <xsl:template match="p[floatingText[not(@type = $tei2html:allow-floats-in-para)] | figure | table]" mode="tei2html" priority="1.2">
     <xsl:for-each-group select="node()"
       group-adjacent="boolean(self::floatingText | self::figure | self::table)">
       <xsl:choose>
