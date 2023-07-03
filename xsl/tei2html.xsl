@@ -1209,7 +1209,7 @@
   <xsl:template name="footnote-heading">
     <xsl:element name="{if (/TEI/text/body/div[@type = 'chapter']) then 'h2' else 'h3'}">
       <xsl:attribute name="class" select="'notes-headline'"/>
-      <xsl:text>Fußnoten</xsl:text>
+      <xsl:value-of select="if (/TEI[@xml:lang eq 'de']) then 'Fußnoten' else 'Footnotes'"/>
     </xsl:element>
   </xsl:template>
 
@@ -2124,15 +2124,6 @@
     </img>
   </xsl:template>
   
-  <xsl:template match="graphic[exists((desc,../figDesc, ../desc)/ref)]" mode="epub-alternatives">
-    <xsl:element name="ref" namespace="http://www.tei-c.org/ns/1.0">
-      <xsl:copy select="((desc,../figDesc, ../desc)/ref)[1]/@target"/>
-      <xsl:next-match/>
-    </xsl:element>
-  </xsl:template>
-
-  <xsl:template match="desc/ref | figDesc/ref | *[self::desc|self::figDesc][every $n in node() satisfies $n[self::ref]]" mode="epub-alternatives"/>
-
   <xsl:template match="graphic[svg:svg]" mode="tei2html">
     <xsl:copy-of select="svg:svg"/>
   </xsl:template>
