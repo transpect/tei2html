@@ -927,13 +927,19 @@
             <xsl:attribute name="epub:type" select="'noteref'"/>
           </xsl:if>
           <xsl:call-template name="note-link-title"/>
+          <xsl:variable name="footnote-number" 
+                        select="if ($tei2html:chapterwise-footnote) 
+                                then index-of(ancestor::div[@type='chapter']/descendant::note[@type='footnote']/@xml:id, @xml:id) 
+                                else index-of($fn-ids, @xml:id)">
+          </xsl:variable>
           <xsl:choose>
             <xsl:when test="exists(ancestor::*[local-name() = ('hi', 'sup')])">
-              <xsl:value-of select="index-of($fn-ids, @xml:id)"/>
+              <xsl:value-of select="$footnote-number"/>
+              <xsl:message select="'footnote marker:', $footnote-number, 'c:', index-of($fn-ids, @xml:id)"></xsl:message>
             </xsl:when>
             <xsl:otherwise>
               <sup>
-                <xsl:value-of select="index-of($fn-ids, @xml:id[1])"/>
+                <xsl:value-of select="$footnote-number"/>
               </sup>
             </xsl:otherwise>
           </xsl:choose>
