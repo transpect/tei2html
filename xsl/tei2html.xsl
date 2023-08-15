@@ -916,6 +916,8 @@
   <xsl:template
     match="*:seg[@type = 'tab'][preceding-sibling::*[1][self::*:label]][ancestor::*:note]"
     mode="tei2html"/>
+  
+  <xsl:variable name="chapterwise-footnotes-div-type" select="('article','chapter','part','appendix')"/>
 
   <xsl:template match="note[@type = 'footnote']" mode="tei2html">
    <xsl:param name="in-toc" tunnel="yes" as="xs:boolean?"/>
@@ -928,8 +930,8 @@
           </xsl:if>
           <xsl:call-template name="note-link-title"/>
           <xsl:variable name="footnote-number" 
-                        select="if ($tei2html:chapterwise-footnote) 
-                                then index-of(ancestor::div[@type=('article','chapter','part')][1]/descendant::note[@type='footnote']/@xml:id, @xml:id) 
+                        select="if ($tei2html:chapterwise-footnote and ancestor::div[@type=$chapterwise-footnotes-div-type]) 
+                                then index-of(ancestor::div[@type=$chapterwise-footnotes-div-type][1]/descendant::note[@type='footnote']/@xml:id, @xml:id) 
                                 else index-of($fn-ids, @xml:id)">
           </xsl:variable>
           <xsl:choose>
