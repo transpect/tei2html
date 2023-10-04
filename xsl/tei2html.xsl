@@ -1607,11 +1607,17 @@
   <xsl:template match="@rendition[. = ('subscript', 'superscript')]" mode="tei2html"/>
 
   <xsl:template
-    match="hi | seg | add | emph | orig | date | name | persName | surname | Name | forename | unclear | idno | settlement| roleName"
+    match="hi | seg | add |  orig | date | name | persName | surname | Name | forename | unclear | idno | settlement| roleName"
     mode="tei2html" priority="2">
     <span>
       <xsl:next-match/>
     </span>
+  </xsl:template>
+
+  <xsl:template match="emph" mode="tei2html" priority="3">
+    <em>
+      <xsl:next-match/>
+    </em>
   </xsl:template>
 
   <xsl:template match="*:surname[not(../../../..[self::*:fileDesc])]" mode="epub-alternatives" priority="2">
@@ -2130,7 +2136,7 @@
       <xsl:call-template name="css:content"/>
     </img>
   </xsl:template>
-  
+
   <xsl:template match="graphic[svg:svg]" mode="tei2html">
     <xsl:copy-of select="svg:svg"/>
   </xsl:template>
