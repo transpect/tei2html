@@ -1173,7 +1173,7 @@
         <xsl:if test="$footnotes">
           <div class="notes">
             <xsl:attribute name="epub:type" select="'footnotes'"/>
-           <xsl:call-template name="footnote-heading"/>
+            <xsl:call-template name="footnote-heading"/>
             <xsl:apply-templates select=".//note[@type = 'footnote']" mode="notes">
               <xsl:with-param name="fn-ids" select=".//note[@type = 'footnote']/@xml:id" as="xs:string*" tunnel="yes"/>
             </xsl:apply-templates>
@@ -1718,6 +1718,13 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:function name="tei2html:add-aria-role" as="attribute(role)?">
+    <xsl:param name="rolename" as="xs:string"/>
+    <xsl:if test="$tei2html:epub-type eq '3' or $xhtml-version = '5.0'">
+      <xsl:attribute name="role" select="$rolename"/>
+    </xsl:if>
+  </xsl:function>
+
   <xsl:function name="tr:create-epub-type-attribute" as="attribute()*">
     <xsl:param name="tei2html:epub-type" as="xs:string"/>
     <xsl:param name="context" as="element(*)"/>
@@ -1726,37 +1733,42 @@
     <xsl:choose>
       <xsl:when test="$context[self::*:pb]">
         <xsl:attribute name="epub:type" select="'pagebreak'"/>
-        <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-pagebreak'"/></xsl:if>
+        <xsl:sequence select="tei2html:add-aria-role('doc-pagebreak')"/>
       </xsl:when>
       <xsl:when test="$context[self::*:divGen[@type = 'index'] or self::*:div[@type = 'index']]">
         <xsl:attribute name="epub:type" select="$context/@type"/>
-        <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-index'"/></xsl:if>
+        <xsl:sequence select="tei2html:add-aria-role('doc-index')"/>
       </xsl:when>
       <xsl:when test="$context[self::*:divGen[@type = 'toc'] or self::*:div[@type = 'toc']]">
         <xsl:attribute name="epub:type" select="$context/@type"/>
+        <xsl:sequence select="tei2html:add-aria-role('doc-toc')"/>
       </xsl:when>
       <xsl:when
         test="$context[self::*:div[@type = ('glossary', 'bibliography', 'chapter', 'foreword', 'part', 'dedication', 'appendix', 'acknowledgments')]]">
         <!-- subtype may be glossary for a chapter or appendix that serves also as a glossary. This is a hub2tei convention introduced on 2016-08-06 -->
-        <xsl:attribute name="epub:type" select="if ($context[self::*:div[@type = ('appendix', 'chapter', 'part')]][tei2html:is-endnote-section(.)]) 
-                                                then concat('endnotes ', $context/@type)
-                                                else string-join(($context/@type, $context/@subtype[not(. = 'subhead')]), ' ')"/>
-      <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="concat('doc-', $context/@type)"/></xsl:if>
+        <xsl:variable name="type" select="if ($context[self::*:div[@type = ('appendix', 'chapter', 'part')]][tei2html:is-endnote-section(.)]) 
+                                          then concat('endnotes ', $context/@type)
+                                          else string-join(($context/@type, $context/@subtype[not(. = 'subhead')]), ' ')"/>
+        <xsl:attribute name="epub:type" select="$type"/>
+        <xsl:sequence select="tei2html:add-aria-role(if (starts-with($type, 'endnotes')) 
+                                                     then 'doc-endnotes'
+                                                     else concat('doc-', $context/@type)
+                                                     )"/><!-- only one digital publishing role is allowed: https://idpf.github.io/epub-guides/epub-aria-authoring/-->
       </xsl:when>
       <xsl:when test="$context/self::div[self::*:div[@type = 'acknowledgements']]">
          <xsl:attribute name="epub:type" select="'acknowledgments'"/>
-         <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-acknowledgments'"/></xsl:if>
+         <xsl:sequence select="tei2html:add-aria-role('doc-acknowledgments')"/>
       </xsl:when>
       <xsl:when test="$context/self::div[@type = ('virtual-part', 'virtual-chapter')]">
         <xsl:attribute name="epub:type" select="replace($context/@type, '^virtual-', '')"/>
-      <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="concat('doc-', replace($context/@type, '^virtual-', ''))"/></xsl:if>
+        <xsl:sequence select="tei2html:add-aria-role(concat('doc-', replace($context/@type, '^virtual-', '')))"/>
       </xsl:when>
       <xsl:when
         test="
           $context[self::*:div[@type = 'preface'][not(@rend)
           or not(matches(@rend, string-join($frontmatter-parts, '|')))]]">
         <xsl:attribute name="epub:type" select="$context/@type"/>
-        <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-preface'"/></xsl:if>
+        <xsl:sequence select="tei2html:add-aria-role('doc-preface')"/>
       </xsl:when>
       <xsl:when
         test="$context[self::*:div[@type = 'preface'][some $class in $frontmatter-parts satisfies matches($class, @rend)]]">
@@ -1778,35 +1790,38 @@
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'acknowledge?ments')">
             <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'acknowledgments' else 'acknowledgements'"/>
-            <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-acknowledgments'"/></xsl:if>
+            <xsl:sequence select="tei2html:add-aria-role('doc-acknowledgments')"/>
           </xsl:when>
           <!-- additional Info in title -->
           <xsl:when test="matches($context/@rend, 'additional-info')">
             <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'colophon' else 'tr:additional-info'"/>
-          <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
-                                                    <xsl:attribute name="aria-label" select="'Additional information'"/>
+            <xsl:sequence select="tei2html:add-aria-role('doc-colophon')"/>
+          <xsl:if test="$tei2html:epub-type eq '3' or $xhtml-version = '5.0'">
+             <xsl:attribute name="aria-label" select="'Additional information'"/>
          </xsl:if>
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'series')">
             <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'colophon' else 'tr:additional-info'"/>
-          <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
-                                                    <xsl:attribute name="aria-label" select="'About the series'"/>
+            <xsl:sequence select="tei2html:add-aria-role('doc-colophon')"/>
+          <xsl:if test="$tei2html:epub-type eq '3' or $xhtml-version = '5.0'">
+            <xsl:attribute name="aria-label" select="'About the series'"/>
           <!-- seriespage as draft-->
          </xsl:if>
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'about-book')">
             <xsl:attribute name="epub:type" select="if ($tei2html:epub-type eq '3') then 'preamble' else 'tr:about-the-book'"/>
-          <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-colophon'"/>
-                                                    <xsl:attribute name="aria-label" select="'About the book'"/>
+            <xsl:sequence select="tei2html:add-aria-role('doc-colophon')"/>
+          <xsl:if test="$tei2html:epub-type eq '3' or $xhtml-version = '5.0'">
+            <xsl:attribute name="aria-label" select="'About the book'"/>
          </xsl:if><!-- perhaps preamble as type? -->
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'dedication')">
             <xsl:attribute name="epub:type" select="'dedication'"/>
-            <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-dedication'"/></xsl:if>
+            <xsl:sequence select="tei2html:add-aria-role('doc-dedication')"/>
           </xsl:when>
           <xsl:when test="matches($context/@rend, 'motto')">
             <xsl:attribute name="epub:type" select="'epigraph'"/>
-            <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-epigraph'"/></xsl:if>
+            <xsl:sequence select="tei2html:add-aria-role('doc-epigraph')"/>
           </xsl:when>
         </xsl:choose>
       </xsl:when>
@@ -1815,11 +1830,11 @@
       </xsl:when>
       <xsl:when test="$context[self::*:div[@type = 'motto']]">
         <xsl:attribute name="epub:type" select="'epigraph'"/>
-        <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="'doc-epigraph'"/></xsl:if>
+        <xsl:sequence select="tei2html:add-aria-role('doc-epigraph')"/>
       </xsl:when>
       <xsl:when test="$context[self::*:divGen[@type = ('index')]]">
         <xsl:attribute name="epub:type" select="$context/@type"/>
-        <xsl:if test="$tei2html:epub-type eq '3'"><xsl:attribute name="role" select="concat('doc-', $context/@type)"/></xsl:if>
+        <xsl:sequence select="tei2html:add-aria-role(concat('doc-', $context/@type))"/>
         </xsl:when>
       <xsl:when test="$context[self::*:note[@type = ('footnote', 'endnote')]]">
         <xsl:attribute name="epub:type" namespace="http://www.idpf.org/2007/ops"
