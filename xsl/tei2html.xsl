@@ -56,6 +56,12 @@
   
   <xsl:param name="tei2html:copy-dt-class-from-dd" select="false()" as="xs:boolean"/>
   <xsl:param name="generate-note-link-title" select="false()" as="xs:boolean"/>
+  <xsl:param name="tei2html:initial-letter-prop-handling" as="xs:string" select="'unchanged'">
+     <!-- expected values: 
+        - 'remove': discards the drop-cap properties
+        - 'unchanged': preserve the porperty as style attribute
+        - string-value: create a class with the given name, discard the CSS propertiy. e.g. drop-cap. can be styled via CSS -->
+  </xsl:param>
 
   <!-- override this in your adaptions with 3, then epub-types are created -->
   <xsl:variable name="tei2html:epub-type" as="xs:string" select="if ($epub-version) then replace($epub-version, '^EPUB', '') else '2'"/>
@@ -1462,6 +1468,9 @@
   <xsl:template match="head[@type = 'sub'] | head[ancestor::*[self::floatingText]]" mode="tei2html"
     priority="2">
     <p>
+      <xsl:if test="@type = 'sub' and ($epub-version = 'EPUB3' or $xhtml-version = '5.0')">
+        <xsl:attribute name="role" select="'doc-subtitle'"/>
+      </xsl:if>
       <xsl:call-template name="css:content"/>
     </p>
   </xsl:template>
@@ -2815,4 +2824,18 @@
     </xsl:element>
   </xsl:template>
   
+ <xsl:template match="  @css:initial-letter[not($tei2html:initial-letter-prop-handling = 'unchanged')] 
+                      | @*:drop-cap-chars[not($tei2html:initial-letter-prop-handling = 'unchanged')]" mode="tei2html hub2htm:css-style-overrides hub2htm:css-style-defs"/>
+   
+
+  <xsl:template match="seg[@css:initial-letter]
+                          [not($tei2html:initial-letter-prop-handling = ('remove', 'unchanged'))]" mode="class-att">
+    <xsl:variable name="other-classes">
+      <xsl:next-match/>
+    </xsl:variable>
+    <xsl:if test="$tei2html:initial-letter-prop-handling[normalize-space()] or $other-classes[normalize-space()]">
+      <xsl:attribute name="class" select="string-join(($tei2html:initial-letter-prop-handling, $other-classes[normalize-space()]), ' ')"/>
+    </xsl:if>
+  </xsl:template>
+
 </xsl:stylesheet>
