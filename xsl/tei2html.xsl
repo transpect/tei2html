@@ -502,12 +502,23 @@
   </xsl:template>
 
   <xsl:template match="div[@type = ('chapter', 'article', 'appendix', 'preface')][not(..[@type = 'appendix'])]" mode="tei2html" priority="10">
+    <!-- also consider introductory text in parts -->
+    <xsl:variable name="previous-text" as="element()*">
+        <xsl:sequence select="if (.[..[self::div[@type = 'part']]]
+                                   [. is ../div[1]])
+                              then preceding-sibling::*
+                              else ()"/>
+    </xsl:variable>
+    <xsl:variable name="fn-ids" select="if ($tei2html:chapterwise-footnote) 
+                                        then ($previous-text//note[@type = 'footnote']/@xml:id,.//note[@type = 'footnote']/@xml:id) 
+                                        else $footnote-ids" as="xs:string*"/>
     <xsl:next-match>
-      <xsl:with-param name="fn-ids" select="if ($tei2html:chapterwise-footnote) then .//note[@type = 'footnote']/@xml:id else $footnote-ids" as="xs:string*" tunnel="yes"/>
+      <xsl:with-param name="fn-ids" select="$fn-ids" as="xs:string*" tunnel="yes"/>
     </xsl:next-match>
     <xsl:if test="$tei2html:chapterwise-footnote">
       <xsl:call-template name="tei2html:footnotes">
         <xsl:with-param name="chapterwise" as="xs:boolean" select="true()" tunnel="yes"/>
+        <xsl:with-param name="context" as="node()*" select="$previous-text, ." tunnel="yes"/>
       </xsl:call-template>
     </xsl:if>
   </xsl:template>
@@ -928,6 +939,13 @@
   <xsl:template match="note[@type = 'footnote']" mode="tei2html">
    <xsl:param name="in-toc" tunnel="yes" as="xs:boolean?"/>
    <xsl:param name="fn-ids" as="xs:string*" tunnel="yes"/>
+   <xsl:variable name="previous-text" as="element()*">
+        <xsl:sequence select="if (ancestor::div[@type=$chapterwise-footnotes-div-type][1]
+                                               [..[self::div[@type = 'part']]]
+                                               [. is ../div[1]])
+                              then ancestor::div[@type=$chapterwise-footnotes-div-type][1]/preceding-sibling::*
+                              else ()"/><!-- consider introductory text in parts -->
+    </xsl:variable>
     <xsl:if test="not($in-toc)">
       <span class="note-anchor" id="fna_{@xml:id}">
         <a href="#fn_{@xml:id}">
@@ -937,7 +955,7 @@
           <xsl:call-template name="note-link-title"/>
           <xsl:variable name="footnote-number" 
                         select="if ($tei2html:chapterwise-footnote and ancestor::div[@type=$chapterwise-footnotes-div-type]) 
-                                then index-of(ancestor::div[@type=$chapterwise-footnotes-div-type][1]/descendant::note[@type='footnote']/@xml:id, @xml:id) 
+                                then index-of(($previous-text,ancestor::div[@type=$chapterwise-footnotes-div-type][1])/descendant::note[@type='footnote']/@xml:id, @xml:id) 
                                 else index-of($fn-ids, @xml:id)">
           </xsl:variable>
           <xsl:choose>
@@ -1158,6 +1176,7 @@
 
   <xsl:template name="tei2html:footnotes">
     <xsl:param name="chapterwise" as="xs:boolean?" tunnel="yes"/>
+    <xsl:param name="context" as="node()*" tunnel="yes"/>
     <xsl:choose>
       <xsl:when test="not($chapterwise)">
         <xsl:variable name="divs-with-footnotes" select="*[local-name() = ('front', 'body', 'back')]/*[self::div | self::div1][.//note[@type = 'footnote']]" as="element(div)*"/>
@@ -1165,9 +1184,6 @@
         <xsl:if test="$footnotes">
           <div class="notes">
             <xsl:attribute name="epub:type" select="'footnotes'"/>
-<!--            <xsl:if test="$tei2html:epub-type eq '3'">
-              <xsl:attribute name="role" select="'doc-endnotes'"/>
-            </xsl:if>-->
             <xsl:sequence select="tei2html:create-endnotes(if($divs-with-footnotes) then $divs-with-footnotes else $footnotes, 
               0,
               $tei2html:endnote-heading-level)"/>
@@ -1175,13 +1191,13 @@
         </xsl:if>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:variable name="footnotes" select=".//note[@type = 'footnote']" as="element(note)*"/>
+        <xsl:variable name="footnotes" select="if ($context[normalize-space()]) then $context//note[@type = 'footnote'] else .//note[@type = 'footnote']" as="element(note)*"/>
         <xsl:if test="$footnotes">
           <div class="notes">
             <xsl:attribute name="epub:type" select="'footnotes'"/>
             <xsl:call-template name="footnote-heading"/>
-            <xsl:apply-templates select=".//note[@type = 'footnote']" mode="notes">
-              <xsl:with-param name="fn-ids" select=".//note[@type = 'footnote']/@xml:id" as="xs:string*" tunnel="yes"/>
+            <xsl:apply-templates select="$footnotes" mode="notes">
+              <xsl:with-param name="fn-ids" select="$footnotes/@xml:id" as="xs:string*" tunnel="yes"/>
             </xsl:apply-templates>
           </div>
         </xsl:if>
