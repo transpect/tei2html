@@ -1141,6 +1141,9 @@
   </xsl:template>
 
   <xsl:template match="floatingText[@type = ('programlisting', 'code')]//p" mode="tei2html">
+    <xsl:if test="preceding-sibling::*[1][self::p]">
+      <br/>
+    </xsl:if>
     <xsl:apply-templates select="node()" mode="#current" xml:space="preserve"/>
   </xsl:template>
 
