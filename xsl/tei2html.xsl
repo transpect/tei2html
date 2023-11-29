@@ -1132,6 +1132,22 @@
     </pre>
   </xsl:template>
 
+  <xsl:template match="floatingText[@type = ('programlisting', 'code')]" mode="tei2html">
+    <pre>
+      <code>
+        <xsl:apply-templates select="@*, node()" mode="#current"/>
+      </code>
+    </pre>
+  </xsl:template>
+
+  <xsl:template match="floatingText[@type = ('programlisting', 'code')]//p" mode="tei2html">
+    <xsl:apply-templates select="node()" mode="#current" xml:space="preserve"/>
+  </xsl:template>
+
+  <xsl:template match="floatingText[@type = ('programlisting', 'code')]/@rend" mode="tei2html">
+    <xsl:attribute name="class" select="replace(., '^.+codeblock_?(.+)$', '$1')"/>
+  </xsl:template>
+  
   <xsl:template match="argument" mode="tei2html">
     <div class="introduction">
       <xsl:call-template name="css:content"/>
