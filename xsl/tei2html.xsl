@@ -668,7 +668,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="floatingText" mode="tei2html">
+  <xsl:template match="floatingText" mode="tei2html" name="default-floatingText">
     <div>
     <xsl:apply-templates select="." mode="class-att"/>
       <xsl:choose>
@@ -684,7 +684,9 @@
           </xsl:for-each>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:apply-templates select="@* except (@rend, @type, @rendition), node()" mode="#current"/>
+          <xsl:apply-templates select="@* except (@rend, @type, @rendition), node()" mode="#current">
+            <xsl:with-param name="default-floatingText" as="xs:boolean" tunnel="yes" select="true()"/>
+          </xsl:apply-templates>
         </xsl:otherwise>
       </xsl:choose>
     </div>
@@ -1141,10 +1143,18 @@
   </xsl:template>
 
   <xsl:template match="floatingText[@type = ('programlisting', 'code')]//p" mode="tei2html">
-    <xsl:if test="preceding-sibling::*[1][self::p]">
-      <br/>
-    </xsl:if>
-    <xsl:apply-templates select="node()" mode="#current" xml:space="preserve"/>
+    <xsl:param name="default-floatingText" as="xs:boolean?" tunnel="yes"/>
+    <xsl:choose>
+      <xsl:when test="$default-floatingText">
+        <xsl:next-match/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:if test="preceding-sibling::*[1][self::p]">
+          <br/>
+        </xsl:if>
+        <xsl:apply-templates select="node()" mode="#current" xml:space="preserve"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="floatingText[@type = ('programlisting', 'code')]/@rend" mode="tei2html">
