@@ -1703,6 +1703,7 @@
   <xsl:template match="ref | ptr" mode="tei2html" priority="5">
     <a>
       <xsl:attribute name="class" select="local-name()"/>
+      <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates select="@*, node()" mode="#current"/>
       <xsl:if test="not(node())">
         <xsl:value-of select="(@xlink:href | @target)[1]"/>
@@ -1900,6 +1901,12 @@
       <xsl:when test="$context[self::*:note[@type = ('footnote', 'endnote')]]">
         <xsl:attribute name="epub:type" namespace="http://www.idpf.org/2007/ops"
           select="$context/@type"/>
+      </xsl:when>
+      <xsl:when test="$context[self::*:ref[normalize-space()]
+                                          [contains(@target, 'endnote')]
+                                          [ancestor::*:p[matches(@rend, $tei:endnote-style-regex)]]
+                              ]">
+       <xsl:sequence select="tei2html:add-aria-role('doc-backlink')"/>
       </xsl:when>
     </xsl:choose>
     <!--</xsl:if>-->
