@@ -125,6 +125,12 @@
       <xsl:apply-templates select="@* | node()" mode="#current"/>
     </xsl:copy>
   </xsl:template>
+  
+  <xsl:function name="tei2html:main-sec-name" as="xs:string">
+    <xsl:param name="context" as="element()"/>
+    <xsl:sequence select="if (xs:double($xhtml-version) ge 5 
+                              and $context[self::div[@type = $default-structural-containers]|self::divGen]) then 'section' else 'div'"/>
+  </xsl:function>
 
   <xsl:template match="*" mode="tei2html" priority="-1">
     <xsl:if test="$verbose eq 'yes'">
@@ -417,12 +423,13 @@
     <xsl:if test="not($tei2html:chapterwise-footnote)">
     <xsl:variable name="footnotes" select="//note[@type = 'footnote']" as="element(note)*"/>
         <xsl:if test="$footnotes">
-          <div class="notes">
+          <xsl:element name="{tei2html:main-sec-name(.)}">
+            <xsl:attribute name="class" select="'notes'"/>
             <xsl:attribute name="epub:type" select="'footnotes'"/>
             <xsl:apply-templates select="//note[@type = 'footnote']" mode="notes">
               <xsl:with-param name="fn-ids" select="//note[@type = 'footnote']/@xml:id" as="xs:string*" tunnel="yes"/>
             </xsl:apply-templates>
-          </div>
+          </xsl:element>
         </xsl:if>
     </xsl:if>
   </xsl:template>
@@ -456,10 +463,12 @@
 
   <xsl:template name="lof">
     <xsl:if test="//figure[normalize-space(head)]">
-      <div epub:type="loi" class="lox loi">
+      <xsl:element name="{tei2html:main-sec-name(.)}">
+        <xsl:attribute name="epub:type" select="'loi'"/>
+        <xsl:attribute name="class" select="'lox loi'"/>
         <h2>List of Figures</h2>
         <xsl:apply-templates select="//figure[normalize-space(string-join(head, ' '))]" mode="lox"/>
-      </div>
+      </xsl:element>
     </xsl:if>
   </xsl:template>
 
@@ -482,10 +491,12 @@
 
   <xsl:template name="lot">
     <xsl:if test="//table/head[normalize-space()]">
-      <div epub:type="lot" class="lox lot">
+      <xsl:element name="{tei2html:main-sec-name(.)}">
+        <xsl:attribute name="epub:type" select="'lot'"/>
+        <xsl:attribute name="class" select="'lox lot'"/>
         <h2>List of Tables</h2>
         <xsl:apply-templates select="//table[head[normalize-space()]]" mode="lox"/>
-      </div>
+      </xsl:element>
     </xsl:if>
   </xsl:template>
 
@@ -523,13 +534,13 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="div[@type]" mode="tei2html" priority="3">
-    <div>
+ <xsl:template match="div[@type]" mode="tei2html" priority="3">
+    <xsl:element name="{tei2html:main-sec-name(.)}">
       <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates select="." mode="class-att"/>
       <xsl:apply-templates select="node()" mode="#current"/>
-    </div>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="div[@type]" mode="class-att" priority="3">
@@ -670,7 +681,7 @@
 
   <xsl:template match="floatingText" mode="tei2html" name="default-floatingText">
     <div>
-    <xsl:apply-templates select="." mode="class-att"/>
+      <xsl:apply-templates select="." mode="class-att"/>
       <xsl:choose>
         <xsl:when test="@rendition and $box-to-image-via-rendition">
           <xsl:for-each select="tokenize(@rendition, ' ')">
@@ -792,9 +803,9 @@
             *[name() = $default-structural-containers][$divify-sections = 'yes']
             | caption | abstract | lg | spGrp"
     mode="tei2html" priority="2">
-    <div>
+    <xsl:element name="{tei2html:main-sec-name(.)}">
       <xsl:call-template name="css:content"/>
-    </div>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="figure | figure/caption" mode="tei2html" priority="3">
@@ -1218,24 +1229,26 @@
         <xsl:variable name="divs-with-footnotes" select="*[local-name() = ('front', 'body', 'back')]/*[self::div | self::div1][.//note[@type = 'footnote']]" as="element(div)*"/>
         <xsl:variable name="footnotes" select=".//note[@type = 'footnote']" as="element(note)*"/>
         <xsl:if test="$footnotes">
-          <div class="notes">
+          <xsl:element name="{tei2html:main-sec-name(.)}">
+            <xsl:attribute name="class" select="'notes'"/>
             <xsl:attribute name="epub:type" select="'footnotes'"/>
             <xsl:sequence select="tei2html:create-endnotes(if($divs-with-footnotes) then $divs-with-footnotes else $footnotes, 
               0,
               $tei2html:endnote-heading-level)"/>
-          </div>
+          </xsl:element>
         </xsl:if>
       </xsl:when>
       <xsl:otherwise>
         <xsl:variable name="footnotes" select="if ($context[normalize-space()]) then $context//note[@type = 'footnote'] else .//note[@type = 'footnote']" as="element(note)*"/>
         <xsl:if test="$footnotes">
-          <div class="notes">
+          <xsl:element name="{tei2html:main-sec-name(.)}">
+            <xsl:attribute name="class" select="'notes'"/>
             <xsl:attribute name="epub:type" select="'footnotes'"/>
             <xsl:call-template name="footnote-heading"/>
             <xsl:apply-templates select="$footnotes" mode="notes">
               <xsl:with-param name="fn-ids" select="$footnotes/@xml:id" as="xs:string*" tunnel="yes"/>
             </xsl:apply-templates>
-          </div>
+          </xsl:element>
         </xsl:if>
       </xsl:otherwise>
     </xsl:choose>
@@ -1257,15 +1270,16 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:for-each select="$seq">
-          <div class="notes-section level-{$index + 1}">
-              <xsl:apply-templates select="head[not(@type = 'sub')]" mode="notes">
-                <xsl:with-param name="index" select="$index + 1"/>
-              </xsl:apply-templates>
+          <xsl:element name="{tei2html:main-sec-name(.)}">
+            <xsl:attribute name="class" select="concat('notes-section level-',$index + 1)"/>
+            <xsl:apply-templates select="head[not(@type = 'sub')]" mode="notes">
+              <xsl:with-param name="index" select="$index + 1"/>
+            </xsl:apply-templates>
             <xsl:apply-templates select=".//note[@type = 'footnote'][count(ancestor::div) eq ($index + 1)]" mode="notes">
               <xsl:with-param name="fn-ids" select="$footnote-ids" as="xs:string*" tunnel="yes"/>
             </xsl:apply-templates>
             <xsl:sequence select="tei2html:create-endnotes(./div[.//note[@type = 'footnote']], $index + 1, $max)"/>
-          </div>
+          </xsl:element>
         </xsl:for-each>
       </xsl:otherwise>
     </xsl:choose>
@@ -1458,9 +1472,11 @@
   </xsl:function>
 
   <xsl:template match="div[@type = 'imprint']" mode="tei2html">
-    <div class="imprint">
+    <xsl:element name="{tei2html:main-sec-name(.)}">
+      <xsl:attribute name="class" select="'imprint'"/>
+      <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates mode="#current"/>
-    </div>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="*[self::*:seg or self::*:p or self::*:l or self::*:head[parent::*[self::*:figure | self::*:table | self::*:lg | self::listBibl]]]" 
@@ -1961,7 +1977,7 @@
 
   <xsl:template match="divGen[@type = 'index']" mode="tei2html">
     <xsl:variable name="subtype" select="@subtype" as="xs:string?"/>
-    <div>
+    <xsl:element name="{tei2html:main-sec-name(.)}">
       <xsl:apply-templates select="." mode="class-att"/>
       <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates select="@*" mode="#current"/>
@@ -1988,16 +2004,17 @@
         </xsl:variable>
         <xsl:choose>
           <xsl:when test="$divify-sections = 'yes'">
-            <div class="ie1">
+            <xsl:element name="{tei2html:main-sec-name(.)}">
+              <xsl:attribute name="class" select="'ie1'"/>
               <xsl:sequence select="$processed"/>
-            </div>
+            </xsl:element>
           </xsl:when>
           <xsl:otherwise>
             <xsl:sequence select="$processed"/>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each-group>
-    </div>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template name="index-heading">
@@ -2803,17 +2820,17 @@
     </xsl:copy>
   </xsl:template>
 
-  <xsl:template match="html:p[html:div[matches(@class, 'table-wrapper')]]" mode="clean-up"
+  <xsl:template match="html:p[*[html:div|html:figure][matches(@class, 'table-wrapper')]]" mode="clean-up"
     priority="3">
     <!-- tables are not allowed in paras in epub. but sometimes they appear inside (footnotes etc.). So they are dissolved.-->
     <xsl:choose>
       <xsl:when test="
           some $t in (text(), html:span/text())
             satisfies matches($t, '\S')">
-        <xsl:apply-templates select="html:div[matches(@class, 'table-wrapper')]" mode="#current"/>
+        <xsl:apply-templates select="(html:div|html:figure)[matches(@class, 'table-wrapper')]" mode="#current"/>
         <xsl:copy copy-namespaces="no">
           <xsl:apply-templates select="@*" mode="#current"/>
-          <xsl:apply-templates select="node() except html:div[matches(@class, 'table-wrapper')]"
+          <xsl:apply-templates select="node() except (html:div|html:figure)[matches(@class, 'table-wrapper')]"
             mode="#current"/>
         </xsl:copy>
       </xsl:when>
