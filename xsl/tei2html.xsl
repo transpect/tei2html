@@ -1074,9 +1074,9 @@
     <xsl:attribute name="class" select="@style"/>
     <xsl:if test="$tei2html:generate-ol-type">
       <xsl:attribute name="type" select="if (@style = 'loweralpha') then 'a' else
-                                          if (@style = 'upperalpha') then 'A' else 
-                                          if (@style = 'lowerroman') then 'i' else
-                                          if (@style = 'upperroman') then 'I' else '1'"/>
+                                         if (@style = 'upperalpha') then 'A' else 
+                                         if (@style = 'lowerroman') then 'i' else
+                                         if (@style = 'upperroman') then 'I' else '1'"/>
     </xsl:if>
   </xsl:template>
 
