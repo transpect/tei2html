@@ -1072,7 +1072,8 @@
 
   <xsl:template match="list[@type eq 'ordered']" mode="class-att" priority="2">
     <xsl:attribute name="class" select="@style"/>
-    <xsl:if test="$tei2html:generate-ol-type">
+    <xsl:if test="$tei2html:generate-ol-type and 
+                  not($epub-version = 'EPUB2')">
       <xsl:attribute name="type" select="if (@style = 'loweralpha') then 'a' else
                                          if (@style = 'upperalpha') then 'A' else 
                                          if (@style = 'lowerroman') then 'i' else
