@@ -105,6 +105,7 @@
   
   <!-- table style name for  auxiliary tables (without borders) -->
   <xsl:variable name="tei2html:auxiliary-table-style-regex" select="'letex_aux-table'" as="xs:string"/>
+  <xsl:variable name="tei2html:add-toc-headline-to-toc" select="false()" as="xs:boolean"/>
   
   <!-- separate the endnotes list by section headlines
        e.g. '0' ... no section headlines
@@ -795,7 +796,7 @@
   </xsl:template>
 
   <xsl:variable name="default-structural-containers" as="xs:string+"
-    select="('part', 'front-matter-part', 'section', 'appendix', 'acknowledgements', 'dedication', 'preface')"/>
+    select="('part', 'chapter', 'virtual-part', 'virtual-chapter', 'front-matter-part', 'section', 'appendix', 'acknowledgements', 'dedication', 'preface')"/>
 
   <!-- everything that goes into a div (except footnote-like content): -->
   <xsl:template
@@ -1384,13 +1385,16 @@
                                                       'index', 
                                                       'listBibl')
                                             ]
-                                            |parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)]|parent::divGen[@type = 'index']|parent::listBibl
+                                            |parent::div[@type = 'preface'][not(@rend = $frontmatter-parts)]|
+                                             parent::divGen[@type = 'index']|
+                                             parent::listBibl|
+                                             parent::divGen[@type = 'toc'][$tei2html:add-toc-headline-to-toc]
                                 ]
                                 [   (@type = 'main') 
                                  or (head[@type = 'sub'][not(preceding-sibling::*[1][self::head[@type = 'main']] 
                                      or following-sibling::*[1][self::head[@type = 'main']])])
                                 ]
-                                [not(ancestor::divGen[@type = 'toc'])]
+                                [not(ancestor::divGen[@type = 'toc']) or $tei2html:add-toc-headline-to-toc]
                                 [tei2html:heading-level(.) le number(($toc_level, 100)[1]) + 1]"/>
     <!-- flat list of li elements with class representing level, e.g. "toc1, toc2, ..."-->
     <xsl:variable name="toc-headlines-by-level" as="element()*">
