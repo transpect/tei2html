@@ -2234,7 +2234,7 @@
     <img>
       <xsl:attribute name="alt" select="normalize-space((desc,../figDesc, ../desc)[1])"/>
       <xsl:attribute name="src" select="resolve-uri(translate(@url, '[]', '__'))"/>
-      <xsl:apply-templates select="@rend" mode="#current"/>
+      <xsl:apply-templates select="@rend, @type" mode="#current"/>
       <!--  <xsl:copy-of select="@* except (@url, @rend)">-->
       <!-- css:content AND copy duplicates attributes, so I commented it out (mp)-->
       <!--</xsl:copy-of>-->
@@ -2254,6 +2254,10 @@
     <xsl:attribute name="src" select="."/>
   </xsl:template>
 
+  <xsl:template match="graphic/@type[. = 'artifact']" mode="tei2html" priority="3">
+    <xsl:attribute name="role" select="'presentation'"/>
+  </xsl:template>
+  
   <xsl:template match="graphic/@css:*" mode="tei2html"/>
 
   <xsl:template
