@@ -1473,7 +1473,7 @@
                                                $max, 
                                                QName('http://www.w3.org/1999/xhtml', 'ol'), 
                                               'class', 
-                                              '[A-Za-z-_]+')"/>
+                                              '[A-Za-z_-]+')"/>
   </xsl:function>
 
   <xsl:template match="div[@type = 'imprint']" mode="tei2html">
