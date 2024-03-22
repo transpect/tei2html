@@ -130,7 +130,7 @@
   <xsl:function name="tei2html:main-sec-name" as="xs:string">
     <xsl:param name="context" as="element()"/>
     <xsl:sequence select="if (xs:double($xhtml-version) ge 5 
-                              and $context[self::div[@type = $default-structural-containers]|self::divGen]) then 'section' else 'div'"/>
+                              and $context[self::div[@type = $default-structural-containers]|self::divGen|self::text|self::back|self::front]) then 'section' else 'div'"/>
   </xsl:function>
 
   <xsl:template match="*" mode="tei2html" priority="-1">
