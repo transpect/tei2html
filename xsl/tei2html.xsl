@@ -1081,13 +1081,13 @@
                                          if (@style = 'lowerroman') then 'i' else
                                          if (@style = 'upperroman') then 'I' else '1'"/>
     </xsl:if>
-    <xsl:if test="$epub-version = 'EPUB3' 
+<!--    <xsl:if test="$epub-version = 'EPUB3' 
                     and 
                     item[1]/@n[not(matches(., '^[1aAiI][\.]?$'))]">
       <xsl:variable name="start-counter" select="replace(item[1]/@n, '.\)\]','')"/>
       <xsl:attribute name="start" select="if (@style = ('loweralpha', 'upperalpha')) then tr:letters-to-number($start-counter, string-length($start-counter)) else
                                           if (@style = ('lowerroman', 'upperroman' )) then tr:roman-to-int($start-counter) else $start-counter"/>
-      </xsl:if>
+      </xsl:if>-->
   </xsl:template>
 
  <xsl:param name="tei2html:change-ordered-to-deflist" as="xs:boolean" select="true()"/>
