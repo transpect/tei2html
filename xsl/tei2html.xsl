@@ -24,6 +24,7 @@
   <xsl:import href="http://transpect.io/hub2html/xsl/css-atts2wrap.xsl"/>
   <xsl:import href="http://transpect.io/htmltables/xsl/html-tables-normalize.xsl"/>
   <xsl:import href="http://transpect.io/xslt-util/lengths/xsl/lengths.xsl"/>
+  <xsl:import href="http://transpect.io/xslt-util/num/xsl/num.xsl"/>
   <xsl:import href="http://transpect.io/xslt-util/flat-list-to-tree/xsl/flat-list-to-tree.xsl"/>
 
   <xsl:param name="debug" select="'yes'"/>
@@ -1080,6 +1081,13 @@
                                          if (@style = 'lowerroman') then 'i' else
                                          if (@style = 'upperroman') then 'I' else '1'"/>
     </xsl:if>
+    <xsl:if test="$epub-version = 'EPUB3' 
+                    and 
+                    item[1]/@n[not(matches(., '^[1aAiI][\.]?$'))]">
+      <xsl:variable name="start-counter" select="replace(item[1]/@n, '.\)\]','')"/>
+      <xsl:attribute name="start" select="if (@style = ('loweralpha', 'upperalpha')) then tr:letters-to-number($start-counter, string-length($start-counter)) else
+                                          if (@style = ('lowerroman', 'upperroman' )) then tr:roman-to-int($start-counter) else $start-counter"/>
+      </xsl:if>
   </xsl:template>
 
  <xsl:param name="tei2html:change-ordered-to-deflist" as="xs:boolean" select="true()"/>
@@ -1972,6 +1980,12 @@
     </p>
   </xsl:template>
 
+  <xsl:template match="bibl[@type = 'source']" mode="tei2html" priority="2">
+    <cite>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </cite>
+  </xsl:template>
+  
   <xsl:template match="divGen[@type = 'index'] | div[@type = 'index']" mode="class-att" priority="2">
     <xsl:attribute name="class" select="string-join((@type, @rend), ' ')"/>
   </xsl:template>
