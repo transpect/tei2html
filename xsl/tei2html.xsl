@@ -1955,7 +1955,7 @@
     <br/>
   </xsl:template>
 
-  <xsl:template match="p//bibl[@type = 'citation']" mode="tei2html" priority="2">
+  <xsl:template match="*[self::p|self::head]//bibl[@type = 'citation']" mode="tei2html" priority="2">
     <xsl:choose>
       <xsl:when test="exists(key('by-id', tokenize(translate(@corresp, '#', ''), '\s+'), $root)[@xml:id])">
         <a href="{tokenize(@corresp, '\s+')[1]}" class="citation">
