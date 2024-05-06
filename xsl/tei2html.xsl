@@ -514,11 +514,12 @@
     </p>
   </xsl:template>
 
-  <xsl:template match="div[@type = ('chapter', 'article', 'appendix', 'preface')][not(..[@type = 'appendix'])]" mode="tei2html" priority="10">
+  <xsl:template match="div[@type = ('chapter', 'article', 'appendix', 'preface', 'bibliography')][not(..[@type = 'appendix'])]" mode="tei2html" priority="10">
     <!-- also consider introductory text in parts -->
     <xsl:variable name="previous-text" as="element()*">
         <xsl:sequence select="if (.[..[self::div[@type = 'part']]]
-                                   [. is ../div[1]])
+                                   [. is ../div[1]]
+                                   [not(@type = ('bibliography', 'appendix'))])
                               then preceding-sibling::*
                               else ()"/>
     </xsl:variable>
