@@ -2001,7 +2001,10 @@
       <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates select="@*" mode="#current"/>
       <xsl:attribute name="id" select="string-join(((@id, @xml:id)[1], $subtype), '-')"/>
-      <xsl:call-template name="tei2html:title-group"/>
+      <xsl:variable name="title-group">
+        <xsl:call-template name="tei2html:title-group"/>
+      </xsl:variable>
+      <xsl:sequence select="$title-group"/>
       <xsl:for-each-group select="//index[not(parent::index)]
                                          [term](:broken indexterm:)
                                          [if ($subtype)
@@ -2015,7 +2018,9 @@
         <xsl:sort select="current-grouping-key()"
                   collation="http://saxon.sf.net/collation?lang={(/*/@xml:lang, 'de')[1]};strength=primary"/>
         <xsl:variable name="processed" as="element(*)*">
-          <xsl:call-template name="index-heading"/>
+          <xsl:call-template name="index-heading">
+            <xsl:with-param name="index-main-title" select="$title-group"/>
+          </xsl:call-template>
           <xsl:call-template name="group-index-terms">
             <xsl:with-param name="level" select="1"/>
             <xsl:with-param name="index-terms" select="current-group()"/>
@@ -2037,9 +2042,15 @@
   </xsl:template>
 
   <xsl:template name="index-heading">
-    <h4 class="index-subject-heading">
+    <xsl:param name="index-main-title"/>
+    
+    <xsl:variable name="level" select="if ($index-main-title/descendant-or-self::*[matches(local-name(), '^h\d')]) 
+                                       then xs:integer(substring($index-main-title/descendant-or-self::*[matches(local-name(), '^h\d')][1]/local-name(), 2, 1))
+                                       else 0" as="xs:integer?"/>
+    <xsl:element name="{if ($level = (1 to 5)) then concat('h', $level + 1) else 'p'}">
+      <xsl:attribute name="class" select="'index-subject-heading'"/>
       <xsl:value-of select="current-grouping-key()"/>
-    </h4>
+    </xsl:element>
   </xsl:template>
 
   <!-- override this for actual grouping -->
