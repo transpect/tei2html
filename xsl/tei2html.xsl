@@ -975,7 +975,9 @@
                                 else index-of($fn-ids, @xml:id)">
           </xsl:variable>
           <xsl:choose>
-            <xsl:when test="exists(ancestor::*[local-name() = ('hi', 'sup')])">
+            <xsl:when test="exists(ancestor::*[local-name() = ('hi', 'sup')]
+                                              [not(@rend = ('strong', 'em'))]
+                                   )">
               <xsl:value-of select="$footnote-number"/>
             </xsl:when>
             <xsl:otherwise>
