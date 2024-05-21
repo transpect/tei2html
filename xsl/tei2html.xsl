@@ -63,6 +63,9 @@
         - 'unchanged': preserve the porperty as style attribute
         - string-value: create a class with the given name, discard the CSS propertiy. e.g. drop-cap. can be styled via CSS -->
   </xsl:param>
+  <xsl:param name="tei2html:table2figure" as="xs:boolean" select="false()">
+    <!-- if set true() tables will be put in figure elements instead of divs -->
+  </xsl:param>
 
   <!-- override this in your adaptions with 3, then epub-types are created -->
   <xsl:variable name="tei2html:epub-type" as="xs:string" select="if ($epub-version) then replace($epub-version, '^EPUB', '') else '2'"/>
@@ -752,9 +755,27 @@
   <xsl:variable name="tei2html:table-head-before-table" as="xs:boolean" select="true()"/>
 
   <xsl:template name="table-heading">
-    <xsl:apply-templates select="head" mode="#current">
-      <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
-    </xsl:apply-templates>
+    <xsl:param name="include-postscript-in-figcaption" as="xs:boolean?"/>
+    <xsl:choose>
+      <xsl:when test="$tei2html:table2figure and xs:double($xhtml-version) ge 5"> 
+        <figcaption>
+          <xsl:apply-templates select="head" mode="#current">
+            <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
+          </xsl:apply-templates>
+          <xsl:if test="$include-postscript-in-figcaption">
+            <xsl:apply-templates select="postscript" mode="#current"/>
+          </xsl:if>
+        </figcaption>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates select="head" mode="#current">
+          <xsl:with-param name="not-discard-table-head" as="xs:boolean" tunnel="yes" select="true()"/>
+        </xsl:apply-templates>
+        <xsl:if test="$include-postscript-in-figcaption">
+          <xsl:apply-templates select="postscript" mode="#current"/>
+        </xsl:if>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:function name="tei2html:strip-combining" as="xs:string">
@@ -2326,7 +2347,8 @@
     <xsl:variable name="atts" as="attribute(*)*">
       <xsl:call-template name="css:other-atts"/>
     </xsl:variable>
-    <div class="{string-join(('table-wrapper', $atts[name() = 'class']), ' ')}">
+    <xsl:element name="{if (xs:double($xhtml-version) ge 5 and $tei2html:table2figure) then 'figure' else 'div'}">
+      <xsl:attribute name="class" select="string-join(('table-wrapper', $atts[name() = 'class']), ' ')"/>
       <!-- We duplicate the class attribute on the wrapper since some classes belong to 
         the wrapper and some to the contained table -->
       <xsl:if test="$tei2html:table-head-before-table">
@@ -2337,10 +2359,17 @@
         <xsl:apply-templates select="* except (head | postscript)" mode="#current"/>
       </xsl:element>
       <xsl:if test="not($tei2html:table-head-before-table)">
-        <xsl:call-template name="table-heading"/>
+        <!-- if captions are rendered after table and a figure is created: pull postscript into figcaption-->
+        <xsl:call-template name="table-heading">
+          <xsl:with-param name="include-postscript-in-figcaption" as="xs:boolean?" 
+            select="$tei2html:table2figure and not($tei2html:table-head-before-table)"/>
+        </xsl:call-template>
       </xsl:if>
-      <xsl:apply-templates select="postscript" mode="#current"/>
-    </div>
+      <xsl:if test="$tei2html:table2figure and $tei2html:table-head-before-table">
+        <!-- if a figure element is created and the caption is at the back: no element may come after-->
+        <xsl:apply-templates select="postscript" mode="#current"/>
+      </xsl:if>
+    </xsl:element>
   </xsl:template>
 
   <xsl:template match="td/@css:width | th/@css:width" mode="hub2htm:css-style-overrides" priority="3"/>
