@@ -1073,13 +1073,13 @@
   </xsl:template>
   
 
-  <xsl:template match="list[@type = ('bulleted', 'simple')]" mode="tei2html">
+  <xsl:template match="list[@type = ('bulleted', 'simple', 'indexlist')]" mode="tei2html">
     <ul>
       <xsl:call-template name="css:content"/>
     </ul>
   </xsl:template>
 
-  <xsl:template match="list[@type = ('bulleted', 'simple')]" mode="class-att" priority="2">
+  <xsl:template match="list[@type = ('bulleted', 'simple', 'indexlist')]" mode="class-att" priority="2">
     <xsl:attribute name="class" select="(descendant::p[1]/@rend, @type)[1]"/>
   </xsl:template>
 
@@ -2361,11 +2361,10 @@
       <xsl:if test="not($tei2html:table-head-before-table)">
         <!-- if captions are rendered after table and a figure is created: pull postscript into figcaption-->
         <xsl:call-template name="table-heading">
-          <xsl:with-param name="include-postscript-in-figcaption" as="xs:boolean?" 
-            select="$tei2html:table2figure and not($tei2html:table-head-before-table)"/>
+          <xsl:with-param name="include-postscript-in-figcaption" as="xs:boolean" select="$tei2html:table2figure"/>
         </xsl:call-template>
       </xsl:if>
-      <xsl:if test="$tei2html:table2figure and $tei2html:table-head-before-table">
+      <xsl:if test="$tei2html:table-head-before-table">
         <!-- if a figure element is created and the caption is at the back: no element may come after-->
         <xsl:apply-templates select="postscript" mode="#current"/>
       </xsl:if>
