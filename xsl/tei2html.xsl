@@ -2364,7 +2364,8 @@
           <xsl:with-param name="include-postscript-in-figcaption" as="xs:boolean" select="$tei2html:table2figure"/>
         </xsl:call-template>
       </xsl:if>
-      <xsl:if test="$tei2html:table-head-before-table">
+      <xsl:if test="$tei2html:table-head-before-table or 
+                    (not($tei2html:table-head-before-table) and not($tei2html:table2figure))">
         <!-- if a figure element is created and the caption is at the back: no element may come after-->
         <xsl:apply-templates select="postscript" mode="#current"/>
       </xsl:if>
