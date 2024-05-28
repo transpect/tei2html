@@ -1858,6 +1858,10 @@
         <xsl:attribute name="epub:type" select="$context/@type"/>
         <xsl:sequence select="tei2html:add-aria-role('doc-toc')"/>
       </xsl:when>
+      <xsl:when test="$context[self::*:div[@type = 'article']]">
+        <xsl:attribute name="epub:type" select="'chapter'"/>
+        <xsl:sequence select="tei2html:add-aria-role('doc-chapter')"/>
+      </xsl:when>
       <xsl:when
         test="$context[self::*:div[@type = ('glossary', 'bibliography', 'chapter', 'foreword', 'part', 'dedication', 'appendix', 'acknowledgments')]]">
         <!-- subtype may be glossary for a chapter or appendix that serves also as a glossary. This is a hub2tei convention introduced on 2016-08-06 -->
