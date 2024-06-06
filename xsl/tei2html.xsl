@@ -712,7 +712,8 @@
   <!-- changeable order of figure elements-->
   <xsl:template match="table[@rendition[matches(., '\.(png|jpe?g)$', 'i')]][not(parent::p)]"
     mode="tei2html" priority="5">
-    <div class="table-wrapper alt-image">
+    <xsl:element name="{if ($tei2html:table2figure and xs:double($xhtml-version) ge 5) then 'figure' else 'div'}">
+      <xsl:attribute name="class" select="'table-wrapper alt-image'"/>
       <xsl:if test="matches(@xml:id, '^(cell)?page_')">
         <a id="{@xml:id}"/>
       </xsl:if>
@@ -732,7 +733,7 @@
         <xsl:call-template name="table-heading"/>
       </xsl:if>
       <xsl:apply-templates select="postscript | bibl | p" mode="#current"/>
-    </div>
+    </xsl:element>
   </xsl:template>
 
   <!-- changeable order of figure elements-->
