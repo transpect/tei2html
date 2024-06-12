@@ -517,7 +517,8 @@
     </p>
   </xsl:template>
 
-  <xsl:template match="div[@type = ('chapter', 'article', 'appendix', 'preface', 'bibliography')][not(..[@type = 'appendix'])]" mode="tei2html" priority="10">
+  <xsl:template match="div[@type = ('chapter', 'article', 'appendix', 'preface', 'bibliography')]
+                          [not(..[@type = 'appendix'])]" mode="tei2html" priority="10">
     <!-- also consider introductory text in parts -->
     <xsl:variable name="previous-text" as="element()*">
         <xsl:sequence select="if (.[..[self::div[@type = 'part']]]
@@ -972,7 +973,7 @@
     match="*:seg[@type = 'tab'][preceding-sibling::*[1][self::*:label]][ancestor::*:note]"
     mode="tei2html"/>
   
-  <xsl:variable name="chapterwise-footnotes-div-type" select="('article','chapter','part','appendix')"/>
+  <xsl:variable name="chapterwise-footnotes-div-type" select="('article','chapter','part','appendix', 'bibliography')"/>
 
   <xsl:template match="note[@type = 'footnote']" mode="tei2html">
    <xsl:param name="in-toc" tunnel="yes" as="xs:boolean?"/>
@@ -992,7 +993,7 @@
           </xsl:if>
           <xsl:call-template name="note-link-title"/>
           <xsl:variable name="footnote-number" 
-                        select="if ($tei2html:chapterwise-footnote and ancestor::div[@type=$chapterwise-footnotes-div-type]) 
+                        select="if ($tei2html:chapterwise-footnote and ancestor::div[@type=$chapterwise-footnotes-div-type][not(..[@type = 'appendix'])]) 
                                 then index-of(($previous-text,ancestor::div[@type=$chapterwise-footnotes-div-type][1])/descendant::note[@type='footnote']/@xml:id, @xml:id) 
                                 else index-of($fn-ids, @xml:id)">
           </xsl:variable>
