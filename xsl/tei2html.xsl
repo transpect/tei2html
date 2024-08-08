@@ -235,7 +235,6 @@
       <xsl:sequence select="htmltable:normalize(.)"/>
     </xsl:variable>
     <xsl:apply-templates select="$table" mode="create-table-width-classes"/>
-    <!--    <xsl:message select="'#####', $table"/>-->
   </xsl:template>
 
   <xsl:template match="@* | node()" mode="col-widths create-table-width-classes">
@@ -519,6 +518,7 @@
 
   <xsl:template match="div[@type = ('chapter', 'article', 'appendix', 'preface', 'bibliography')]
                           [not(..[@type = 'appendix'])]" mode="tei2html" priority="10">
+    <xsl:param name="avoid-footnote-creation" select="false()" as="xs:boolean" tunnel="yes"/>
     <!-- also consider introductory text in parts -->
     <xsl:variable name="previous-text" as="element()*">
         <xsl:sequence select="if (.[..[self::div[@type = 'part']]]
@@ -533,7 +533,7 @@
     <xsl:next-match>
       <xsl:with-param name="fn-ids" select="$fn-ids" as="xs:string*" tunnel="yes"/>
     </xsl:next-match>
-    <xsl:if test="$tei2html:chapterwise-footnote">
+    <xsl:if test="$tei2html:chapterwise-footnote and not($avoid-footnote-creation) ">
       <xsl:call-template name="tei2html:footnotes">
         <xsl:with-param name="chapterwise" as="xs:boolean" select="true()" tunnel="yes"/>
         <xsl:with-param name="context" as="node()*" select="$previous-text, ." tunnel="yes"/>
