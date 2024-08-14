@@ -1090,7 +1090,7 @@
      <xsl:if test="$epub-version = 'EPUB3' 
                     and 
                    not(matches(string-join(./*:item[1]/@n, ''), $tei2html:ordered-to-def-list-regex))">
-      <xsl:variable name="start-counter" select="replace(string-join(./*:item[1]/@n, ''), '[\.\)\]]$','')" as="xs:string"/>
+      <xsl:variable name="start-counter" select="replace(string-join(./*:item[1]/@n, ''), '[\(\[\.\)\]]','')" as="xs:string"/>
       <xsl:attribute name="start" select="if (@style = ('loweralpha', 'upperalpha')) then tr:letters-to-number($start-counter, string-length($start-counter)) else
                                           if (@style = ('lowerroman', 'upperroman' )) then tr:roman-to-int($start-counter) else $start-counter"/>
       </xsl:if>
