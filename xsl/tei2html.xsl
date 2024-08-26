@@ -1268,6 +1268,7 @@
           <xsl:element name="{tei2html:main-sec-name(.)}">
             <xsl:attribute name="class" select="'notes'"/>
             <xsl:attribute name="epub:type" select="'footnotes'"/>
+            <xsl:call-template name="footnote-heading"/>
             <xsl:sequence select="tei2html:create-endnotes(if($divs-with-footnotes) then $divs-with-footnotes else $footnotes, 
               0,
               $tei2html:endnote-heading-level)"/>
@@ -1322,6 +1323,9 @@
   </xsl:function>
   
   <xsl:template name="footnote-heading">
+    <xsl:param name="chapterwise" select="false()" tunnel="yes" as="xs:boolean"/>
+    <!-- if you do not want to create a heading for endnotes as it was before: 
+      overwrite this template using the param chapterwise -->
     <xsl:element name="{if (/TEI/text/body/div[@type = 'chapter']) then 'h2' else 'h3'}">
       <xsl:attribute name="class" select="'notes-headline'"/>
       <xsl:value-of select="if (/TEI[@xml:lang eq 'de']) then 'Fußnoten' else 'Footnotes'"/>
@@ -1842,6 +1846,7 @@
     </xsl:if>
   </xsl:function>
 
+  
   <xsl:function name="tr:create-epub-type-attribute" as="attribute()*">
     <xsl:param name="tei2html:epub-type" as="xs:string"/>
     <xsl:param name="context" as="element(*)"/>
