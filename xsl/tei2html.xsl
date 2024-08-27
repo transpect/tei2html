@@ -1324,12 +1324,14 @@
   
   <xsl:template name="footnote-heading">
     <xsl:param name="chapterwise" select="false()" tunnel="yes" as="xs:boolean"/>
-    <!-- if you do not want to create a heading for endnotes as it was before: 
+    <!-- if you do want to create a heading for endnotes: 
       overwrite this template using the param chapterwise -->
-    <xsl:element name="{if (/TEI/text/body/div[@type = 'chapter']) then 'h2' else 'h3'}">
-      <xsl:attribute name="class" select="'notes-headline'"/>
-      <xsl:value-of select="if (/TEI[@xml:lang eq 'de']) then 'Fußnoten' else 'Footnotes'"/>
-    </xsl:element>
+    <xsl:if test="$chapterwise">
+      <xsl:element name="{if (/TEI/text/body/div[@type = 'chapter']) then 'h2' else 'h3'}">
+        <xsl:attribute name="class" select="'notes-headline'"/>
+        <xsl:value-of select="if (/TEI[@xml:lang eq 'de']) then 'Fußnoten' else 'Footnotes'"/>
+      </xsl:element>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="div/head[not(@type = 'sub')]" mode="notes">
