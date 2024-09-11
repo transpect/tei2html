@@ -102,7 +102,7 @@
   <xsl:param name="lang" select="(/*/@xml:lang, 'en')[1]" as="xs:string"/>
 
   <xsl:param name="apply-cstyles-in-indexterms" select="false()" as="xs:boolean"/>
-
+  <xsl:param name="tei2html:add-blockquote-to-epigraph"  select="false()" as="xs:boolean"/>
   <xsl:variable name="l10n" select="document(concat('l10n.', ($lang, 'en')[1], '.xml'))" as="document-node(element(l10n:l10n))"/>
   
   <xsl:key name="tei2html:content-styled-by-rule" match="*[@class]" use="tokenize(@class, '\s+')"/>
@@ -2940,6 +2940,17 @@
     </xsl:copy>
   </xsl:template>
 
+  <xsl:template match="html:*[contains(@epub:type, 'epigraph')]
+                             [not(html:blockquote)]
+                             [$tei2html:add-blockquote-to-epigraph]" mode="clean-up" priority="3">
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:element name="blockquote">
+        <xsl:apply-templates select="node()" mode="#current"/>
+      </xsl:element>
+    </xsl:copy>
+  </xsl:template>
+  
   <xsl:template match="*:span[@class = 'label']/@class" mode="clean-up" priority="3">
     <xsl:attribute name="{name()}" select="concat(., tei2html:label-width(..))"/>
   </xsl:template>
