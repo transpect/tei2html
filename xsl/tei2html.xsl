@@ -2371,7 +2371,7 @@
       </xsl:if>
       <xsl:element name="{local-name()}" exclude-result-prefixes="#all">
         <xsl:sequence select="$atts"/>
-        <xsl:apply-templates select="* except (head | postscript)" mode="#current"/>
+        <xsl:apply-templates select="* except (head | postscript | *:tfoot), *:tfoot" mode="#current"/>
       </xsl:element>
       <xsl:if test="not($tei2html:table-head-before-table)">
         <!-- if captions are rendered after table and a figure is created: pull postscript into figcaption-->
