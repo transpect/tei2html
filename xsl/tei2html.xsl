@@ -544,6 +544,7 @@
  <xsl:template match="div[@type]" mode="tei2html" priority="3">
     <xsl:element name="{tei2html:main-sec-name(.)}">
       <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:message select="'----', @type, @rend, $tei2html:epub-type, tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates select="." mode="class-att"/>
       <xsl:apply-templates select="node()" mode="#current"/>
@@ -1901,7 +1902,7 @@
         <xsl:sequence select="tei2html:add-aria-role('doc-preface')"/>
       </xsl:when>
       <xsl:when
-        test="$context[self::*:div[@type = 'preface'][some $class in $frontmatter-parts satisfies matches($class, @rend)]]">
+        test="$context[self::*:div[@type = 'preface'][some $class in $frontmatter-parts satisfies matches(@rend, $class)]]">
         <xsl:choose>
           <xsl:when test="matches($context/@rend, 'title-page')">
             <xsl:attribute name="epub:type" select="'titlepage'"/>
