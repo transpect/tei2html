@@ -1886,7 +1886,9 @@
                                                      else concat('doc-', $context/@type)
                                                      )"/><!-- only one digital publishing role is allowed: https://idpf.github.io/epub-guides/epub-aria-authoring/-->
       </xsl:when>
-      <xsl:when test="$context[self::*:div[@type = 'section'][tei2html:is-endnote-section(.)][not(..[self::*:div[@type = 'section'][tei2html:is-endnote-section(.)]])]]">
+      <xsl:when test="$context[self::*:div[@type = 'section']
+                                          [tei2html:is-endnote-section(.)]
+                                          [not(..[self::*:div[@type = ('section', 'appendix')][tei2html:is-endnote-section(.)]])]]">
         <xsl:attribute name="epub:type" select="'endnotes'"/>
         <xsl:sequence select="tei2html:add-aria-role('doc-endnotes')"/>
         <!-- only one digital publishing role is allowed: https://idpf.github.io/epub-guides/epub-aria-authoring/-->
