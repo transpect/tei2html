@@ -54,7 +54,7 @@
   <xsl:param name="xhtml-version" select="'1.0'" as="xs:string">
     <!-- supported values: '1.0', '5.0' -->
   </xsl:param>
-  
+
   <xsl:param name="tei2html:copy-dt-class-from-dd" select="false()" as="xs:boolean"/>
   <xsl:param name="generate-note-link-title" select="false()" as="xs:boolean"/>
   <xsl:param name="tei2html:initial-letter-prop-handling" as="xs:string" select="'unchanged'">
@@ -2304,7 +2304,7 @@
 
   <xsl:template match="graphic" mode="tei2html">
     <img>
-      <xsl:attribute name="alt" select="normalize-space((desc,../figDesc, ../desc)[1])"/>
+      <xsl:attribute name="alt" select="if (not(@type = 'artifact')) then normalize-space((desc,../figDesc, ../desc)[1]) else ''"/>
       <xsl:attribute name="src" select="resolve-uri(translate(@url, '[]', '__'))"/>
       <xsl:apply-templates select="@rend, @type" mode="#current"/>
       <!--  <xsl:copy-of select="@* except (@url, @rend)">-->
