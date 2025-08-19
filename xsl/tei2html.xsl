@@ -544,7 +544,7 @@
  <xsl:template match="div[@type]" mode="tei2html" priority="3">
     <xsl:element name="{tei2html:main-sec-name(.)}">
       <xsl:apply-templates select="@*" mode="#current"/>
-      <xsl:message select="'----', @type, @rend, $tei2html:epub-type, tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
+      <!--<xsl:message select="'-\-\-\-', @type, @rend, $tei2html:epub-type, tr:create-epub-type-attribute($tei2html:epub-type, .)"/>-->
       <xsl:sequence select="tr:create-epub-type-attribute($tei2html:epub-type, .)"/>
       <xsl:apply-templates select="." mode="class-att"/>
       <xsl:apply-templates select="node()" mode="#current"/>
@@ -2987,7 +2987,7 @@
     <xsl:copy-of select="."/>
   </xsl:template>
 
-  <xsl:template match="mml:*/@*[local-name() = ('class', 'color', 'display', 'fontfamily', 'fontsize', 
+  <xsl:template match="mml:*/@*[local-name() = ('alttext', 'class', 'color', 'display', 'fontfamily', 'fontsize', 
                                                 'fontstyle', 'fontweight', 'id', 'mathbackground', 
                                                 'mathcolor', 'mathsize', 'mathvariant', 'href', 
                                                 'type', 'other', 'style', 'xref')]" mode="tei2html">
