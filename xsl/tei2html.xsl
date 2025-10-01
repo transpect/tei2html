@@ -1776,7 +1776,7 @@
   </xsl:template>
 
   <xsl:template match="ref/@target" mode="tei2html" priority="2">
-    <xsl:attribute name="href" select="replace(., '^www\.', 'http://www.')"/>
+    <xsl:attribute name="href" select="replace(., '^www(1?)\.', 'http://www$1.')"/>
   </xsl:template>
 
   <xsl:template match="formula" mode="tei2html">
