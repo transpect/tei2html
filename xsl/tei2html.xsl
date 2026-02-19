@@ -1226,6 +1226,25 @@
 
   <xsl:template match="argument/p[not(@*) and not(node())]" mode="tei2html" priority="2"/>
   
+  <xsl:template match="closer" mode="tei2html">
+    <div class="closer">
+      <xsl:call-template name="css:content"/>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="closer" mode="tei2html">
+    <div class="closer">
+      <xsl:call-template name="css:content"/>
+    </div>
+  </xsl:template>
+  
+  <xsl:template match="closer/signed
+                      |closer/dateline" mode="tei2html">
+    <p class="{name()}">
+      <xsl:call-template name="css:content"/>
+    </p>
+  </xsl:template>
+  
   <xsl:template match="quote" mode="tei2html">
     <blockquote>
       <xsl:call-template name="css:content"/>
