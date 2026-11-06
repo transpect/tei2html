@@ -285,7 +285,14 @@
   <xsl:template
     match="*:td[@data-rowspan-part &gt; 1] | *:td[@data-colspan-part &gt; 1] | *:th[@data-colspan-part &gt; 1] | *:th[@data-rowspan-part &gt; 1]"
     mode="create-table-width-classes" priority="3"/>
-
+  
+  <xsl:template match="html:th[not(normalize-space()) and not(html:img)][$epub-version ne 'EPUB2']" mode="clean-up">
+    <!-- no empty th cells for a11y -->
+    <xsl:element name="td">
+      <xsl:apply-templates select="@*, node()" mode="#current"/>
+    </xsl:element>
+  </xsl:template>
+  
   <xsl:template match="/*/@*[name() = ('source-dir-uri', 'xml:base')]" mode="tei2html">
     <xsl:copy/>
   </xsl:template>
@@ -2532,8 +2539,8 @@
 
   <xsl:template
     match="
-      table[not(col | colgroup)][@css:width]/*/row/*/@css:width
-      | table[exists(col | colgroup)][@css:width]//col/@*[local-name() = 'width']"
+              table[not(col | colgroup)][@css:width]/*/row/*/@css:width
+            | table[exists(col | colgroup)][@css:width]//col/@*[local-name() = 'width']"
     mode="table-widths">
     <xsl:param name="table-twips" as="xs:double?" tunnel="yes"/>
     <xsl:param name="table-percentage" as="xs:integer?" tunnel="yes"/>
