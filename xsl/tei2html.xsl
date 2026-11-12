@@ -124,7 +124,7 @@
   <xsl:key name="link-by-anchor" match="*:ref" use="@target"/>
 
   <!-- identity template -->
-  <xsl:template match="* | @*" mode="expand-css clean-up table-widths epub-alternatives join-segs"
+  <xsl:template match="node() | @*" mode="expand-css clean-up table-widths epub-alternatives join-segs"
     priority="-0.5">
     <xsl:copy copy-namespaces="no">
       <xsl:apply-templates select="@* | node()" mode="#current"/>
